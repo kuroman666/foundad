@@ -87,3 +87,4 @@ where `data.test_root` is the dataset folder, and `app` is test_dinov2 or test_d
 
 ## Acknowledgement
 This repo utilizes [DINOv3](https://github.com/facebookresearch/dinov3), [DINOv2](https://github.com/facebookresearch/dinov2), [DINO](https://github.com/facebookresearch/dino), [SigLIP](https://github.com/google-research/big_vision), [CLIP](https://github.com/openai/CLIP) and [DINOSigLIP](https://github.com/tri-ml/prismatic-vlms). We also thank [I-JEPA](https://github.com/facebookresearch/ijepa) for the inspiration.
+# foundad
