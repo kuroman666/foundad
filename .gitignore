@@ -109,6 +109,9 @@ setup.cfg
 *.tar.gz
 *.zip
 *.rar
+*.png
+*.jpg
+*.tar.xz
 
 # Large data dirs
 data/

@@ -1,0 +1,9 @@
+=== FoundAD Metrics Report (20261029_174426) ===
+Command: python foundad/main.py mode=AD data.dataset=mvtec data.data_name=mvtec_4shot data.mvtec_classnames='[bottle,cable]' diy_name=dbug data.test_root=./mvtec app=test app.ckpt_step=2000
+---------------------------------------------------------------------------
+INFO:evaluator:Evaluating train-step2000.pth.tar on mvtec
+Evaluating bottle...
+INFO:evaluator:bottle | AUROC_i 1.0000 | AUPR_i 1.0000 | AUROC_p 0.9877 | PRO-AUC 0.9640
+Evaluating cable...
+INFO:evaluator:cable | AUROC_i 0.9130 | AUPR_i 0.9601 | AUROC_p 0.9523 | PRO-AUC 0.8991
+INFO:evaluator:Mean | AUROC_i 0.9565 | AUPR_i 0.9801 | AUROC_p 0.9700 | PRO-AUC 0.9315
