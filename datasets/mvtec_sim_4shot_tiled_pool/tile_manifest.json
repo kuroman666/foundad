@@ -1,0 +1,2486 @@
+{
+  "tile_size": 512,
+  "tile_overlap": 64,
+  "images": {
+    "wafer_0001_clean.png": {
+      "stem": "wafer_0001_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0001_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0001_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0001_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0002_clean.png": {
+      "stem": "wafer_0002_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0002_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0002_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0002_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0003_clean.png": {
+      "stem": "wafer_0003_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0003_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0003_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0003_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0004_clean.png": {
+      "stem": "wafer_0004_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0004_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0004_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0004_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0005_clean.png": {
+      "stem": "wafer_0005_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0005_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0005_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0005_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0006_clean.png": {
+      "stem": "wafer_0006_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0006_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0006_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0006_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0007_clean.png": {
+      "stem": "wafer_0007_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0007_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0007_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0007_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0008_clean.png": {
+      "stem": "wafer_0008_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0008_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0008_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0008_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0009_clean.png": {
+      "stem": "wafer_0009_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0009_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0009_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0009_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0010_clean.png": {
+      "stem": "wafer_0010_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0010_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0010_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0010_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0011_clean.png": {
+      "stem": "wafer_0011_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0011_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0011_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0011_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0012_clean.png": {
+      "stem": "wafer_0012_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0012_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0012_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0012_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0013_clean.png": {
+      "stem": "wafer_0013_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0013_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0013_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0013_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0014_clean.png": {
+      "stem": "wafer_0014_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0014_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0014_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0014_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0015_clean.png": {
+      "stem": "wafer_0015_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0015_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0015_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0015_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0016_clean.png": {
+      "stem": "wafer_0016_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0016_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0016_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0016_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0017_clean.png": {
+      "stem": "wafer_0017_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0017_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0017_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0017_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0018_clean.png": {
+      "stem": "wafer_0018_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0018_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0018_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0018_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0019_clean.png": {
+      "stem": "wafer_0019_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0019_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0019_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0019_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0020_clean.png": {
+      "stem": "wafer_0020_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0020_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0020_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0020_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0021_clean.png": {
+      "stem": "wafer_0021_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0021_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0021_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0021_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0022_clean.png": {
+      "stem": "wafer_0022_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0022_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0022_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0022_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0023_clean.png": {
+      "stem": "wafer_0023_clean",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0023_clean.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0023_clean__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0023_clean__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0024_escape_crack.png": {
+      "stem": "wafer_0024_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0024_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0024_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0024_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0025_escape_crack.png": {
+      "stem": "wafer_0025_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0025_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0025_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0025_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0026_escape_crack.png": {
+      "stem": "wafer_0026_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0026_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0026_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0026_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0027_escape_crack.png": {
+      "stem": "wafer_0027_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0027_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0027_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0027_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0028_escape_crack.png": {
+      "stem": "wafer_0028_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0028_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0028_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0028_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0029_escape_crack.png": {
+      "stem": "wafer_0029_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0029_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0029_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0029_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0030_escape_crack.png": {
+      "stem": "wafer_0030_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0030_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0030_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0030_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    },
+    "wafer_0031_escape_crack.png": {
+      "stem": "wafer_0031_escape_crack",
+      "path": "/home/kenny/project/FoundAD/datasets/sim_fab_capsule_pool/wafer_0031_escape_crack.png",
+      "height": 1000,
+      "width": 1000,
+      "tiles": [
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0000_x0000_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0000_x0000_h0512_w0512.png",
+          "y": 0,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0000_x0448_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0000_x0448_h0512_w0512.png",
+          "y": 0,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0000_x0488_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0000_x0488_h0512_w0512.png",
+          "y": 0,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0448_x0000_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0448_x0000_h0512_w0512.png",
+          "y": 448,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0448_x0448_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0448_x0448_h0512_w0512.png",
+          "y": 448,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0448_x0488_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0448_x0488_h0512_w0512.png",
+          "y": 448,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0488_x0000_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0488_x0000_h0512_w0512.png",
+          "y": 488,
+          "x": 0,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0488_x0448_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0488_x0448_h0512_w0512.png",
+          "y": 488,
+          "x": 448,
+          "h": 512,
+          "w": 512
+        },
+        {
+          "tile_stem": "wafer_0031_escape_crack__tile_y0488_x0488_h0512_w0512",
+          "tile_fname": "wafer_0031_escape_crack__tile_y0488_x0488_h0512_w0512.png",
+          "y": 488,
+          "x": 488,
+          "h": 512,
+          "w": 512
+        }
+      ]
+    }
+  }
+}

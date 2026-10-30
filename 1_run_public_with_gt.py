@@ -1,6 +1,7 @@
 # 檔案位置: FoundAD/1_run_public_with_gt.py (全選覆蓋並存檔)
 import os
 import re
+import stat
 import glob
 import csv
 import shutil
@@ -9,10 +10,59 @@ import subprocess
 from datetime import datetime
 
 
+def force_writable_and_remove(target_dir: str):
+    """解除唯讀權限 (如 MVTec 預設 0444 權限) 並安全清空舊抽樣資料夾，防止第二次執行時發生 PermissionError。"""
+    if not os.path.exists(target_dir):
+        return
+
+    def _onerror(func, path, exc_info):
+        try:
+            os.chmod(path, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+            func(path)
+        except Exception:
+            pass
+
+    for root, dirs, files in os.walk(target_dir):
+        for d in dirs:
+            p = os.path.join(root, d)
+            try:
+                os.chmod(p, stat.S_IRWXU | stat.S_IRGRP | stat.S_IXGRP | stat.S_IROTH | stat.S_IXOTH)
+            except OSError:
+                pass
+        for f in files:
+            p = os.path.join(root, f)
+            try:
+                os.chmod(p, stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+            except OSError:
+                pass
+
+    shutil.rmtree(target_dir, onerror=_onerror)
+
+
+def make_tree_writable(target_dir: str):
+    """確保抽樣後的資料夾與圖片皆具備寫入權限 (0644/0755)。"""
+    if not os.path.exists(target_dir):
+        return
+    for root, dirs, files in os.walk(target_dir):
+        for d in dirs:
+            try:
+                os.chmod(os.path.join(root, d), 0o755)
+            except OSError:
+                pass
+        for f in files:
+            try:
+                os.chmod(os.path.join(root, f), 0o644)
+            except OSError:
+                pass
+
+
 def find_latest_ckpt_step(data_name: str, diy_name: str, req_step: int) -> int:
     pattern = f"./logs/{data_name}/*{diy_name}*/train-step*.pth.tar"
     files = glob.glob(pattern) or glob.glob(f"./logs/{data_name}/**/train-step*.pth.tar", recursive=True)
-    steps = [int(re.search(r"train-step(\d+)\.pth\.tar", f).group(1)) for f in files if re.search(r"train-step(\d+)\.pth\.tar", f)]
+    steps = [
+        int(re.search(r"train-step(\d+)\.pth\.tar", f).group(1))
+        for f in files if re.search(r"train-step(\d+)\.pth\.tar", f)
+    ]
     if not steps or req_step in steps:
         return req_step
     best_step = max(steps)
@@ -20,7 +70,7 @@ def find_latest_ckpt_step(data_name: str, diy_name: str, req_step: int) -> int:
     return best_step
 
 
-def run_and_log(cmd, log_file):
+def run_and_log(cmd: str, log_file: str) -> str:
     print(f"\n[EXEC] {cmd}\n" + "-" * 60)
     output_lines = []
     with open(log_file, "a", encoding="utf-8") as f:
@@ -51,6 +101,7 @@ def main():
     parser.add_argument("--diy_name", type=str, default="dbug")
     parser.add_argument("--ckpt_step", type=int, default=2000)
     parser.add_argument("--shots", type=int, default=4)
+    parser.add_argument("--max_batch_size", type=int, default=16, help="限制最大訓練 Batch Size，防止高解析度下 OOM")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--skip_sample", action="store_true")
     parser.add_argument("--skip_train", action="store_true")
@@ -69,14 +120,17 @@ def main():
     abs_test_root = os.path.abspath(args.test_root)
 
     if not args.skip_sample:
+        # 抽樣前先解除舊資料夾中 MVTec 唯讀圖片的權限並清理，徹底避免 PermissionError
+        force_writable_and_remove(train_root_path)
         sample_cmd = (
             f"python foundad/src/sample.py source={abs_test_root} "
             f"target={train_root_path} num_samples={args.shots} seed={args.seed}"
         )
         run_and_log(sample_cmd, full_log_txt)
+        make_tree_writable(train_root_path)
 
     num_classes = len([c.strip() for c in args.classnames.strip("[]").split(",") if c.strip()])
-    total_batch_size = max(args.shots, num_classes * args.shots)
+    total_batch_size = min(args.max_batch_size, max(args.shots, num_classes * args.shots))
 
     if not args.skip_train:
         train_cmd = (
@@ -121,7 +175,9 @@ def main():
     for seg_src in glob.glob(f"./logs/{args.data_name}/**/segmentation", recursive=True):
         if os.path.isdir(seg_src):
             seg_dst = os.path.join(args.save_dir, "segmentation")
+            force_writable_and_remove(seg_dst)
             shutil.copytree(seg_src, seg_dst, dirs_exist_ok=True)
+            make_tree_writable(seg_dst)
 
     print(f"[✓] Task 1 報表與圖片已輸出至: {args.save_dir}")
 
