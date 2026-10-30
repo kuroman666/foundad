@@ -10,15 +10,15 @@ DINO_CKPT_PATH="auto"
 # --- Task 1: 有 GT 的公開資料集測試參數 ---
 MVTEC_ROOT="${DATASETS_DIR}/mvtec"
 GT_DATA_NAME="mvtec_4shot"
-GT_CLASSES="[bottle,cable]"
+GT_CLASSES="[bottle,cable,capsule,grid,tile,transistor]"
 GT_DIY_NAME="dbug"
 GT_CKPT_STEP=2000
 # SKIP_GT_SAMPLE="--skip_sample"        # 想重抽樣改為 ""
 # SKIP_GT_TRAIN="--skip_train"          # 想重訓練 Task 1 改為 ""
 
 # --- Task 2: 無 GT 模擬抓漏 + 畫紅框測試參數 ---
-MOCK_SOURCE_CAT="${DATASETS_DIR}/mvtec/bottle"
-SIM_POOL_DIR="${DATASETS_DIR}/sim_fab_bottle_pool"
+MOCK_SOURCE_CAT="${DATASETS_DIR}/mvtec/capsule" # 模擬抓漏的來源類別 (可改成其他類別)
+SIM_POOL_DIR="${DATASETS_DIR}/sim_fab_capsule_pool"
 SHOTS=4
 FAB_CKPT_STEP=2000
 SIGMA_K=3.2                           # 畫紅框門檻 (越小框越多，越大越嚴格)

@@ -1,0 +1,4153 @@
+
+============================================================
+[CMD] python foundad/main.py mode=train data.batch_size=24 data.dataset=mvtec data.data_name=mvtec_4shot data.data_path=/home/kenny/project/FoundAD/datasets data.train_root=/home/kenny/project/FoundAD/datasets/mvtec_4shot data.mvtec_classnames='[bottle,cable,capsule,grid,tile,transistor]' diy_name=dbug app=train_dinov3
+============================================================
+INFO:root:Params:
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+{ 'app': <Recursion on dict with id=137487524459840>,
+  'data': { 'batch_size': 24,
+            'data_name': 'mvtec_4shot',
+            'data_path': '/home/kenny/project/FoundAD/datasets',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'grid',
+                                  'tile',
+                                  'transistor'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/path/to/dataset',
+            'train_root': '/home/kenny/project/FoundAD/datasets/mvtec_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 40112},
+  'diy_name': 'dbug',
+  'logging': {'folder': 'logs/mvtec_4shot/dinov3dbug', 'write_tag': 'train'},
+  'meta': { 'crop_size': 512,
+            'feat_normed': False,
+            'if_pred_pe': False,
+            'loss_mode': 'l2',
+            'model': 'dinov3',
+            'n_layer': 3,
+            'pred_depth': 6,
+            'pred_emb_dim': 384,
+            'use_bfloat16': False},
+  'mode': 'train',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+Config saved to logs/mvtec_4shot/dinov3dbug/params.yaml
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+INFO:src.train:Loss mode l2
+Totally 8 will be trained..
+INFO:root:Using AdamW
+INFO:root:Constant lr, lr=0.001
+INFO:src.train:Epoch 1
+INFO:src.train:Epoch 1 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 2
+INFO:src.train:Epoch 2 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 3
+INFO:src.train:Epoch 3 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 4
+INFO:src.train:Epoch 4 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 5
+INFO:src.train:Epoch 5 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 6
+INFO:src.train:Epoch 6 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 7
+INFO:src.train:Epoch 7 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 8
+INFO:src.train:Epoch 8 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 9
+INFO:src.train:Epoch 9 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 10
+INFO:src.train:Epoch 10 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 11
+INFO:src.train:Epoch 11 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 12
+INFO:src.train:Epoch 12 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 13
+INFO:src.train:Epoch 13 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 14
+INFO:src.train:Epoch 14 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 15
+INFO:src.train:Epoch 15 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 16
+INFO:src.train:Epoch 16 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 17
+INFO:src.train:Epoch 17 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 18
+INFO:src.train:Epoch 18 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 19
+INFO:src.train:Epoch 19 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 20
+INFO:src.train:Epoch 20 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 21
+INFO:src.train:Epoch 21 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 22
+INFO:src.train:Epoch 22 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 23
+INFO:src.train:Epoch 23 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 24
+INFO:src.train:Epoch 24 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 25
+INFO:src.train:Epoch 25 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 26
+INFO:src.train:Epoch 26 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 27
+INFO:src.train:Epoch 27 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 28
+INFO:src.train:Epoch 28 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 29
+INFO:src.train:Epoch 29 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 30
+INFO:src.train:Epoch 30 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 31
+INFO:src.train:Epoch 31 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 32
+INFO:src.train:Epoch 32 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 33
+INFO:src.train:Epoch 33 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 34
+INFO:src.train:Epoch 34 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 35
+INFO:src.train:Epoch 35 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 36
+INFO:src.train:Epoch 36 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 37
+INFO:src.train:Epoch 37 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 38
+INFO:src.train:Epoch 38 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 39
+INFO:src.train:Epoch 39 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 40
+INFO:src.train:Epoch 40 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 41
+INFO:src.train:Epoch 41 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 42
+INFO:src.train:Epoch 42 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 43
+INFO:src.train:Epoch 43 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 44
+INFO:src.train:Epoch 44 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 45
+INFO:src.train:Epoch 45 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 46
+INFO:src.train:Epoch 46 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 47
+INFO:src.train:Epoch 47 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 48
+INFO:src.train:Epoch 48 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 49
+INFO:src.train:Epoch 49 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 50
+INFO:src.train:Epoch 50 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 51
+INFO:src.train:Epoch 51 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 52
+INFO:src.train:Epoch 52 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 53
+INFO:src.train:Epoch 53 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 54
+INFO:src.train:Epoch 54 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 55
+INFO:src.train:Epoch 55 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 56
+INFO:src.train:Epoch 56 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 57
+INFO:src.train:Epoch 57 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 58
+INFO:src.train:Epoch 58 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 59
+INFO:src.train:Epoch 59 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 60
+INFO:src.train:Epoch 60 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 61
+INFO:src.train:Epoch 61 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 62
+INFO:src.train:Epoch 62 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 63
+INFO:src.train:Epoch 63 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 64
+INFO:src.train:Epoch 64 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 65
+INFO:src.train:Epoch 65 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 66
+INFO:src.train:Epoch 66 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 67
+INFO:src.train:Epoch 67 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 68
+INFO:src.train:Epoch 68 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 69
+INFO:src.train:Epoch 69 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 70
+INFO:src.train:Epoch 70 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 71
+INFO:src.train:Epoch 71 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 72
+INFO:src.train:Epoch 72 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 73
+INFO:src.train:Epoch 73 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 74
+INFO:src.train:Epoch 74 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 75
+INFO:src.train:Epoch 75 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 76
+INFO:src.train:Epoch 76 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 77
+INFO:src.train:Epoch 77 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 78
+INFO:src.train:Epoch 78 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 79
+INFO:src.train:Epoch 79 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 80
+INFO:src.train:Epoch 80 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 81
+INFO:src.train:Epoch 81 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 82
+INFO:src.train:Epoch 82 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 83
+INFO:src.train:Epoch 83 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 84
+INFO:src.train:Epoch 84 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 85
+INFO:src.train:Epoch 85 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 86
+INFO:src.train:Epoch 86 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 87
+INFO:src.train:Epoch 87 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 88
+INFO:src.train:Epoch 88 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 89
+INFO:src.train:Epoch 89 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 90
+INFO:src.train:Epoch 90 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 91
+INFO:src.train:Epoch 91 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 92
+INFO:src.train:Epoch 92 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 93
+INFO:src.train:Epoch 93 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 94
+INFO:src.train:Epoch 94 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 95
+INFO:src.train:Epoch 95 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 96
+INFO:src.train:Epoch 96 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 97
+INFO:src.train:Epoch 97 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 98
+INFO:src.train:Epoch 98 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 99
+INFO:src.train:Epoch 99 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 100
+INFO:src.train:Epoch 100 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 101
+INFO:src.train:Epoch 101 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 102
+INFO:src.train:Epoch 102 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 103
+INFO:src.train:Epoch 103 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 104
+INFO:src.train:Epoch 104 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 105
+INFO:src.train:Epoch 105 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 106
+INFO:src.train:Epoch 106 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 107
+INFO:src.train:Epoch 107 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 108
+INFO:src.train:Epoch 108 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 109
+INFO:src.train:Epoch 109 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 110
+INFO:src.train:Epoch 110 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 111
+INFO:src.train:Epoch 111 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 112
+INFO:src.train:Epoch 112 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 113
+INFO:src.train:Epoch 113 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 114
+INFO:src.train:Epoch 114 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 115
+INFO:src.train:Epoch 115 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 116
+INFO:src.train:Epoch 116 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 117
+INFO:src.train:Epoch 117 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 118
+INFO:src.train:Epoch 118 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 119
+INFO:src.train:Epoch 119 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 120
+INFO:src.train:Epoch 120 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 121
+INFO:src.train:Epoch 121 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 122
+INFO:src.train:Epoch 122 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 123
+INFO:src.train:Epoch 123 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 124
+INFO:src.train:Epoch 124 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 125
+INFO:src.train:Epoch 125 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 126
+INFO:src.train:Epoch 126 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 127
+INFO:src.train:Epoch 127 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 128
+INFO:src.train:Epoch 128 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 129
+INFO:src.train:Epoch 129 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 130
+INFO:src.train:Epoch 130 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 131
+INFO:src.train:Epoch 131 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 132
+INFO:src.train:Epoch 132 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 133
+INFO:src.train:Epoch 133 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 134
+INFO:src.train:Epoch 134 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 135
+INFO:src.train:Epoch 135 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 136
+INFO:src.train:Epoch 136 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 137
+INFO:src.train:Epoch 137 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 138
+INFO:src.train:Epoch 138 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 139
+INFO:src.train:Epoch 139 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 140
+INFO:src.train:Epoch 140 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 141
+INFO:src.train:Epoch 141 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 142
+INFO:src.train:Epoch 142 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 143
+INFO:src.train:Epoch 143 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 144
+INFO:src.train:Epoch 144 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 145
+INFO:src.train:Epoch 145 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 146
+INFO:src.train:Epoch 146 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 147
+INFO:src.train:Epoch 147 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 148
+INFO:src.train:Epoch 148 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 149
+INFO:src.train:Epoch 149 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 150
+INFO:src.train:Epoch 150 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 151
+INFO:src.train:Epoch 151 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 152
+INFO:src.train:Epoch 152 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 153
+INFO:src.train:Epoch 153 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 154
+INFO:src.train:Epoch 154 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 155
+INFO:src.train:Epoch 155 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 156
+INFO:src.train:Epoch 156 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 157
+INFO:src.train:Epoch 157 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 158
+INFO:src.train:Epoch 158 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 159
+INFO:src.train:Epoch 159 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 160
+INFO:src.train:Epoch 160 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 161
+INFO:src.train:Epoch 161 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 162
+INFO:src.train:Epoch 162 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 163
+INFO:src.train:Epoch 163 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 164
+INFO:src.train:Epoch 164 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 165
+INFO:src.train:Epoch 165 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 166
+INFO:src.train:Epoch 166 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 167
+INFO:src.train:Epoch 167 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 168
+INFO:src.train:Epoch 168 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 169
+INFO:src.train:Epoch 169 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 170
+INFO:src.train:Epoch 170 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 171
+INFO:src.train:Epoch 171 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 172
+INFO:src.train:Epoch 172 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 173
+INFO:src.train:Epoch 173 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 174
+INFO:src.train:Epoch 174 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 175
+INFO:src.train:Epoch 175 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 176
+INFO:src.train:Epoch 176 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 177
+INFO:src.train:Epoch 177 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 178
+INFO:src.train:Epoch 178 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 179
+INFO:src.train:Epoch 179 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 180
+INFO:src.train:Epoch 180 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 181
+INFO:src.train:Epoch 181 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 182
+INFO:src.train:Epoch 182 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 183
+INFO:src.train:Epoch 183 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 184
+INFO:src.train:Epoch 184 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 185
+INFO:src.train:Epoch 185 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 186
+INFO:src.train:Epoch 186 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 187
+INFO:src.train:Epoch 187 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 188
+INFO:src.train:Epoch 188 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 189
+INFO:src.train:Epoch 189 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 190
+INFO:src.train:Epoch 190 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 191
+INFO:src.train:Epoch 191 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 192
+INFO:src.train:Epoch 192 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 193
+INFO:src.train:Epoch 193 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 194
+INFO:src.train:Epoch 194 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 195
+INFO:src.train:Epoch 195 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 196
+INFO:src.train:Epoch 196 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 197
+INFO:src.train:Epoch 197 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 198
+INFO:src.train:Epoch 198 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 199
+INFO:src.train:Epoch 199 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 200
+INFO:src.train:Epoch 200 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 201
+INFO:src.train:Epoch 201 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 202
+INFO:src.train:Epoch 202 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 203
+INFO:src.train:Epoch 203 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 204
+INFO:src.train:Epoch 204 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 205
+INFO:src.train:Epoch 205 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 206
+INFO:src.train:Epoch 206 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 207
+INFO:src.train:Epoch 207 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 208
+INFO:src.train:Epoch 208 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 209
+INFO:src.train:Epoch 209 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 210
+INFO:src.train:Epoch 210 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 211
+INFO:src.train:Epoch 211 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 212
+INFO:src.train:Epoch 212 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 213
+INFO:src.train:Epoch 213 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 214
+INFO:src.train:Epoch 214 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 215
+INFO:src.train:Epoch 215 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 216
+INFO:src.train:Epoch 216 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 217
+INFO:src.train:Epoch 217 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 218
+INFO:src.train:Epoch 218 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 219
+INFO:src.train:Epoch 219 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 220
+INFO:src.train:Epoch 220 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 221
+INFO:src.train:Epoch 221 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 222
+INFO:src.train:Epoch 222 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 223
+INFO:src.train:Epoch 223 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 224
+INFO:src.train:Epoch 224 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 225
+INFO:src.train:Epoch 225 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 226
+INFO:src.train:Epoch 226 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 227
+INFO:src.train:Epoch 227 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 228
+INFO:src.train:Epoch 228 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 229
+INFO:src.train:Epoch 229 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 230
+INFO:src.train:Epoch 230 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 231
+INFO:src.train:Epoch 231 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 232
+INFO:src.train:Epoch 232 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 233
+INFO:src.train:Epoch 233 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 234
+INFO:src.train:Epoch 234 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 235
+INFO:src.train:Epoch 235 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 236
+INFO:src.train:Epoch 236 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 237
+INFO:src.train:Epoch 237 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 238
+INFO:src.train:Epoch 238 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 239
+INFO:src.train:Epoch 239 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 240
+INFO:src.train:Epoch 240 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 241
+INFO:src.train:Epoch 241 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 242
+INFO:src.train:Epoch 242 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 243
+INFO:src.train:Epoch 243 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 244
+INFO:src.train:Epoch 244 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 245
+INFO:src.train:Epoch 245 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 246
+INFO:src.train:Epoch 246 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 247
+INFO:src.train:Epoch 247 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 248
+INFO:src.train:Epoch 248 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 249
+INFO:src.train:Epoch 249 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 250
+INFO:src.train:Epoch 250 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 251
+INFO:src.train:Epoch 251 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 252
+INFO:src.train:Epoch 252 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 253
+INFO:src.train:Epoch 253 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 254
+INFO:src.train:Epoch 254 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 255
+INFO:src.train:Epoch 255 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 256
+INFO:src.train:Epoch 256 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 257
+INFO:src.train:Epoch 257 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 258
+INFO:src.train:Epoch 258 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 259
+INFO:src.train:Epoch 259 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 260
+INFO:src.train:Epoch 260 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 261
+INFO:src.train:Epoch 261 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 262
+INFO:src.train:Epoch 262 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 263
+INFO:src.train:Epoch 263 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 264
+INFO:src.train:Epoch 264 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 265
+INFO:src.train:Epoch 265 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 266
+INFO:src.train:Epoch 266 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 267
+INFO:src.train:Epoch 267 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 268
+INFO:src.train:Epoch 268 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 269
+INFO:src.train:Epoch 269 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 270
+INFO:src.train:Epoch 270 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 271
+INFO:src.train:Epoch 271 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 272
+INFO:src.train:Epoch 272 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 273
+INFO:src.train:Epoch 273 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 274
+INFO:src.train:Epoch 274 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 275
+INFO:src.train:Epoch 275 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 276
+INFO:src.train:Epoch 276 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 277
+INFO:src.train:Epoch 277 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 278
+INFO:src.train:Epoch 278 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 279
+INFO:src.train:Epoch 279 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 280
+INFO:src.train:Epoch 280 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 281
+INFO:src.train:Epoch 281 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 282
+INFO:src.train:Epoch 282 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 283
+INFO:src.train:Epoch 283 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 284
+INFO:src.train:Epoch 284 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 285
+INFO:src.train:Epoch 285 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 286
+INFO:src.train:Epoch 286 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 287
+INFO:src.train:Epoch 287 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 288
+INFO:src.train:Epoch 288 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 289
+INFO:src.train:Epoch 289 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 290
+INFO:src.train:Epoch 290 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 291
+INFO:src.train:Epoch 291 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 292
+INFO:src.train:Epoch 292 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 293
+INFO:src.train:Epoch 293 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 294
+INFO:src.train:Epoch 294 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 295
+INFO:src.train:Epoch 295 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 296
+INFO:src.train:Epoch 296 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 297
+INFO:src.train:Epoch 297 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 298
+INFO:src.train:Epoch 298 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 299
+INFO:src.train:Epoch 299 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 300
+INFO:src.train:Epoch 300 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 301
+INFO:src.train:Epoch 301 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 302
+INFO:src.train:Epoch 302 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 303
+INFO:src.train:Epoch 303 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 304
+INFO:src.train:Epoch 304 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 305
+INFO:src.train:Epoch 305 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 306
+INFO:src.train:Epoch 306 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 307
+INFO:src.train:Epoch 307 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 308
+INFO:src.train:Epoch 308 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 309
+INFO:src.train:Epoch 309 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 310
+INFO:src.train:Epoch 310 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 311
+INFO:src.train:Epoch 311 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 312
+INFO:src.train:Epoch 312 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 313
+INFO:src.train:Epoch 313 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 314
+INFO:src.train:Epoch 314 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 315
+INFO:src.train:Epoch 315 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 316
+INFO:src.train:Epoch 316 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 317
+INFO:src.train:Epoch 317 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 318
+INFO:src.train:Epoch 318 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 319
+INFO:src.train:Epoch 319 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 320
+INFO:src.train:Epoch 320 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 321
+INFO:src.train:Epoch 321 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 322
+INFO:src.train:Epoch 322 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 323
+INFO:src.train:Epoch 323 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 324
+INFO:src.train:Epoch 324 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 325
+INFO:src.train:Epoch 325 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 326
+INFO:src.train:Epoch 326 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 327
+INFO:src.train:Epoch 327 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 328
+INFO:src.train:Epoch 328 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 329
+INFO:src.train:Epoch 329 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 330
+INFO:src.train:Epoch 330 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 331
+INFO:src.train:Epoch 331 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 332
+INFO:src.train:Epoch 332 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 333
+INFO:src.train:Epoch 333 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 334
+INFO:src.train:Epoch 334 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 335
+INFO:src.train:Epoch 335 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 336
+INFO:src.train:Epoch 336 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 337
+INFO:src.train:Epoch 337 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 338
+INFO:src.train:Epoch 338 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 339
+INFO:src.train:Epoch 339 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 340
+INFO:src.train:Epoch 340 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 341
+INFO:src.train:Epoch 341 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 342
+INFO:src.train:Epoch 342 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 343
+INFO:src.train:Epoch 343 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 344
+INFO:src.train:Epoch 344 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 345
+INFO:src.train:Epoch 345 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 346
+INFO:src.train:Epoch 346 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 347
+INFO:src.train:Epoch 347 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 348
+INFO:src.train:Epoch 348 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 349
+INFO:src.train:Epoch 349 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 350
+INFO:src.train:Epoch 350 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 351
+INFO:src.train:Epoch 351 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 352
+INFO:src.train:Epoch 352 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 353
+INFO:src.train:Epoch 353 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 354
+INFO:src.train:Epoch 354 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 355
+INFO:src.train:Epoch 355 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 356
+INFO:src.train:Epoch 356 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 357
+INFO:src.train:Epoch 357 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 358
+INFO:src.train:Epoch 358 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 359
+INFO:src.train:Epoch 359 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 360
+INFO:src.train:Epoch 360 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 361
+INFO:src.train:Epoch 361 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 362
+INFO:src.train:Epoch 362 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 363
+INFO:src.train:Epoch 363 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 364
+INFO:src.train:Epoch 364 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 365
+INFO:src.train:Epoch 365 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 366
+INFO:src.train:Epoch 366 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 367
+INFO:src.train:Epoch 367 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 368
+INFO:src.train:Epoch 368 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 369
+INFO:src.train:Epoch 369 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 370
+INFO:src.train:Epoch 370 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 371
+INFO:src.train:Epoch 371 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 372
+INFO:src.train:Epoch 372 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 373
+INFO:src.train:Epoch 373 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 374
+INFO:src.train:Epoch 374 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 375
+INFO:src.train:Epoch 375 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 376
+INFO:src.train:Epoch 376 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 377
+INFO:src.train:Epoch 377 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 378
+INFO:src.train:Epoch 378 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 379
+INFO:src.train:Epoch 379 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 380
+INFO:src.train:Epoch 380 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 381
+INFO:src.train:Epoch 381 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 382
+INFO:src.train:Epoch 382 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 383
+INFO:src.train:Epoch 383 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 384
+INFO:src.train:Epoch 384 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 385
+INFO:src.train:Epoch 385 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 386
+INFO:src.train:Epoch 386 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 387
+INFO:src.train:Epoch 387 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 388
+INFO:src.train:Epoch 388 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 389
+INFO:src.train:Epoch 389 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 390
+INFO:src.train:Epoch 390 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 391
+INFO:src.train:Epoch 391 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 392
+INFO:src.train:Epoch 392 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 393
+INFO:src.train:Epoch 393 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 394
+INFO:src.train:Epoch 394 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 395
+INFO:src.train:Epoch 395 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 396
+INFO:src.train:Epoch 396 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 397
+INFO:src.train:Epoch 397 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 398
+INFO:src.train:Epoch 398 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 399
+INFO:src.train:Epoch 399 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 400
+INFO:src.train:Epoch 400 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 401
+INFO:src.train:Epoch 401 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 402
+INFO:src.train:Epoch 402 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 403
+INFO:src.train:Epoch 403 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 404
+INFO:src.train:Epoch 404 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 405
+INFO:src.train:Epoch 405 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 406
+INFO:src.train:Epoch 406 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 407
+INFO:src.train:Epoch 407 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 408
+INFO:src.train:Epoch 408 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 409
+INFO:src.train:Epoch 409 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 410
+INFO:src.train:Epoch 410 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 411
+INFO:src.train:Epoch 411 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 412
+INFO:src.train:Epoch 412 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 413
+INFO:src.train:Epoch 413 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 414
+INFO:src.train:Epoch 414 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 415
+INFO:src.train:Epoch 415 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 416
+INFO:src.train:Epoch 416 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 417
+INFO:src.train:Epoch 417 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 418
+INFO:src.train:Epoch 418 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 419
+INFO:src.train:Epoch 419 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 420
+INFO:src.train:Epoch 420 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 421
+INFO:src.train:Epoch 421 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 422
+INFO:src.train:Epoch 422 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 423
+INFO:src.train:Epoch 423 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 424
+INFO:src.train:Epoch 424 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 425
+INFO:src.train:Epoch 425 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 426
+INFO:src.train:Epoch 426 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 427
+INFO:src.train:Epoch 427 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 428
+INFO:src.train:Epoch 428 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 429
+INFO:src.train:Epoch 429 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 430
+INFO:src.train:Epoch 430 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 431
+INFO:src.train:Epoch 431 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 432
+INFO:src.train:Epoch 432 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 433
+INFO:src.train:Epoch 433 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 434
+INFO:src.train:Epoch 434 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 435
+INFO:src.train:Epoch 435 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 436
+INFO:src.train:Epoch 436 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 437
+INFO:src.train:Epoch 437 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 438
+INFO:src.train:Epoch 438 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 439
+INFO:src.train:Epoch 439 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 440
+INFO:src.train:Epoch 440 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 441
+INFO:src.train:Epoch 441 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 442
+INFO:src.train:Epoch 442 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 443
+INFO:src.train:Epoch 443 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 444
+INFO:src.train:Epoch 444 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 445
+INFO:src.train:Epoch 445 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 446
+INFO:src.train:Epoch 446 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 447
+INFO:src.train:Epoch 447 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 448
+INFO:src.train:Epoch 448 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 449
+INFO:src.train:Epoch 449 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 450
+INFO:src.train:Epoch 450 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 451
+INFO:src.train:Epoch 451 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 452
+INFO:src.train:Epoch 452 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 453
+INFO:src.train:Epoch 453 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 454
+INFO:src.train:Epoch 454 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 455
+INFO:src.train:Epoch 455 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 456
+INFO:src.train:Epoch 456 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 457
+INFO:src.train:Epoch 457 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 458
+INFO:src.train:Epoch 458 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 459
+INFO:src.train:Epoch 459 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 460
+INFO:src.train:Epoch 460 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 461
+INFO:src.train:Epoch 461 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 462
+INFO:src.train:Epoch 462 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 463
+INFO:src.train:Epoch 463 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 464
+INFO:src.train:Epoch 464 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 465
+INFO:src.train:Epoch 465 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 466
+INFO:src.train:Epoch 466 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 467
+INFO:src.train:Epoch 467 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 468
+INFO:src.train:Epoch 468 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 469
+INFO:src.train:Epoch 469 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 470
+INFO:src.train:Epoch 470 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 471
+INFO:src.train:Epoch 471 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 472
+INFO:src.train:Epoch 472 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 473
+INFO:src.train:Epoch 473 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 474
+INFO:src.train:Epoch 474 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 475
+INFO:src.train:Epoch 475 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 476
+INFO:src.train:Epoch 476 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 477
+INFO:src.train:Epoch 477 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 478
+INFO:src.train:Epoch 478 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 479
+INFO:src.train:Epoch 479 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 480
+INFO:src.train:Epoch 480 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 481
+INFO:src.train:Epoch 481 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 482
+INFO:src.train:Epoch 482 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 483
+INFO:src.train:Epoch 483 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 484
+INFO:src.train:Epoch 484 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 485
+INFO:src.train:Epoch 485 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 486
+INFO:src.train:Epoch 486 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 487
+INFO:src.train:Epoch 487 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 488
+INFO:src.train:Epoch 488 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 489
+INFO:src.train:Epoch 489 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 490
+INFO:src.train:Epoch 490 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 491
+INFO:src.train:Epoch 491 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 492
+INFO:src.train:Epoch 492 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 493
+INFO:src.train:Epoch 493 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 494
+INFO:src.train:Epoch 494 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 495
+INFO:src.train:Epoch 495 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 496
+INFO:src.train:Epoch 496 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 497
+INFO:src.train:Epoch 497 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 498
+INFO:src.train:Epoch 498 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 499
+INFO:src.train:Epoch 499 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 500
+INFO:src.train:Epoch 500 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 501
+INFO:src.train:Epoch 501 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 502
+INFO:src.train:Epoch 502 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 503
+INFO:src.train:Epoch 503 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 504
+INFO:src.train:Epoch 504 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 505
+INFO:src.train:Epoch 505 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 506
+INFO:src.train:Epoch 506 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 507
+INFO:src.train:Epoch 507 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 508
+INFO:src.train:Epoch 508 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 509
+INFO:src.train:Epoch 509 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 510
+INFO:src.train:Epoch 510 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 511
+INFO:src.train:Epoch 511 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 512
+INFO:src.train:Epoch 512 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 513
+INFO:src.train:Epoch 513 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 514
+INFO:src.train:Epoch 514 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 515
+INFO:src.train:Epoch 515 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 516
+INFO:src.train:Epoch 516 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 517
+INFO:src.train:Epoch 517 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 518
+INFO:src.train:Epoch 518 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 519
+INFO:src.train:Epoch 519 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 520
+INFO:src.train:Epoch 520 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 521
+INFO:src.train:Epoch 521 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 522
+INFO:src.train:Epoch 522 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 523
+INFO:src.train:Epoch 523 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 524
+INFO:src.train:Epoch 524 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 525
+INFO:src.train:Epoch 525 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 526
+INFO:src.train:Epoch 526 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 527
+INFO:src.train:Epoch 527 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 528
+INFO:src.train:Epoch 528 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 529
+INFO:src.train:Epoch 529 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 530
+INFO:src.train:Epoch 530 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 531
+INFO:src.train:Epoch 531 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 532
+INFO:src.train:Epoch 532 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 533
+INFO:src.train:Epoch 533 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 534
+INFO:src.train:Epoch 534 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 535
+INFO:src.train:Epoch 535 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 536
+INFO:src.train:Epoch 536 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 537
+INFO:src.train:Epoch 537 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 538
+INFO:src.train:Epoch 538 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 539
+INFO:src.train:Epoch 539 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 540
+INFO:src.train:Epoch 540 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 541
+INFO:src.train:Epoch 541 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 542
+INFO:src.train:Epoch 542 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 543
+INFO:src.train:Epoch 543 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 544
+INFO:src.train:Epoch 544 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 545
+INFO:src.train:Epoch 545 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 546
+INFO:src.train:Epoch 546 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 547
+INFO:src.train:Epoch 547 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 548
+INFO:src.train:Epoch 548 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 549
+INFO:src.train:Epoch 549 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 550
+INFO:src.train:Epoch 550 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 551
+INFO:src.train:Epoch 551 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 552
+INFO:src.train:Epoch 552 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 553
+INFO:src.train:Epoch 553 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 554
+INFO:src.train:Epoch 554 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 555
+INFO:src.train:Epoch 555 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 556
+INFO:src.train:Epoch 556 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 557
+INFO:src.train:Epoch 557 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 558
+INFO:src.train:Epoch 558 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 559
+INFO:src.train:Epoch 559 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 560
+INFO:src.train:Epoch 560 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 561
+INFO:src.train:Epoch 561 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 562
+INFO:src.train:Epoch 562 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 563
+INFO:src.train:Epoch 563 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 564
+INFO:src.train:Epoch 564 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 565
+INFO:src.train:Epoch 565 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 566
+INFO:src.train:Epoch 566 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 567
+INFO:src.train:Epoch 567 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 568
+INFO:src.train:Epoch 568 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 569
+INFO:src.train:Epoch 569 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 570
+INFO:src.train:Epoch 570 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 571
+INFO:src.train:Epoch 571 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 572
+INFO:src.train:Epoch 572 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 573
+INFO:src.train:Epoch 573 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 574
+INFO:src.train:Epoch 574 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 575
+INFO:src.train:Epoch 575 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 576
+INFO:src.train:Epoch 576 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 577
+INFO:src.train:Epoch 577 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 578
+INFO:src.train:Epoch 578 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 579
+INFO:src.train:Epoch 579 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 580
+INFO:src.train:Epoch 580 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 581
+INFO:src.train:Epoch 581 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 582
+INFO:src.train:Epoch 582 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 583
+INFO:src.train:Epoch 583 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 584
+INFO:src.train:Epoch 584 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 585
+INFO:src.train:Epoch 585 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 586
+INFO:src.train:Epoch 586 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 587
+INFO:src.train:Epoch 587 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 588
+INFO:src.train:Epoch 588 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 589
+INFO:src.train:Epoch 589 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 590
+INFO:src.train:Epoch 590 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 591
+INFO:src.train:Epoch 591 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 592
+INFO:src.train:Epoch 592 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 593
+INFO:src.train:Epoch 593 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 594
+INFO:src.train:Epoch 594 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 595
+INFO:src.train:Epoch 595 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 596
+INFO:src.train:Epoch 596 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 597
+INFO:src.train:Epoch 597 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 598
+INFO:src.train:Epoch 598 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 599
+INFO:src.train:Epoch 599 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 600
+INFO:src.train:Epoch 600 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 601
+INFO:src.train:Epoch 601 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 602
+INFO:src.train:Epoch 602 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 603
+INFO:src.train:Epoch 603 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 604
+INFO:src.train:Epoch 604 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 605
+INFO:src.train:Epoch 605 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 606
+INFO:src.train:Epoch 606 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 607
+INFO:src.train:Epoch 607 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 608
+INFO:src.train:Epoch 608 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 609
+INFO:src.train:Epoch 609 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 610
+INFO:src.train:Epoch 610 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 611
+INFO:src.train:Epoch 611 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 612
+INFO:src.train:Epoch 612 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 613
+INFO:src.train:Epoch 613 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 614
+INFO:src.train:Epoch 614 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 615
+INFO:src.train:Epoch 615 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 616
+INFO:src.train:Epoch 616 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 617
+INFO:src.train:Epoch 617 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 618
+INFO:src.train:Epoch 618 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 619
+INFO:src.train:Epoch 619 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 620
+INFO:src.train:Epoch 620 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 621
+INFO:src.train:Epoch 621 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 622
+INFO:src.train:Epoch 622 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 623
+INFO:src.train:Epoch 623 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 624
+INFO:src.train:Epoch 624 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 625
+INFO:src.train:Epoch 625 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 626
+INFO:src.train:Epoch 626 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 627
+INFO:src.train:Epoch 627 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 628
+INFO:src.train:Epoch 628 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 629
+INFO:src.train:Epoch 629 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 630
+INFO:src.train:Epoch 630 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 631
+INFO:src.train:Epoch 631 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 632
+INFO:src.train:Epoch 632 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 633
+INFO:src.train:Epoch 633 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 634
+INFO:src.train:Epoch 634 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 635
+INFO:src.train:Epoch 635 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 636
+INFO:src.train:Epoch 636 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 637
+INFO:src.train:Epoch 637 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 638
+INFO:src.train:Epoch 638 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 639
+INFO:src.train:Epoch 639 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 640
+INFO:src.train:Epoch 640 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 641
+INFO:src.train:Epoch 641 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 642
+INFO:src.train:Epoch 642 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 643
+INFO:src.train:Epoch 643 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 644
+INFO:src.train:Epoch 644 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 645
+INFO:src.train:Epoch 645 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 646
+INFO:src.train:Epoch 646 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 647
+INFO:src.train:Epoch 647 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 648
+INFO:src.train:Epoch 648 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 649
+INFO:src.train:Epoch 649 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 650
+INFO:src.train:Epoch 650 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 651
+INFO:src.train:Epoch 651 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 652
+INFO:src.train:Epoch 652 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 653
+INFO:src.train:Epoch 653 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 654
+INFO:src.train:Epoch 654 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 655
+INFO:src.train:Epoch 655 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 656
+INFO:src.train:Epoch 656 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 657
+INFO:src.train:Epoch 657 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 658
+INFO:src.train:Epoch 658 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 659
+INFO:src.train:Epoch 659 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 660
+INFO:src.train:Epoch 660 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 661
+INFO:src.train:Epoch 661 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 662
+INFO:src.train:Epoch 662 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 663
+INFO:src.train:Epoch 663 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 664
+INFO:src.train:Epoch 664 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 665
+INFO:src.train:Epoch 665 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 666
+INFO:src.train:Epoch 666 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 667
+INFO:src.train:Epoch 667 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 668
+INFO:src.train:Epoch 668 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 669
+INFO:src.train:Epoch 669 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 670
+INFO:src.train:Epoch 670 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 671
+INFO:src.train:Epoch 671 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 672
+INFO:src.train:Epoch 672 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 673
+INFO:src.train:Epoch 673 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 674
+INFO:src.train:Epoch 674 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 675
+INFO:src.train:Epoch 675 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 676
+INFO:src.train:Epoch 676 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 677
+INFO:src.train:Epoch 677 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 678
+INFO:src.train:Epoch 678 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 679
+INFO:src.train:Epoch 679 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 680
+INFO:src.train:Epoch 680 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 681
+INFO:src.train:Epoch 681 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 682
+INFO:src.train:Epoch 682 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 683
+INFO:src.train:Epoch 683 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 684
+INFO:src.train:Epoch 684 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 685
+INFO:src.train:Epoch 685 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 686
+INFO:src.train:Epoch 686 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 687
+INFO:src.train:Epoch 687 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 688
+INFO:src.train:Epoch 688 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 689
+INFO:src.train:Epoch 689 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 690
+INFO:src.train:Epoch 690 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 691
+INFO:src.train:Epoch 691 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 692
+INFO:src.train:Epoch 692 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 693
+INFO:src.train:Epoch 693 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 694
+INFO:src.train:Epoch 694 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 695
+INFO:src.train:Epoch 695 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 696
+INFO:src.train:Epoch 696 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 697
+INFO:src.train:Epoch 697 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 698
+INFO:src.train:Epoch 698 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 699
+INFO:src.train:Epoch 699 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 700
+INFO:src.train:Epoch 700 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 701
+INFO:src.train:Epoch 701 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 702
+INFO:src.train:Epoch 702 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 703
+INFO:src.train:Epoch 703 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 704
+INFO:src.train:Epoch 704 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 705
+INFO:src.train:Epoch 705 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 706
+INFO:src.train:Epoch 706 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 707
+INFO:src.train:Epoch 707 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 708
+INFO:src.train:Epoch 708 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 709
+INFO:src.train:Epoch 709 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 710
+INFO:src.train:Epoch 710 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 711
+INFO:src.train:Epoch 711 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 712
+INFO:src.train:Epoch 712 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 713
+INFO:src.train:Epoch 713 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 714
+INFO:src.train:Epoch 714 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 715
+INFO:src.train:Epoch 715 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 716
+INFO:src.train:Epoch 716 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 717
+INFO:src.train:Epoch 717 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 718
+INFO:src.train:Epoch 718 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 719
+INFO:src.train:Epoch 719 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 720
+INFO:src.train:Epoch 720 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 721
+INFO:src.train:Epoch 721 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 722
+INFO:src.train:Epoch 722 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 723
+INFO:src.train:Epoch 723 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 724
+INFO:src.train:Epoch 724 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 725
+INFO:src.train:Epoch 725 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 726
+INFO:src.train:Epoch 726 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 727
+INFO:src.train:Epoch 727 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 728
+INFO:src.train:Epoch 728 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 729
+INFO:src.train:Epoch 729 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 730
+INFO:src.train:Epoch 730 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 731
+INFO:src.train:Epoch 731 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 732
+INFO:src.train:Epoch 732 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 733
+INFO:src.train:Epoch 733 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 734
+INFO:src.train:Epoch 734 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 735
+INFO:src.train:Epoch 735 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 736
+INFO:src.train:Epoch 736 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 737
+INFO:src.train:Epoch 737 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 738
+INFO:src.train:Epoch 738 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 739
+INFO:src.train:Epoch 739 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 740
+INFO:src.train:Epoch 740 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 741
+INFO:src.train:Epoch 741 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 742
+INFO:src.train:Epoch 742 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 743
+INFO:src.train:Epoch 743 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 744
+INFO:src.train:Epoch 744 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 745
+INFO:src.train:Epoch 745 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 746
+INFO:src.train:Epoch 746 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 747
+INFO:src.train:Epoch 747 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 748
+INFO:src.train:Epoch 748 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 749
+INFO:src.train:Epoch 749 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 750
+INFO:src.train:Epoch 750 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 751
+INFO:src.train:Epoch 751 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 752
+INFO:src.train:Epoch 752 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 753
+INFO:src.train:Epoch 753 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 754
+INFO:src.train:Epoch 754 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 755
+INFO:src.train:Epoch 755 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 756
+INFO:src.train:Epoch 756 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 757
+INFO:src.train:Epoch 757 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 758
+INFO:src.train:Epoch 758 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 759
+INFO:src.train:Epoch 759 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 760
+INFO:src.train:Epoch 760 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 761
+INFO:src.train:Epoch 761 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 762
+INFO:src.train:Epoch 762 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 763
+INFO:src.train:Epoch 763 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 764
+INFO:src.train:Epoch 764 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 765
+INFO:src.train:Epoch 765 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 766
+INFO:src.train:Epoch 766 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 767
+INFO:src.train:Epoch 767 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 768
+INFO:src.train:Epoch 768 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 769
+INFO:src.train:Epoch 769 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 770
+INFO:src.train:Epoch 770 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 771
+INFO:src.train:Epoch 771 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 772
+INFO:src.train:Epoch 772 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 773
+INFO:src.train:Epoch 773 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 774
+INFO:src.train:Epoch 774 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 775
+INFO:src.train:Epoch 775 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 776
+INFO:src.train:Epoch 776 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 777
+INFO:src.train:Epoch 777 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 778
+INFO:src.train:Epoch 778 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 779
+INFO:src.train:Epoch 779 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 780
+INFO:src.train:Epoch 780 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 781
+INFO:src.train:Epoch 781 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 782
+INFO:src.train:Epoch 782 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 783
+INFO:src.train:Epoch 783 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 784
+INFO:src.train:Epoch 784 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 785
+INFO:src.train:Epoch 785 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 786
+INFO:src.train:Epoch 786 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 787
+INFO:src.train:Epoch 787 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 788
+INFO:src.train:Epoch 788 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 789
+INFO:src.train:Epoch 789 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 790
+INFO:src.train:Epoch 790 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 791
+INFO:src.train:Epoch 791 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 792
+INFO:src.train:Epoch 792 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 793
+INFO:src.train:Epoch 793 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 794
+INFO:src.train:Epoch 794 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 795
+INFO:src.train:Epoch 795 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 796
+INFO:src.train:Epoch 796 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 797
+INFO:src.train:Epoch 797 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 798
+INFO:src.train:Epoch 798 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 799
+INFO:src.train:Epoch 799 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 800
+INFO:src.train:Epoch 800 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 801
+INFO:src.train:Epoch 801 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 802
+INFO:src.train:Epoch 802 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 803
+INFO:src.train:Epoch 803 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 804
+INFO:src.train:Epoch 804 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 805
+INFO:src.train:Epoch 805 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 806
+INFO:src.train:Epoch 806 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 807
+INFO:src.train:Epoch 807 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 808
+INFO:src.train:Epoch 808 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 809
+INFO:src.train:Epoch 809 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 810
+INFO:src.train:Epoch 810 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 811
+INFO:src.train:Epoch 811 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 812
+INFO:src.train:Epoch 812 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 813
+INFO:src.train:Epoch 813 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 814
+INFO:src.train:Epoch 814 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 815
+INFO:src.train:Epoch 815 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 816
+INFO:src.train:Epoch 816 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 817
+INFO:src.train:Epoch 817 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 818
+INFO:src.train:Epoch 818 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 819
+INFO:src.train:Epoch 819 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 820
+INFO:src.train:Epoch 820 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 821
+INFO:src.train:Epoch 821 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 822
+INFO:src.train:Epoch 822 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 823
+INFO:src.train:Epoch 823 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 824
+INFO:src.train:Epoch 824 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 825
+INFO:src.train:Epoch 825 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 826
+INFO:src.train:Epoch 826 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 827
+INFO:src.train:Epoch 827 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 828
+INFO:src.train:Epoch 828 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 829
+INFO:src.train:Epoch 829 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 830
+INFO:src.train:Epoch 830 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 831
+INFO:src.train:Epoch 831 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 832
+INFO:src.train:Epoch 832 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 833
+INFO:src.train:Epoch 833 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 834
+INFO:src.train:Epoch 834 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 835
+INFO:src.train:Epoch 835 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 836
+INFO:src.train:Epoch 836 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 837
+INFO:src.train:Epoch 837 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 838
+INFO:src.train:Epoch 838 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 839
+INFO:src.train:Epoch 839 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 840
+INFO:src.train:Epoch 840 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 841
+INFO:src.train:Epoch 841 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 842
+INFO:src.train:Epoch 842 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 843
+INFO:src.train:Epoch 843 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 844
+INFO:src.train:Epoch 844 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 845
+INFO:src.train:Epoch 845 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 846
+INFO:src.train:Epoch 846 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 847
+INFO:src.train:Epoch 847 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 848
+INFO:src.train:Epoch 848 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 849
+INFO:src.train:Epoch 849 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 850
+INFO:src.train:Epoch 850 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 851
+INFO:src.train:Epoch 851 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 852
+INFO:src.train:Epoch 852 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 853
+INFO:src.train:Epoch 853 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 854
+INFO:src.train:Epoch 854 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 855
+INFO:src.train:Epoch 855 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 856
+INFO:src.train:Epoch 856 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 857
+INFO:src.train:Epoch 857 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 858
+INFO:src.train:Epoch 858 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 859
+INFO:src.train:Epoch 859 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 860
+INFO:src.train:Epoch 860 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 861
+INFO:src.train:Epoch 861 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 862
+INFO:src.train:Epoch 862 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 863
+INFO:src.train:Epoch 863 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 864
+INFO:src.train:Epoch 864 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 865
+INFO:src.train:Epoch 865 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 866
+INFO:src.train:Epoch 866 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 867
+INFO:src.train:Epoch 867 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 868
+INFO:src.train:Epoch 868 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 869
+INFO:src.train:Epoch 869 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 870
+INFO:src.train:Epoch 870 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 871
+INFO:src.train:Epoch 871 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 872
+INFO:src.train:Epoch 872 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 873
+INFO:src.train:Epoch 873 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 874
+INFO:src.train:Epoch 874 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 875
+INFO:src.train:Epoch 875 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 876
+INFO:src.train:Epoch 876 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 877
+INFO:src.train:Epoch 877 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 878
+INFO:src.train:Epoch 878 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 879
+INFO:src.train:Epoch 879 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 880
+INFO:src.train:Epoch 880 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 881
+INFO:src.train:Epoch 881 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 882
+INFO:src.train:Epoch 882 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 883
+INFO:src.train:Epoch 883 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 884
+INFO:src.train:Epoch 884 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 885
+INFO:src.train:Epoch 885 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 886
+INFO:src.train:Epoch 886 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 887
+INFO:src.train:Epoch 887 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 888
+INFO:src.train:Epoch 888 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 889
+INFO:src.train:Epoch 889 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 890
+INFO:src.train:Epoch 890 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 891
+INFO:src.train:Epoch 891 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 892
+INFO:src.train:Epoch 892 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 893
+INFO:src.train:Epoch 893 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 894
+INFO:src.train:Epoch 894 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 895
+INFO:src.train:Epoch 895 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 896
+INFO:src.train:Epoch 896 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 897
+INFO:src.train:Epoch 897 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 898
+INFO:src.train:Epoch 898 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 899
+INFO:src.train:Epoch 899 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 900
+INFO:src.train:Epoch 900 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 901
+INFO:src.train:Epoch 901 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 902
+INFO:src.train:Epoch 902 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 903
+INFO:src.train:Epoch 903 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 904
+INFO:src.train:Epoch 904 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 905
+INFO:src.train:Epoch 905 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 906
+INFO:src.train:Epoch 906 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 907
+INFO:src.train:Epoch 907 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 908
+INFO:src.train:Epoch 908 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 909
+INFO:src.train:Epoch 909 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 910
+INFO:src.train:Epoch 910 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 911
+INFO:src.train:Epoch 911 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 912
+INFO:src.train:Epoch 912 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 913
+INFO:src.train:Epoch 913 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 914
+INFO:src.train:Epoch 914 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 915
+INFO:src.train:Epoch 915 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 916
+INFO:src.train:Epoch 916 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 917
+INFO:src.train:Epoch 917 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 918
+INFO:src.train:Epoch 918 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 919
+INFO:src.train:Epoch 919 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 920
+INFO:src.train:Epoch 920 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 921
+INFO:src.train:Epoch 921 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 922
+INFO:src.train:Epoch 922 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 923
+INFO:src.train:Epoch 923 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 924
+INFO:src.train:Epoch 924 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 925
+INFO:src.train:Epoch 925 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 926
+INFO:src.train:Epoch 926 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 927
+INFO:src.train:Epoch 927 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 928
+INFO:src.train:Epoch 928 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 929
+INFO:src.train:Epoch 929 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 930
+INFO:src.train:Epoch 930 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 931
+INFO:src.train:Epoch 931 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 932
+INFO:src.train:Epoch 932 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 933
+INFO:src.train:Epoch 933 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 934
+INFO:src.train:Epoch 934 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 935
+INFO:src.train:Epoch 935 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 936
+INFO:src.train:Epoch 936 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 937
+INFO:src.train:Epoch 937 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 938
+INFO:src.train:Epoch 938 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 939
+INFO:src.train:Epoch 939 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 940
+INFO:src.train:Epoch 940 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 941
+INFO:src.train:Epoch 941 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 942
+INFO:src.train:Epoch 942 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 943
+INFO:src.train:Epoch 943 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 944
+INFO:src.train:Epoch 944 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 945
+INFO:src.train:Epoch 945 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 946
+INFO:src.train:Epoch 946 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 947
+INFO:src.train:Epoch 947 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 948
+INFO:src.train:Epoch 948 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 949
+INFO:src.train:Epoch 949 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 950
+INFO:src.train:Epoch 950 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 951
+INFO:src.train:Epoch 951 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 952
+INFO:src.train:Epoch 952 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 953
+INFO:src.train:Epoch 953 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 954
+INFO:src.train:Epoch 954 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 955
+INFO:src.train:Epoch 955 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 956
+INFO:src.train:Epoch 956 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 957
+INFO:src.train:Epoch 957 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 958
+INFO:src.train:Epoch 958 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 959
+INFO:src.train:Epoch 959 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 960
+INFO:src.train:Epoch 960 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 961
+INFO:src.train:Epoch 961 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 962
+INFO:src.train:Epoch 962 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 963
+INFO:src.train:Epoch 963 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 964
+INFO:src.train:Epoch 964 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 965
+INFO:src.train:Epoch 965 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 966
+INFO:src.train:Epoch 966 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 967
+INFO:src.train:Epoch 967 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 968
+INFO:src.train:Epoch 968 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 969
+INFO:src.train:Epoch 969 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 970
+INFO:src.train:Epoch 970 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 971
+INFO:src.train:Epoch 971 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 972
+INFO:src.train:Epoch 972 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 973
+INFO:src.train:Epoch 973 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 974
+INFO:src.train:Epoch 974 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 975
+INFO:src.train:Epoch 975 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 976
+INFO:src.train:Epoch 976 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 977
+INFO:src.train:Epoch 977 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 978
+INFO:src.train:Epoch 978 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 979
+INFO:src.train:Epoch 979 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 980
+INFO:src.train:Epoch 980 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 981
+INFO:src.train:Epoch 981 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 982
+INFO:src.train:Epoch 982 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 983
+INFO:src.train:Epoch 983 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 984
+INFO:src.train:Epoch 984 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 985
+INFO:src.train:Epoch 985 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 986
+INFO:src.train:Epoch 986 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 987
+INFO:src.train:Epoch 987 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 988
+INFO:src.train:Epoch 988 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 989
+INFO:src.train:Epoch 989 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 990
+INFO:src.train:Epoch 990 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 991
+INFO:src.train:Epoch 991 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 992
+INFO:src.train:Epoch 992 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 993
+INFO:src.train:Epoch 993 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 994
+INFO:src.train:Epoch 994 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 995
+INFO:src.train:Epoch 995 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 996
+INFO:src.train:Epoch 996 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 997
+INFO:src.train:Epoch 997 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 998
+INFO:src.train:Epoch 998 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 999
+INFO:src.train:Epoch 999 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1000
+INFO:src.train:Epoch 1000 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1001
+INFO:src.train:Epoch 1001 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1002
+INFO:src.train:Epoch 1002 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1003
+INFO:src.train:Epoch 1003 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1004
+INFO:src.train:Epoch 1004 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1005
+INFO:src.train:Epoch 1005 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1006
+INFO:src.train:Epoch 1006 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1007
+INFO:src.train:Epoch 1007 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1008
+INFO:src.train:Epoch 1008 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1009
+INFO:src.train:Epoch 1009 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1010
+INFO:src.train:Epoch 1010 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1011
+INFO:src.train:Epoch 1011 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1012
+INFO:src.train:Epoch 1012 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1013
+INFO:src.train:Epoch 1013 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1014
+INFO:src.train:Epoch 1014 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1015
+INFO:src.train:Epoch 1015 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1016
+INFO:src.train:Epoch 1016 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1017
+INFO:src.train:Epoch 1017 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1018
+INFO:src.train:Epoch 1018 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1019
+INFO:src.train:Epoch 1019 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1020
+INFO:src.train:Epoch 1020 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1021
+INFO:src.train:Epoch 1021 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1022
+INFO:src.train:Epoch 1022 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1023
+INFO:src.train:Epoch 1023 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1024
+INFO:src.train:Epoch 1024 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1025
+INFO:src.train:Epoch 1025 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1026
+INFO:src.train:Epoch 1026 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1027
+INFO:src.train:Epoch 1027 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1028
+INFO:src.train:Epoch 1028 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1029
+INFO:src.train:Epoch 1029 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1030
+INFO:src.train:Epoch 1030 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1031
+INFO:src.train:Epoch 1031 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1032
+INFO:src.train:Epoch 1032 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1033
+INFO:src.train:Epoch 1033 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1034
+INFO:src.train:Epoch 1034 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1035
+INFO:src.train:Epoch 1035 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1036
+INFO:src.train:Epoch 1036 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1037
+INFO:src.train:Epoch 1037 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1038
+INFO:src.train:Epoch 1038 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1039
+INFO:src.train:Epoch 1039 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1040
+INFO:src.train:Epoch 1040 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1041
+INFO:src.train:Epoch 1041 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1042
+INFO:src.train:Epoch 1042 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1043
+INFO:src.train:Epoch 1043 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1044
+INFO:src.train:Epoch 1044 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1045
+INFO:src.train:Epoch 1045 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1046
+INFO:src.train:Epoch 1046 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1047
+INFO:src.train:Epoch 1047 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1048
+INFO:src.train:Epoch 1048 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1049
+INFO:src.train:Epoch 1049 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1050
+INFO:src.train:Epoch 1050 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1051
+INFO:src.train:Epoch 1051 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1052
+INFO:src.train:Epoch 1052 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1053
+INFO:src.train:Epoch 1053 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1054
+INFO:src.train:Epoch 1054 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1055
+INFO:src.train:Epoch 1055 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1056
+INFO:src.train:Epoch 1056 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1057
+INFO:src.train:Epoch 1057 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1058
+INFO:src.train:Epoch 1058 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1059
+INFO:src.train:Epoch 1059 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1060
+INFO:src.train:Epoch 1060 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1061
+INFO:src.train:Epoch 1061 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1062
+INFO:src.train:Epoch 1062 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1063
+INFO:src.train:Epoch 1063 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1064
+INFO:src.train:Epoch 1064 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1065
+INFO:src.train:Epoch 1065 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1066
+INFO:src.train:Epoch 1066 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1067
+INFO:src.train:Epoch 1067 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1068
+INFO:src.train:Epoch 1068 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1069
+INFO:src.train:Epoch 1069 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1070
+INFO:src.train:Epoch 1070 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1071
+INFO:src.train:Epoch 1071 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1072
+INFO:src.train:Epoch 1072 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1073
+INFO:src.train:Epoch 1073 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1074
+INFO:src.train:Epoch 1074 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1075
+INFO:src.train:Epoch 1075 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1076
+INFO:src.train:Epoch 1076 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1077
+INFO:src.train:Epoch 1077 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1078
+INFO:src.train:Epoch 1078 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1079
+INFO:src.train:Epoch 1079 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1080
+INFO:src.train:Epoch 1080 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1081
+INFO:src.train:Epoch 1081 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1082
+INFO:src.train:Epoch 1082 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1083
+INFO:src.train:Epoch 1083 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1084
+INFO:src.train:Epoch 1084 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1085
+INFO:src.train:Epoch 1085 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1086
+INFO:src.train:Epoch 1086 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1087
+INFO:src.train:Epoch 1087 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1088
+INFO:src.train:Epoch 1088 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1089
+INFO:src.train:Epoch 1089 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1090
+INFO:src.train:Epoch 1090 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1091
+INFO:src.train:Epoch 1091 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1092
+INFO:src.train:Epoch 1092 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1093
+INFO:src.train:Epoch 1093 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1094
+INFO:src.train:Epoch 1094 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1095
+INFO:src.train:Epoch 1095 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1096
+INFO:src.train:Epoch 1096 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1097
+INFO:src.train:Epoch 1097 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1098
+INFO:src.train:Epoch 1098 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1099
+INFO:src.train:Epoch 1099 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1100
+INFO:src.train:Epoch 1100 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1101
+INFO:src.train:Epoch 1101 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1102
+INFO:src.train:Epoch 1102 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1103
+INFO:src.train:Epoch 1103 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1104
+INFO:src.train:Epoch 1104 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1105
+INFO:src.train:Epoch 1105 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1106
+INFO:src.train:Epoch 1106 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1107
+INFO:src.train:Epoch 1107 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1108
+INFO:src.train:Epoch 1108 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1109
+INFO:src.train:Epoch 1109 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1110
+INFO:src.train:Epoch 1110 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1111
+INFO:src.train:Epoch 1111 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1112
+INFO:src.train:Epoch 1112 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1113
+INFO:src.train:Epoch 1113 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1114
+INFO:src.train:Epoch 1114 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1115
+INFO:src.train:Epoch 1115 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1116
+INFO:src.train:Epoch 1116 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1117
+INFO:src.train:Epoch 1117 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1118
+INFO:src.train:Epoch 1118 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1119
+INFO:src.train:Epoch 1119 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1120
+INFO:src.train:Epoch 1120 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1121
+INFO:src.train:Epoch 1121 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1122
+INFO:src.train:Epoch 1122 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1123
+INFO:src.train:Epoch 1123 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1124
+INFO:src.train:Epoch 1124 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1125
+INFO:src.train:Epoch 1125 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1126
+INFO:src.train:Epoch 1126 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1127
+INFO:src.train:Epoch 1127 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1128
+INFO:src.train:Epoch 1128 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1129
+INFO:src.train:Epoch 1129 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1130
+INFO:src.train:Epoch 1130 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1131
+INFO:src.train:Epoch 1131 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1132
+INFO:src.train:Epoch 1132 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1133
+INFO:src.train:Epoch 1133 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1134
+INFO:src.train:Epoch 1134 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1135
+INFO:src.train:Epoch 1135 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1136
+INFO:src.train:Epoch 1136 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1137
+INFO:src.train:Epoch 1137 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1138
+INFO:src.train:Epoch 1138 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1139
+INFO:src.train:Epoch 1139 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1140
+INFO:src.train:Epoch 1140 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1141
+INFO:src.train:Epoch 1141 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1142
+INFO:src.train:Epoch 1142 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1143
+INFO:src.train:Epoch 1143 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1144
+INFO:src.train:Epoch 1144 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1145
+INFO:src.train:Epoch 1145 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1146
+INFO:src.train:Epoch 1146 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1147
+INFO:src.train:Epoch 1147 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1148
+INFO:src.train:Epoch 1148 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1149
+INFO:src.train:Epoch 1149 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1150
+INFO:src.train:Epoch 1150 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1151
+INFO:src.train:Epoch 1151 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1152
+INFO:src.train:Epoch 1152 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1153
+INFO:src.train:Epoch 1153 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1154
+INFO:src.train:Epoch 1154 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1155
+INFO:src.train:Epoch 1155 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1156
+INFO:src.train:Epoch 1156 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1157
+INFO:src.train:Epoch 1157 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1158
+INFO:src.train:Epoch 1158 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1159
+INFO:src.train:Epoch 1159 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1160
+INFO:src.train:Epoch 1160 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1161
+INFO:src.train:Epoch 1161 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1162
+INFO:src.train:Epoch 1162 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1163
+INFO:src.train:Epoch 1163 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1164
+INFO:src.train:Epoch 1164 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1165
+INFO:src.train:Epoch 1165 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1166
+INFO:src.train:Epoch 1166 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1167
+INFO:src.train:Epoch 1167 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1168
+INFO:src.train:Epoch 1168 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1169
+INFO:src.train:Epoch 1169 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1170
+INFO:src.train:Epoch 1170 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1171
+INFO:src.train:Epoch 1171 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1172
+INFO:src.train:Epoch 1172 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1173
+INFO:src.train:Epoch 1173 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1174
+INFO:src.train:Epoch 1174 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1175
+INFO:src.train:Epoch 1175 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1176
+INFO:src.train:Epoch 1176 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1177
+INFO:src.train:Epoch 1177 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1178
+INFO:src.train:Epoch 1178 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1179
+INFO:src.train:Epoch 1179 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1180
+INFO:src.train:Epoch 1180 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1181
+INFO:src.train:Epoch 1181 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1182
+INFO:src.train:Epoch 1182 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1183
+INFO:src.train:Epoch 1183 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1184
+INFO:src.train:Epoch 1184 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1185
+INFO:src.train:Epoch 1185 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1186
+INFO:src.train:Epoch 1186 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1187
+INFO:src.train:Epoch 1187 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1188
+INFO:src.train:Epoch 1188 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1189
+INFO:src.train:Epoch 1189 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1190
+INFO:src.train:Epoch 1190 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1191
+INFO:src.train:Epoch 1191 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1192
+INFO:src.train:Epoch 1192 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1193
+INFO:src.train:Epoch 1193 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1194
+INFO:src.train:Epoch 1194 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1195
+INFO:src.train:Epoch 1195 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1196
+INFO:src.train:Epoch 1196 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1197
+INFO:src.train:Epoch 1197 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1198
+INFO:src.train:Epoch 1198 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1199
+INFO:src.train:Epoch 1199 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1200
+INFO:src.train:Epoch 1200 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1201
+INFO:src.train:Epoch 1201 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1202
+INFO:src.train:Epoch 1202 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1203
+INFO:src.train:Epoch 1203 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1204
+INFO:src.train:Epoch 1204 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1205
+INFO:src.train:Epoch 1205 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1206
+INFO:src.train:Epoch 1206 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1207
+INFO:src.train:Epoch 1207 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1208
+INFO:src.train:Epoch 1208 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1209
+INFO:src.train:Epoch 1209 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1210
+INFO:src.train:Epoch 1210 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1211
+INFO:src.train:Epoch 1211 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1212
+INFO:src.train:Epoch 1212 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1213
+INFO:src.train:Epoch 1213 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1214
+INFO:src.train:Epoch 1214 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1215
+INFO:src.train:Epoch 1215 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1216
+INFO:src.train:Epoch 1216 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1217
+INFO:src.train:Epoch 1217 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1218
+INFO:src.train:Epoch 1218 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1219
+INFO:src.train:Epoch 1219 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1220
+INFO:src.train:Epoch 1220 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1221
+INFO:src.train:Epoch 1221 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1222
+INFO:src.train:Epoch 1222 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1223
+INFO:src.train:Epoch 1223 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1224
+INFO:src.train:Epoch 1224 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1225
+INFO:src.train:Epoch 1225 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1226
+INFO:src.train:Epoch 1226 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1227
+INFO:src.train:Epoch 1227 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1228
+INFO:src.train:Epoch 1228 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1229
+INFO:src.train:Epoch 1229 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1230
+INFO:src.train:Epoch 1230 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1231
+INFO:src.train:Epoch 1231 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1232
+INFO:src.train:Epoch 1232 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1233
+INFO:src.train:Epoch 1233 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1234
+INFO:src.train:Epoch 1234 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1235
+INFO:src.train:Epoch 1235 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1236
+INFO:src.train:Epoch 1236 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1237
+INFO:src.train:Epoch 1237 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1238
+INFO:src.train:Epoch 1238 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1239
+INFO:src.train:Epoch 1239 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1240
+INFO:src.train:Epoch 1240 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1241
+INFO:src.train:Epoch 1241 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1242
+INFO:src.train:Epoch 1242 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1243
+INFO:src.train:Epoch 1243 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1244
+INFO:src.train:Epoch 1244 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1245
+INFO:src.train:Epoch 1245 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1246
+INFO:src.train:Epoch 1246 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1247
+INFO:src.train:Epoch 1247 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1248
+INFO:src.train:Epoch 1248 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1249
+INFO:src.train:Epoch 1249 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1250
+INFO:src.train:Epoch 1250 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1251
+INFO:src.train:Epoch 1251 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1252
+INFO:src.train:Epoch 1252 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1253
+INFO:src.train:Epoch 1253 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1254
+INFO:src.train:Epoch 1254 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1255
+INFO:src.train:Epoch 1255 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1256
+INFO:src.train:Epoch 1256 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1257
+INFO:src.train:Epoch 1257 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1258
+INFO:src.train:Epoch 1258 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1259
+INFO:src.train:Epoch 1259 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1260
+INFO:src.train:Epoch 1260 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1261
+INFO:src.train:Epoch 1261 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1262
+INFO:src.train:Epoch 1262 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1263
+INFO:src.train:Epoch 1263 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1264
+INFO:src.train:Epoch 1264 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1265
+INFO:src.train:Epoch 1265 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1266
+INFO:src.train:Epoch 1266 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1267
+INFO:src.train:Epoch 1267 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1268
+INFO:src.train:Epoch 1268 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1269
+INFO:src.train:Epoch 1269 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1270
+INFO:src.train:Epoch 1270 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1271
+INFO:src.train:Epoch 1271 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1272
+INFO:src.train:Epoch 1272 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1273
+INFO:src.train:Epoch 1273 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1274
+INFO:src.train:Epoch 1274 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1275
+INFO:src.train:Epoch 1275 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1276
+INFO:src.train:Epoch 1276 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1277
+INFO:src.train:Epoch 1277 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1278
+INFO:src.train:Epoch 1278 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1279
+INFO:src.train:Epoch 1279 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1280
+INFO:src.train:Epoch 1280 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1281
+INFO:src.train:Epoch 1281 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1282
+INFO:src.train:Epoch 1282 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1283
+INFO:src.train:Epoch 1283 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1284
+INFO:src.train:Epoch 1284 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1285
+INFO:src.train:Epoch 1285 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1286
+INFO:src.train:Epoch 1286 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1287
+INFO:src.train:Epoch 1287 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1288
+INFO:src.train:Epoch 1288 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1289
+INFO:src.train:Epoch 1289 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1290
+INFO:src.train:Epoch 1290 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1291
+INFO:src.train:Epoch 1291 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1292
+INFO:src.train:Epoch 1292 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1293
+INFO:src.train:Epoch 1293 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1294
+INFO:src.train:Epoch 1294 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1295
+INFO:src.train:Epoch 1295 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1296
+INFO:src.train:Epoch 1296 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1297
+INFO:src.train:Epoch 1297 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1298
+INFO:src.train:Epoch 1298 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1299
+INFO:src.train:Epoch 1299 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1300
+INFO:src.train:Epoch 1300 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1301
+INFO:src.train:Epoch 1301 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1302
+INFO:src.train:Epoch 1302 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1303
+INFO:src.train:Epoch 1303 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1304
+INFO:src.train:Epoch 1304 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1305
+INFO:src.train:Epoch 1305 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1306
+INFO:src.train:Epoch 1306 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1307
+INFO:src.train:Epoch 1307 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1308
+INFO:src.train:Epoch 1308 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1309
+INFO:src.train:Epoch 1309 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1310
+INFO:src.train:Epoch 1310 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1311
+INFO:src.train:Epoch 1311 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1312
+INFO:src.train:Epoch 1312 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1313
+INFO:src.train:Epoch 1313 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1314
+INFO:src.train:Epoch 1314 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1315
+INFO:src.train:Epoch 1315 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1316
+INFO:src.train:Epoch 1316 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1317
+INFO:src.train:Epoch 1317 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1318
+INFO:src.train:Epoch 1318 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1319
+INFO:src.train:Epoch 1319 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1320
+INFO:src.train:Epoch 1320 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1321
+INFO:src.train:Epoch 1321 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1322
+INFO:src.train:Epoch 1322 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1323
+INFO:src.train:Epoch 1323 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1324
+INFO:src.train:Epoch 1324 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1325
+INFO:src.train:Epoch 1325 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1326
+INFO:src.train:Epoch 1326 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1327
+INFO:src.train:Epoch 1327 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1328
+INFO:src.train:Epoch 1328 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1329
+INFO:src.train:Epoch 1329 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1330
+INFO:src.train:Epoch 1330 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1331
+INFO:src.train:Epoch 1331 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1332
+INFO:src.train:Epoch 1332 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1333
+INFO:src.train:Epoch 1333 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1334
+INFO:src.train:Epoch 1334 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1335
+INFO:src.train:Epoch 1335 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1336
+INFO:src.train:Epoch 1336 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1337
+INFO:src.train:Epoch 1337 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1338
+INFO:src.train:Epoch 1338 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1339
+INFO:src.train:Epoch 1339 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1340
+INFO:src.train:Epoch 1340 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1341
+INFO:src.train:Epoch 1341 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1342
+INFO:src.train:Epoch 1342 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1343
+INFO:src.train:Epoch 1343 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1344
+INFO:src.train:Epoch 1344 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1345
+INFO:src.train:Epoch 1345 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1346
+INFO:src.train:Epoch 1346 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1347
+INFO:src.train:Epoch 1347 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1348
+INFO:src.train:Epoch 1348 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1349
+INFO:src.train:Epoch 1349 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1350
+INFO:src.train:Epoch 1350 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1351
+INFO:src.train:Epoch 1351 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1352
+INFO:src.train:Epoch 1352 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1353
+INFO:src.train:Epoch 1353 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1354
+INFO:src.train:Epoch 1354 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1355
+INFO:src.train:Epoch 1355 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1356
+INFO:src.train:Epoch 1356 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1357
+INFO:src.train:Epoch 1357 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1358
+INFO:src.train:Epoch 1358 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1359
+INFO:src.train:Epoch 1359 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1360
+INFO:src.train:Epoch 1360 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1361
+INFO:src.train:Epoch 1361 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1362
+INFO:src.train:Epoch 1362 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1363
+INFO:src.train:Epoch 1363 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1364
+INFO:src.train:Epoch 1364 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1365
+INFO:src.train:Epoch 1365 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1366
+INFO:src.train:Epoch 1366 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1367
+INFO:src.train:Epoch 1367 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1368
+INFO:src.train:Epoch 1368 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1369
+INFO:src.train:Epoch 1369 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1370
+INFO:src.train:Epoch 1370 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1371
+INFO:src.train:Epoch 1371 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1372
+INFO:src.train:Epoch 1372 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1373
+INFO:src.train:Epoch 1373 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1374
+INFO:src.train:Epoch 1374 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1375
+INFO:src.train:Epoch 1375 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1376
+INFO:src.train:Epoch 1376 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1377
+INFO:src.train:Epoch 1377 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1378
+INFO:src.train:Epoch 1378 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1379
+INFO:src.train:Epoch 1379 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1380
+INFO:src.train:Epoch 1380 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1381
+INFO:src.train:Epoch 1381 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1382
+INFO:src.train:Epoch 1382 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1383
+INFO:src.train:Epoch 1383 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1384
+INFO:src.train:Epoch 1384 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1385
+INFO:src.train:Epoch 1385 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1386
+INFO:src.train:Epoch 1386 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1387
+INFO:src.train:Epoch 1387 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1388
+INFO:src.train:Epoch 1388 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1389
+INFO:src.train:Epoch 1389 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1390
+INFO:src.train:Epoch 1390 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1391
+INFO:src.train:Epoch 1391 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1392
+INFO:src.train:Epoch 1392 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1393
+INFO:src.train:Epoch 1393 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1394
+INFO:src.train:Epoch 1394 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1395
+INFO:src.train:Epoch 1395 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1396
+INFO:src.train:Epoch 1396 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1397
+INFO:src.train:Epoch 1397 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1398
+INFO:src.train:Epoch 1398 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1399
+INFO:src.train:Epoch 1399 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1400
+INFO:src.train:Epoch 1400 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1401
+INFO:src.train:Epoch 1401 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1402
+INFO:src.train:Epoch 1402 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1403
+INFO:src.train:Epoch 1403 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1404
+INFO:src.train:Epoch 1404 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1405
+INFO:src.train:Epoch 1405 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1406
+INFO:src.train:Epoch 1406 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1407
+INFO:src.train:Epoch 1407 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1408
+INFO:src.train:Epoch 1408 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1409
+INFO:src.train:Epoch 1409 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1410
+INFO:src.train:Epoch 1410 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1411
+INFO:src.train:Epoch 1411 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1412
+INFO:src.train:Epoch 1412 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1413
+INFO:src.train:Epoch 1413 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1414
+INFO:src.train:Epoch 1414 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1415
+INFO:src.train:Epoch 1415 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1416
+INFO:src.train:Epoch 1416 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1417
+INFO:src.train:Epoch 1417 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1418
+INFO:src.train:Epoch 1418 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1419
+INFO:src.train:Epoch 1419 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1420
+INFO:src.train:Epoch 1420 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1421
+INFO:src.train:Epoch 1421 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1422
+INFO:src.train:Epoch 1422 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1423
+INFO:src.train:Epoch 1423 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1424
+INFO:src.train:Epoch 1424 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1425
+INFO:src.train:Epoch 1425 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1426
+INFO:src.train:Epoch 1426 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1427
+INFO:src.train:Epoch 1427 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1428
+INFO:src.train:Epoch 1428 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1429
+INFO:src.train:Epoch 1429 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1430
+INFO:src.train:Epoch 1430 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1431
+INFO:src.train:Epoch 1431 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1432
+INFO:src.train:Epoch 1432 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1433
+INFO:src.train:Epoch 1433 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1434
+INFO:src.train:Epoch 1434 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1435
+INFO:src.train:Epoch 1435 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1436
+INFO:src.train:Epoch 1436 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1437
+INFO:src.train:Epoch 1437 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1438
+INFO:src.train:Epoch 1438 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1439
+INFO:src.train:Epoch 1439 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1440
+INFO:src.train:Epoch 1440 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1441
+INFO:src.train:Epoch 1441 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1442
+INFO:src.train:Epoch 1442 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1443
+INFO:src.train:Epoch 1443 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1444
+INFO:src.train:Epoch 1444 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1445
+INFO:src.train:Epoch 1445 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1446
+INFO:src.train:Epoch 1446 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1447
+INFO:src.train:Epoch 1447 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1448
+INFO:src.train:Epoch 1448 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1449
+INFO:src.train:Epoch 1449 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1450
+INFO:src.train:Epoch 1450 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1451
+INFO:src.train:Epoch 1451 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1452
+INFO:src.train:Epoch 1452 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1453
+INFO:src.train:Epoch 1453 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1454
+INFO:src.train:Epoch 1454 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1455
+INFO:src.train:Epoch 1455 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1456
+INFO:src.train:Epoch 1456 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1457
+INFO:src.train:Epoch 1457 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1458
+INFO:src.train:Epoch 1458 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1459
+INFO:src.train:Epoch 1459 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1460
+INFO:src.train:Epoch 1460 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1461
+INFO:src.train:Epoch 1461 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1462
+INFO:src.train:Epoch 1462 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1463
+INFO:src.train:Epoch 1463 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1464
+INFO:src.train:Epoch 1464 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1465
+INFO:src.train:Epoch 1465 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1466
+INFO:src.train:Epoch 1466 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1467
+INFO:src.train:Epoch 1467 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1468
+INFO:src.train:Epoch 1468 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1469
+INFO:src.train:Epoch 1469 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1470
+INFO:src.train:Epoch 1470 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1471
+INFO:src.train:Epoch 1471 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1472
+INFO:src.train:Epoch 1472 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1473
+INFO:src.train:Epoch 1473 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1474
+INFO:src.train:Epoch 1474 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1475
+INFO:src.train:Epoch 1475 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1476
+INFO:src.train:Epoch 1476 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1477
+INFO:src.train:Epoch 1477 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1478
+INFO:src.train:Epoch 1478 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1479
+INFO:src.train:Epoch 1479 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1480
+INFO:src.train:Epoch 1480 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1481
+INFO:src.train:Epoch 1481 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1482
+INFO:src.train:Epoch 1482 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1483
+INFO:src.train:Epoch 1483 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1484
+INFO:src.train:Epoch 1484 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1485
+INFO:src.train:Epoch 1485 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1486
+INFO:src.train:Epoch 1486 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1487
+INFO:src.train:Epoch 1487 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1488
+INFO:src.train:Epoch 1488 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1489
+INFO:src.train:Epoch 1489 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1490
+INFO:src.train:Epoch 1490 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1491
+INFO:src.train:Epoch 1491 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1492
+INFO:src.train:Epoch 1492 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1493
+INFO:src.train:Epoch 1493 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1494
+INFO:src.train:Epoch 1494 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1495
+INFO:src.train:Epoch 1495 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1496
+INFO:src.train:Epoch 1496 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1497
+INFO:src.train:Epoch 1497 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1498
+INFO:src.train:Epoch 1498 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1499
+INFO:src.train:Epoch 1499 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1500
+INFO:src.train:Epoch 1500 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1501
+INFO:src.train:Epoch 1501 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1502
+INFO:src.train:Epoch 1502 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1503
+INFO:src.train:Epoch 1503 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1504
+INFO:src.train:Epoch 1504 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1505
+INFO:src.train:Epoch 1505 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1506
+INFO:src.train:Epoch 1506 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1507
+INFO:src.train:Epoch 1507 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1508
+INFO:src.train:Epoch 1508 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1509
+INFO:src.train:Epoch 1509 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1510
+INFO:src.train:Epoch 1510 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1511
+INFO:src.train:Epoch 1511 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1512
+INFO:src.train:Epoch 1512 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1513
+INFO:src.train:Epoch 1513 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1514
+INFO:src.train:Epoch 1514 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1515
+INFO:src.train:Epoch 1515 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1516
+INFO:src.train:Epoch 1516 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1517
+INFO:src.train:Epoch 1517 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1518
+INFO:src.train:Epoch 1518 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1519
+INFO:src.train:Epoch 1519 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1520
+INFO:src.train:Epoch 1520 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1521
+INFO:src.train:Epoch 1521 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1522
+INFO:src.train:Epoch 1522 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1523
+INFO:src.train:Epoch 1523 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1524
+INFO:src.train:Epoch 1524 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1525
+INFO:src.train:Epoch 1525 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1526
+INFO:src.train:Epoch 1526 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1527
+INFO:src.train:Epoch 1527 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1528
+INFO:src.train:Epoch 1528 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1529
+INFO:src.train:Epoch 1529 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1530
+INFO:src.train:Epoch 1530 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1531
+INFO:src.train:Epoch 1531 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1532
+INFO:src.train:Epoch 1532 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1533
+INFO:src.train:Epoch 1533 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1534
+INFO:src.train:Epoch 1534 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1535
+INFO:src.train:Epoch 1535 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1536
+INFO:src.train:Epoch 1536 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1537
+INFO:src.train:Epoch 1537 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1538
+INFO:src.train:Epoch 1538 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1539
+INFO:src.train:Epoch 1539 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1540
+INFO:src.train:Epoch 1540 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1541
+INFO:src.train:Epoch 1541 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1542
+INFO:src.train:Epoch 1542 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1543
+INFO:src.train:Epoch 1543 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1544
+INFO:src.train:Epoch 1544 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1545
+INFO:src.train:Epoch 1545 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1546
+INFO:src.train:Epoch 1546 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1547
+INFO:src.train:Epoch 1547 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1548
+INFO:src.train:Epoch 1548 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1549
+INFO:src.train:Epoch 1549 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1550
+INFO:src.train:Epoch 1550 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1551
+INFO:src.train:Epoch 1551 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1552
+INFO:src.train:Epoch 1552 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1553
+INFO:src.train:Epoch 1553 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1554
+INFO:src.train:Epoch 1554 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1555
+INFO:src.train:Epoch 1555 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1556
+INFO:src.train:Epoch 1556 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1557
+INFO:src.train:Epoch 1557 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1558
+INFO:src.train:Epoch 1558 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1559
+INFO:src.train:Epoch 1559 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1560
+INFO:src.train:Epoch 1560 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1561
+INFO:src.train:Epoch 1561 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1562
+INFO:src.train:Epoch 1562 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1563
+INFO:src.train:Epoch 1563 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1564
+INFO:src.train:Epoch 1564 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1565
+INFO:src.train:Epoch 1565 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1566
+INFO:src.train:Epoch 1566 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1567
+INFO:src.train:Epoch 1567 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1568
+INFO:src.train:Epoch 1568 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1569
+INFO:src.train:Epoch 1569 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1570
+INFO:src.train:Epoch 1570 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1571
+INFO:src.train:Epoch 1571 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1572
+INFO:src.train:Epoch 1572 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1573
+INFO:src.train:Epoch 1573 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1574
+INFO:src.train:Epoch 1574 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1575
+INFO:src.train:Epoch 1575 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1576
+INFO:src.train:Epoch 1576 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1577
+INFO:src.train:Epoch 1577 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1578
+INFO:src.train:Epoch 1578 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1579
+INFO:src.train:Epoch 1579 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1580
+INFO:src.train:Epoch 1580 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1581
+INFO:src.train:Epoch 1581 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1582
+INFO:src.train:Epoch 1582 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1583
+INFO:src.train:Epoch 1583 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1584
+INFO:src.train:Epoch 1584 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1585
+INFO:src.train:Epoch 1585 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1586
+INFO:src.train:Epoch 1586 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1587
+INFO:src.train:Epoch 1587 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1588
+INFO:src.train:Epoch 1588 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1589
+INFO:src.train:Epoch 1589 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1590
+INFO:src.train:Epoch 1590 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1591
+INFO:src.train:Epoch 1591 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1592
+INFO:src.train:Epoch 1592 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1593
+INFO:src.train:Epoch 1593 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1594
+INFO:src.train:Epoch 1594 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1595
+INFO:src.train:Epoch 1595 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1596
+INFO:src.train:Epoch 1596 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1597
+INFO:src.train:Epoch 1597 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1598
+INFO:src.train:Epoch 1598 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1599
+INFO:src.train:Epoch 1599 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1600
+INFO:src.train:Epoch 1600 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1601
+INFO:src.train:Epoch 1601 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1602
+INFO:src.train:Epoch 1602 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1603
+INFO:src.train:Epoch 1603 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1604
+INFO:src.train:Epoch 1604 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1605
+INFO:src.train:Epoch 1605 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1606
+INFO:src.train:Epoch 1606 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1607
+INFO:src.train:Epoch 1607 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1608
+INFO:src.train:Epoch 1608 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1609
+INFO:src.train:Epoch 1609 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1610
+INFO:src.train:Epoch 1610 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1611
+INFO:src.train:Epoch 1611 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1612
+INFO:src.train:Epoch 1612 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1613
+INFO:src.train:Epoch 1613 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1614
+INFO:src.train:Epoch 1614 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1615
+INFO:src.train:Epoch 1615 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1616
+INFO:src.train:Epoch 1616 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1617
+INFO:src.train:Epoch 1617 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1618
+INFO:src.train:Epoch 1618 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1619
+INFO:src.train:Epoch 1619 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1620
+INFO:src.train:Epoch 1620 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1621
+INFO:src.train:Epoch 1621 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1622
+INFO:src.train:Epoch 1622 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1623
+INFO:src.train:Epoch 1623 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1624
+INFO:src.train:Epoch 1624 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1625
+INFO:src.train:Epoch 1625 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1626
+INFO:src.train:Epoch 1626 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1627
+INFO:src.train:Epoch 1627 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1628
+INFO:src.train:Epoch 1628 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1629
+INFO:src.train:Epoch 1629 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1630
+INFO:src.train:Epoch 1630 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1631
+INFO:src.train:Epoch 1631 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1632
+INFO:src.train:Epoch 1632 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1633
+INFO:src.train:Epoch 1633 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1634
+INFO:src.train:Epoch 1634 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1635
+INFO:src.train:Epoch 1635 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1636
+INFO:src.train:Epoch 1636 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1637
+INFO:src.train:Epoch 1637 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1638
+INFO:src.train:Epoch 1638 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1639
+INFO:src.train:Epoch 1639 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1640
+INFO:src.train:Epoch 1640 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1641
+INFO:src.train:Epoch 1641 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1642
+INFO:src.train:Epoch 1642 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1643
+INFO:src.train:Epoch 1643 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1644
+INFO:src.train:Epoch 1644 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1645
+INFO:src.train:Epoch 1645 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1646
+INFO:src.train:Epoch 1646 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1647
+INFO:src.train:Epoch 1647 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1648
+INFO:src.train:Epoch 1648 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1649
+INFO:src.train:Epoch 1649 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1650
+INFO:src.train:Epoch 1650 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1651
+INFO:src.train:Epoch 1651 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1652
+INFO:src.train:Epoch 1652 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1653
+INFO:src.train:Epoch 1653 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1654
+INFO:src.train:Epoch 1654 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1655
+INFO:src.train:Epoch 1655 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1656
+INFO:src.train:Epoch 1656 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1657
+INFO:src.train:Epoch 1657 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1658
+INFO:src.train:Epoch 1658 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1659
+INFO:src.train:Epoch 1659 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1660
+INFO:src.train:Epoch 1660 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1661
+INFO:src.train:Epoch 1661 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1662
+INFO:src.train:Epoch 1662 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1663
+INFO:src.train:Epoch 1663 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1664
+INFO:src.train:Epoch 1664 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1665
+INFO:src.train:Epoch 1665 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1666
+INFO:src.train:Epoch 1666 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1667
+INFO:src.train:Epoch 1667 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1668
+INFO:src.train:Epoch 1668 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1669
+INFO:src.train:Epoch 1669 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1670
+INFO:src.train:Epoch 1670 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1671
+INFO:src.train:Epoch 1671 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1672
+INFO:src.train:Epoch 1672 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1673
+INFO:src.train:Epoch 1673 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1674
+INFO:src.train:Epoch 1674 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1675
+INFO:src.train:Epoch 1675 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1676
+INFO:src.train:Epoch 1676 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1677
+INFO:src.train:Epoch 1677 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1678
+INFO:src.train:Epoch 1678 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1679
+INFO:src.train:Epoch 1679 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1680
+INFO:src.train:Epoch 1680 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1681
+INFO:src.train:Epoch 1681 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1682
+INFO:src.train:Epoch 1682 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1683
+INFO:src.train:Epoch 1683 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1684
+INFO:src.train:Epoch 1684 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1685
+INFO:src.train:Epoch 1685 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1686
+INFO:src.train:Epoch 1686 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1687
+INFO:src.train:Epoch 1687 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1688
+INFO:src.train:Epoch 1688 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1689
+INFO:src.train:Epoch 1689 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1690
+INFO:src.train:Epoch 1690 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1691
+INFO:src.train:Epoch 1691 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1692
+INFO:src.train:Epoch 1692 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1693
+INFO:src.train:Epoch 1693 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1694
+INFO:src.train:Epoch 1694 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1695
+INFO:src.train:Epoch 1695 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1696
+INFO:src.train:Epoch 1696 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1697
+INFO:src.train:Epoch 1697 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1698
+INFO:src.train:Epoch 1698 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1699
+INFO:src.train:Epoch 1699 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1700
+INFO:src.train:Epoch 1700 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1701
+INFO:src.train:Epoch 1701 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1702
+INFO:src.train:Epoch 1702 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1703
+INFO:src.train:Epoch 1703 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1704
+INFO:src.train:Epoch 1704 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1705
+INFO:src.train:Epoch 1705 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1706
+INFO:src.train:Epoch 1706 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1707
+INFO:src.train:Epoch 1707 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1708
+INFO:src.train:Epoch 1708 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1709
+INFO:src.train:Epoch 1709 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1710
+INFO:src.train:Epoch 1710 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1711
+INFO:src.train:Epoch 1711 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1712
+INFO:src.train:Epoch 1712 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1713
+INFO:src.train:Epoch 1713 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1714
+INFO:src.train:Epoch 1714 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1715
+INFO:src.train:Epoch 1715 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1716
+INFO:src.train:Epoch 1716 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1717
+INFO:src.train:Epoch 1717 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1718
+INFO:src.train:Epoch 1718 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1719
+INFO:src.train:Epoch 1719 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1720
+INFO:src.train:Epoch 1720 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1721
+INFO:src.train:Epoch 1721 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1722
+INFO:src.train:Epoch 1722 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1723
+INFO:src.train:Epoch 1723 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1724
+INFO:src.train:Epoch 1724 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1725
+INFO:src.train:Epoch 1725 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1726
+INFO:src.train:Epoch 1726 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1727
+INFO:src.train:Epoch 1727 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1728
+INFO:src.train:Epoch 1728 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1729
+INFO:src.train:Epoch 1729 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1730
+INFO:src.train:Epoch 1730 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1731
+INFO:src.train:Epoch 1731 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1732
+INFO:src.train:Epoch 1732 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1733
+INFO:src.train:Epoch 1733 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1734
+INFO:src.train:Epoch 1734 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1735
+INFO:src.train:Epoch 1735 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1736
+INFO:src.train:Epoch 1736 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1737
+INFO:src.train:Epoch 1737 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1738
+INFO:src.train:Epoch 1738 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1739
+INFO:src.train:Epoch 1739 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1740
+INFO:src.train:Epoch 1740 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1741
+INFO:src.train:Epoch 1741 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1742
+INFO:src.train:Epoch 1742 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1743
+INFO:src.train:Epoch 1743 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1744
+INFO:src.train:Epoch 1744 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1745
+INFO:src.train:Epoch 1745 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1746
+INFO:src.train:Epoch 1746 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1747
+INFO:src.train:Epoch 1747 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1748
+INFO:src.train:Epoch 1748 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1749
+INFO:src.train:Epoch 1749 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1750
+INFO:src.train:Epoch 1750 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1751
+INFO:src.train:Epoch 1751 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1752
+INFO:src.train:Epoch 1752 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1753
+INFO:src.train:Epoch 1753 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1754
+INFO:src.train:Epoch 1754 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1755
+INFO:src.train:Epoch 1755 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1756
+INFO:src.train:Epoch 1756 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1757
+INFO:src.train:Epoch 1757 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1758
+INFO:src.train:Epoch 1758 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1759
+INFO:src.train:Epoch 1759 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1760
+INFO:src.train:Epoch 1760 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1761
+INFO:src.train:Epoch 1761 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1762
+INFO:src.train:Epoch 1762 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1763
+INFO:src.train:Epoch 1763 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1764
+INFO:src.train:Epoch 1764 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1765
+INFO:src.train:Epoch 1765 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1766
+INFO:src.train:Epoch 1766 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1767
+INFO:src.train:Epoch 1767 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1768
+INFO:src.train:Epoch 1768 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1769
+INFO:src.train:Epoch 1769 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1770
+INFO:src.train:Epoch 1770 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1771
+INFO:src.train:Epoch 1771 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1772
+INFO:src.train:Epoch 1772 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1773
+INFO:src.train:Epoch 1773 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1774
+INFO:src.train:Epoch 1774 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1775
+INFO:src.train:Epoch 1775 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1776
+INFO:src.train:Epoch 1776 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1777
+INFO:src.train:Epoch 1777 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1778
+INFO:src.train:Epoch 1778 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1779
+INFO:src.train:Epoch 1779 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1780
+INFO:src.train:Epoch 1780 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1781
+INFO:src.train:Epoch 1781 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1782
+INFO:src.train:Epoch 1782 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1783
+INFO:src.train:Epoch 1783 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1784
+INFO:src.train:Epoch 1784 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1785
+INFO:src.train:Epoch 1785 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1786
+INFO:src.train:Epoch 1786 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1787
+INFO:src.train:Epoch 1787 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1788
+INFO:src.train:Epoch 1788 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1789
+INFO:src.train:Epoch 1789 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1790
+INFO:src.train:Epoch 1790 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1791
+INFO:src.train:Epoch 1791 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1792
+INFO:src.train:Epoch 1792 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1793
+INFO:src.train:Epoch 1793 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1794
+INFO:src.train:Epoch 1794 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1795
+INFO:src.train:Epoch 1795 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1796
+INFO:src.train:Epoch 1796 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1797
+INFO:src.train:Epoch 1797 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1798
+INFO:src.train:Epoch 1798 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1799
+INFO:src.train:Epoch 1799 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1800
+INFO:src.train:Epoch 1800 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1801
+INFO:src.train:Epoch 1801 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1802
+INFO:src.train:Epoch 1802 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1803
+INFO:src.train:Epoch 1803 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1804
+INFO:src.train:Epoch 1804 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1805
+INFO:src.train:Epoch 1805 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1806
+INFO:src.train:Epoch 1806 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1807
+INFO:src.train:Epoch 1807 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1808
+INFO:src.train:Epoch 1808 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1809
+INFO:src.train:Epoch 1809 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1810
+INFO:src.train:Epoch 1810 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1811
+INFO:src.train:Epoch 1811 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1812
+INFO:src.train:Epoch 1812 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1813
+INFO:src.train:Epoch 1813 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1814
+INFO:src.train:Epoch 1814 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1815
+INFO:src.train:Epoch 1815 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1816
+INFO:src.train:Epoch 1816 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1817
+INFO:src.train:Epoch 1817 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1818
+INFO:src.train:Epoch 1818 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1819
+INFO:src.train:Epoch 1819 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1820
+INFO:src.train:Epoch 1820 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1821
+INFO:src.train:Epoch 1821 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1822
+INFO:src.train:Epoch 1822 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1823
+INFO:src.train:Epoch 1823 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1824
+INFO:src.train:Epoch 1824 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1825
+INFO:src.train:Epoch 1825 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1826
+INFO:src.train:Epoch 1826 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1827
+INFO:src.train:Epoch 1827 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1828
+INFO:src.train:Epoch 1828 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1829
+INFO:src.train:Epoch 1829 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1830
+INFO:src.train:Epoch 1830 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1831
+INFO:src.train:Epoch 1831 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1832
+INFO:src.train:Epoch 1832 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1833
+INFO:src.train:Epoch 1833 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1834
+INFO:src.train:Epoch 1834 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1835
+INFO:src.train:Epoch 1835 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1836
+INFO:src.train:Epoch 1836 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1837
+INFO:src.train:Epoch 1837 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1838
+INFO:src.train:Epoch 1838 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1839
+INFO:src.train:Epoch 1839 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1840
+INFO:src.train:Epoch 1840 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1841
+INFO:src.train:Epoch 1841 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1842
+INFO:src.train:Epoch 1842 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1843
+INFO:src.train:Epoch 1843 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1844
+INFO:src.train:Epoch 1844 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1845
+INFO:src.train:Epoch 1845 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1846
+INFO:src.train:Epoch 1846 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1847
+INFO:src.train:Epoch 1847 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1848
+INFO:src.train:Epoch 1848 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1849
+INFO:src.train:Epoch 1849 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1850
+INFO:src.train:Epoch 1850 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1851
+INFO:src.train:Epoch 1851 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1852
+INFO:src.train:Epoch 1852 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1853
+INFO:src.train:Epoch 1853 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1854
+INFO:src.train:Epoch 1854 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1855
+INFO:src.train:Epoch 1855 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1856
+INFO:src.train:Epoch 1856 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1857
+INFO:src.train:Epoch 1857 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1858
+INFO:src.train:Epoch 1858 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1859
+INFO:src.train:Epoch 1859 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1860
+INFO:src.train:Epoch 1860 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1861
+INFO:src.train:Epoch 1861 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1862
+INFO:src.train:Epoch 1862 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1863
+INFO:src.train:Epoch 1863 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1864
+INFO:src.train:Epoch 1864 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1865
+INFO:src.train:Epoch 1865 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1866
+INFO:src.train:Epoch 1866 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1867
+INFO:src.train:Epoch 1867 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1868
+INFO:src.train:Epoch 1868 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1869
+INFO:src.train:Epoch 1869 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1870
+INFO:src.train:Epoch 1870 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1871
+INFO:src.train:Epoch 1871 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1872
+INFO:src.train:Epoch 1872 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1873
+INFO:src.train:Epoch 1873 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1874
+INFO:src.train:Epoch 1874 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1875
+INFO:src.train:Epoch 1875 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1876
+INFO:src.train:Epoch 1876 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1877
+INFO:src.train:Epoch 1877 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1878
+INFO:src.train:Epoch 1878 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1879
+INFO:src.train:Epoch 1879 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1880
+INFO:src.train:Epoch 1880 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1881
+INFO:src.train:Epoch 1881 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1882
+INFO:src.train:Epoch 1882 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1883
+INFO:src.train:Epoch 1883 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1884
+INFO:src.train:Epoch 1884 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1885
+INFO:src.train:Epoch 1885 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1886
+INFO:src.train:Epoch 1886 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1887
+INFO:src.train:Epoch 1887 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1888
+INFO:src.train:Epoch 1888 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1889
+INFO:src.train:Epoch 1889 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1890
+INFO:src.train:Epoch 1890 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1891
+INFO:src.train:Epoch 1891 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1892
+INFO:src.train:Epoch 1892 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1893
+INFO:src.train:Epoch 1893 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1894
+INFO:src.train:Epoch 1894 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1895
+INFO:src.train:Epoch 1895 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1896
+INFO:src.train:Epoch 1896 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1897
+INFO:src.train:Epoch 1897 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1898
+INFO:src.train:Epoch 1898 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1899
+INFO:src.train:Epoch 1899 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1900
+INFO:src.train:Epoch 1900 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1901
+INFO:src.train:Epoch 1901 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1902
+INFO:src.train:Epoch 1902 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1903
+INFO:src.train:Epoch 1903 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1904
+INFO:src.train:Epoch 1904 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1905
+INFO:src.train:Epoch 1905 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1906
+INFO:src.train:Epoch 1906 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1907
+INFO:src.train:Epoch 1907 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1908
+INFO:src.train:Epoch 1908 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1909
+INFO:src.train:Epoch 1909 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1910
+INFO:src.train:Epoch 1910 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1911
+INFO:src.train:Epoch 1911 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1912
+INFO:src.train:Epoch 1912 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1913
+INFO:src.train:Epoch 1913 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1914
+INFO:src.train:Epoch 1914 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1915
+INFO:src.train:Epoch 1915 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1916
+INFO:src.train:Epoch 1916 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1917
+INFO:src.train:Epoch 1917 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1918
+INFO:src.train:Epoch 1918 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1919
+INFO:src.train:Epoch 1919 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1920
+INFO:src.train:Epoch 1920 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1921
+INFO:src.train:Epoch 1921 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1922
+INFO:src.train:Epoch 1922 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1923
+INFO:src.train:Epoch 1923 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1924
+INFO:src.train:Epoch 1924 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1925
+INFO:src.train:Epoch 1925 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1926
+INFO:src.train:Epoch 1926 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1927
+INFO:src.train:Epoch 1927 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1928
+INFO:src.train:Epoch 1928 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1929
+INFO:src.train:Epoch 1929 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1930
+INFO:src.train:Epoch 1930 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1931
+INFO:src.train:Epoch 1931 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1932
+INFO:src.train:Epoch 1932 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1933
+INFO:src.train:Epoch 1933 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1934
+INFO:src.train:Epoch 1934 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1935
+INFO:src.train:Epoch 1935 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1936
+INFO:src.train:Epoch 1936 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1937
+INFO:src.train:Epoch 1937 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1938
+INFO:src.train:Epoch 1938 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1939
+INFO:src.train:Epoch 1939 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1940
+INFO:src.train:Epoch 1940 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1941
+INFO:src.train:Epoch 1941 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1942
+INFO:src.train:Epoch 1942 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1943
+INFO:src.train:Epoch 1943 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1944
+INFO:src.train:Epoch 1944 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1945
+INFO:src.train:Epoch 1945 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1946
+INFO:src.train:Epoch 1946 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1947
+INFO:src.train:Epoch 1947 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1948
+INFO:src.train:Epoch 1948 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1949
+INFO:src.train:Epoch 1949 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1950
+INFO:src.train:Epoch 1950 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1951
+INFO:src.train:Epoch 1951 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1952
+INFO:src.train:Epoch 1952 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1953
+INFO:src.train:Epoch 1953 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1954
+INFO:src.train:Epoch 1954 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1955
+INFO:src.train:Epoch 1955 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1956
+INFO:src.train:Epoch 1956 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1957
+INFO:src.train:Epoch 1957 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1958
+INFO:src.train:Epoch 1958 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1959
+INFO:src.train:Epoch 1959 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1960
+INFO:src.train:Epoch 1960 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1961
+INFO:src.train:Epoch 1961 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1962
+INFO:src.train:Epoch 1962 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1963
+INFO:src.train:Epoch 1963 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1964
+INFO:src.train:Epoch 1964 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1965
+INFO:src.train:Epoch 1965 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1966
+INFO:src.train:Epoch 1966 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1967
+INFO:src.train:Epoch 1967 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1968
+INFO:src.train:Epoch 1968 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1969
+INFO:src.train:Epoch 1969 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1970
+INFO:src.train:Epoch 1970 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1971
+INFO:src.train:Epoch 1971 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1972
+INFO:src.train:Epoch 1972 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1973
+INFO:src.train:Epoch 1973 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1974
+INFO:src.train:Epoch 1974 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1975
+INFO:src.train:Epoch 1975 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1976
+INFO:src.train:Epoch 1976 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1977
+INFO:src.train:Epoch 1977 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1978
+INFO:src.train:Epoch 1978 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1979
+INFO:src.train:Epoch 1979 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1980
+INFO:src.train:Epoch 1980 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1981
+INFO:src.train:Epoch 1981 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1982
+INFO:src.train:Epoch 1982 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1983
+INFO:src.train:Epoch 1983 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1984
+INFO:src.train:Epoch 1984 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1985
+INFO:src.train:Epoch 1985 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1986
+INFO:src.train:Epoch 1986 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1987
+INFO:src.train:Epoch 1987 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1988
+INFO:src.train:Epoch 1988 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1989
+INFO:src.train:Epoch 1989 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1990
+INFO:src.train:Epoch 1990 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1991
+INFO:src.train:Epoch 1991 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1992
+INFO:src.train:Epoch 1992 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1993
+INFO:src.train:Epoch 1993 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1994
+INFO:src.train:Epoch 1994 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1995
+INFO:src.train:Epoch 1995 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1996
+INFO:src.train:Epoch 1996 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1997
+INFO:src.train:Epoch 1997 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1998
+INFO:src.train:Epoch 1998 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 1999
+INFO:src.train:Epoch 1999 complete. Avg loss 0.000000, lr 0.001000
+INFO:src.train:Epoch 2000
+INFO:src.train:Epoch 2000 complete. Avg loss 0.000000, lr 0.001000
+[rank0]:[W1029 21:36:45.164247608 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+
+============================================================
+[CMD] python foundad/main.py mode=AD data.dataset=mvtec data.data_name=mvtec_4shot data.mvtec_classnames='[bottle,cable,capsule,grid,tile,transistor]' diy_name=dbug data.test_root=/home/kenny/project/FoundAD/datasets/mvtec app=test app.ckpt_step=2000
+============================================================
+INFO:root:Params:
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+{ 'app': <Recursion on dict with id=130624836044416>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'grid',
+                                  'tile',
+                                  'transistor'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec',
+            'train_root': '/path/to/fewshot-folder/mvtec_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 40112},
+  'diy_name': 'dbug',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'AD',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_4shot/dinov3dbug/train-step2000.pth.tar...
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+INFO:evaluator:Evaluating train-step2000.pth.tar on mvtec
