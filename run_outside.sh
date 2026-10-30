@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 檔案位置: FoundAD/run_outside_5090.sh
+# 檔案位置: FoundAD/run_outside.sh
 set -e
 
 # ===================== [可自由修改的參數區] =====================

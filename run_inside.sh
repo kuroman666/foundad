@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 檔案位置: FoundAD/run_inside_h100.sh
+# 檔案位置: FoundAD/run_inside.sh
 set -e
 
 # ===================== [進公司只需改這區參數] =====================
@@ -47,7 +47,7 @@ python 2_run_fab_no_gt.py \
     ${SKIP_TRAIN}
 
 echo "============================================================"
-echo " [全部完成！所有文字與圖片結果已整合至 ${OUTPUT_ROOT}/ 資料夾]"
-echo "  ├── ${OUTPUT_ROOT}/1_public_with_gt/ (有 GT 分數 .txt/.csv 與分割圖)"
-echo "  └── ${OUTPUT_ROOT}/2_fab_no_gt/      (Golden名單、排名表 .txt/.csv、紅框瑕疵圖)"
+echo " [全部完成！所有文字與圖片結果已整合至 ${FAB_RESULT_DIR}/ 資料夾]"
+echo "  ├── ${FAB_RESULT_DIR}/1_public_with_gt/ (有 GT 分數 .txt/.csv 與分割圖)"
+echo "  └── ${FAB_RESULT_DIR}/2_fab_no_gt/      (Golden名單、排名表 .txt/.csv、紅框瑕疵圖)"
 echo "============================================================"

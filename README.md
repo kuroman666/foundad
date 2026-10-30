@@ -3,7 +3,7 @@
 本專案基於 FoundAD (Few-Shot Anomaly Detection) 架構進行客製化擴充，專為「晶圓廠工程師初篩為正常品、完全無標註（No Ground Truth）之 Wafer 影像池」設計。系統支援兩大模式：
 
 * **有 GT 公開資料集驗證模式（公司外測試 / 報告用）：** 自動完成少樣本抽樣、訓練，並將終端機之 `AUROC_i`、`AUPR_i`、`AUROC_p`、`PRO-AUC` 分數匯出為 `.txt` 與 `.csv` 報表。
-* **無 GT 晶圓廠盲池抓漏模式（公司內 H100 即插即用）：** 自動透過 DINO 特徵中心度（Medoid Centrality）從無標註圖片池挑出 4 張最純淨的 Golden Image → 訓練流形預測器 → 自動以動態統計門檻（`μ + kσ`）框出可疑瑕疵位置（紅色 Bounding Box）並輸出異常排名表。
+* **無 GT 晶圓廠盲池抓漏模式（公司內 即插即用）：** 自動透過 DINO 特徵中心度（Medoid Centrality）從無標註圖片池挑出 4 張最純淨的 Golden Image → 訓練流形預測器 → 自動以動態統計門檻（`μ + kσ`）框出可疑瑕疵位置（紅色 Bounding Box）並輸出異常排名表。
 
 ---
 
@@ -12,7 +12,7 @@
 ### 1.1 基礎環境需求
 * **作業系統：** Linux (Ubuntu 20.04 / 22.04+)
 * **Python 版本：** Python 3.10 ~ 3.12
-* **GPU 硬體：** 外部測試機（RTX 5090）或廠內伺服器（NVIDIA H100）
+* **GPU 硬體：** 外部測試機
 
 ### 1.2 情況 A：在「有網路」環境安裝（或進公司前打包環境）
 請依序執行以下指令建立 Conda 虛擬環境並安裝套件：
@@ -109,22 +109,22 @@ FoundAD/
 ├── output/                         # [唯一結果出口] 所有文字數據 (.txt/.csv) 與紅框圖片皆集中於此
 │   ├── 1_public_with_gt/           # 有 GT 公開資料集之實驗結果
 │   ├── 2_fab_no_gt/                # 公司外無 GT 模擬盲池之抓漏結果
-│   └── fab_h100_results/           # 進公司 H100 實測晶圓池之抓漏結果
+│   └── fab_results/           # 進公司 實測晶圓池之抓漏結果
 ├── 1_run_public_with_gt.py         # 有 GT 實驗自動化串接腳本
 ├── 2_run_fab_no_gt.py              # 無 GT 自動挑圖 + 訓練 + 畫紅框一條龍腳本
-├── run_outside_5090.sh             # [執行檔 1] 公司外 (RTX 5090) 測試腳本
-└── run_inside_h100.sh              # [執行檔 2] 公司內 (H100) 即插即用腳本
+├── run_outside.sh             # [執行檔 1] 公司外測試腳本
+└── run_inside.sh              # [執行檔 2] 公司內即插即用腳本
 ```
 
 ### 資料夾準備方式
 * **在公司外測試（使用公開資料集 MVTec AD）：** 只需將下載好的 MVTec 類別（如 `bottle`、`cable`）放進 `./datasets/mvtec/` 下即可，其餘少樣本資料夾（`mvtec_4shot`、`sim_fab_bottle_pool`）腳本會自動建立。
-* **在公司內實測（使用工程師初篩正常之 Wafer 圖片池）：** 不需要手動分類或改檔名！假設公司內的晶圓圖片全部放在某個路徑（例如 `/data/fab_wafers/passed_images/`），只需打開 `run_inside_h100.sh`，修改最上方的兩個路徑變數：
+* **在公司內實測（使用工程師初篩正常之 Wafer 圖片池）：** 不需要手動分類或改檔名！假設公司內的晶圓圖片全部放在某個路徑（例如 `/data/fab_wafers/passed_images/`），只需打開 `run_inside.sh`，修改最上方的兩個路徑變數：
 
 ```bash
 # 1. 指向工程師初篩為正常品、無 Ground Truth 的晶圓圖片資料夾路徑
 WAFER_POOL_DIR="/data/fab_wafers/passed_images"
 
-# 2. 指向公司內部 H100 上的本地 DINOv3 或 DINOv2 .pth 權重檔案路徑
+# 2. 指向公司內部 上的本地 DINOv3 或 DINOv2 .pth 權重檔案路徑
 COMPANY_DINO_CKPT="/data/weights/dinov3_vitb16_pretrain.pth"
 ```
 程式執行時會自動從 `WAFER_POOL_DIR` 挑出 4 張最純淨的 Golden Image，並自動建立 `./datasets/mvtec_wafer_4shot/train/wafer/000.png ~ 003.png` 供模型訓練。
@@ -142,30 +142,30 @@ cd /path/to/FoundAD
 
 > ⚠️ **訓練開關提醒：**
 > * 在 `run_outside_5090.sh` 中，若要從頭訓練，請確保 `SKIP_GT_TRAIN=""` 且 `SKIP_FAB_TRAIN=""`（設為空字串代表要執行 2000 Epochs 訓練）。
-> * 在 `run_inside_h100.sh` 中，第一次執行請確保 `SKIP_TRAIN=""`。
+> * 在 `run_inside.sh` 中，第一次執行請確保 `SKIP_TRAIN=""`。
 
 ### 方式一：使用 bash 直接執行（適合在 Terminal 即時觀察 Loss 變化）
-4-Shot 訓練 2000 個 Epochs 在 RTX 5090 或 H100 上僅需約 1.5 ~ 3 分鐘，可直接於前景執行：
+4-Shot 訓練 2000 個 Epochs 在 或 上僅需約 1.5 ~ 3 分鐘，可直接於前景執行：
 
-* **公司外（RTX 5090 測試公開資料集 + 模擬盲池）：**
+* **公司外（測試公開資料集 + 模擬盲池）：**
   ```bash
   bash run_outside_5090.sh
   ```
-* **公司內（H100 實測無標註晶圓圖片池）：**
+* **公司內 實測無標註晶圓圖片池）：**
   ```bash
-  bash run_inside_h100.sh
+  bash run_inside.sh
   ```
 
 ### 方式二：使用 nohup 背景執行（適合圖片池龐大、防止 SSH 斷線中斷）
-若在公司內連線至 H100 伺服器，為避免網路瞬斷或關閉視窗導致訓練中斷，強烈建議使用 `nohup` 將任務掛在背景執行，並將所有輸出導向 `.log` 檔案：
+若在公司內連線至 伺服器，為避免網路瞬斷或關閉視窗導致訓練中斷，強烈建議使用 `nohup` 將任務掛在背景執行，並將所有輸出導向 `.log` 檔案：
 
 * **公司外背景執行：**
   ```bash
-  nohup bash run_outside_5090.sh > train_outside.log 2>&1 &
+  nohup bash run_outside.sh > train_outside.log 2>&1 &
   ```
-* **公司內（H100）背景執行：**
+* **公司內）背景執行：**
   ```bash
-  nohup bash run_inside_h100.sh > train_inside_h100.log 2>&1 &
+  nohup bash run_inside.sh > train_inside.log 2>&1 &
   ```
 
 #### 常用 nohup 監控與管理指令：
