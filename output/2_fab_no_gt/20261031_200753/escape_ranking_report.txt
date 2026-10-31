@@ -1,0 +1,83 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Image Anomaly Threshold: 0.2500 | Core Box Ratio: 0.55 | Exported Anomaly Images: 10 | Skipped Normal Images: 21
+------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename            | Status          | Max_Score  | BBoxes | Saved_Anomaly_Filename
+------------------------------------------------------------------------------------------------------------------------
+1     | escape_crack_001.png         | ANOMALY         | 0.8500     | 3      | Rank001_Score0.8500_Box03_escape_crack_001.png
+2     | escape_crack_004.png         | ANOMALY         | 0.8101     | 3      | Rank002_Score0.8101_Box03_escape_crack_004.png
+3     | escape_crack_006.png         | ANOMALY         | 0.7448     | 1      | Rank003_Score0.7448_Box01_escape_crack_006.png
+4     | escape_crack_007.png         | ANOMALY         | 0.6207     | 1      | Rank004_Score0.6207_Box01_escape_crack_007.png
+5     | escape_crack_003.png         | ANOMALY         | 0.3797     | 1      | Rank005_Score0.3797_Box01_escape_crack_003.png
+6     | escape_crack_000.png         | ANOMALY         | 0.3385     | 2      | Rank006_Score0.3385_Box02_escape_crack_000.png
+7     | escape_crack_002.png         | ANOMALY         | 0.2876     | 2      | Rank007_Score0.2876_Box02_escape_crack_002.png
+8     | clean_002.png                | ANOMALY         | 0.2610     | 1      | Rank008_Score0.2610_Box01_clean_002.png
+9     | clean_021.png                | ANOMALY         | 0.2598     | 1      | Rank009_Score0.2598_Box01_clean_021.png
+10    | clean_012.png                | ANOMALY         | 0.2522     | 1      | Rank010_Score0.2522_Box01_clean_012.png
+11    | clean_007.png                | PASS_SKIPPED    | 0.2301     | 0      | (未超過 threshold，不輸出圖片)
+12    | clean_006.png                | PASS_SKIPPED    | 0.2283     | 0      | (未超過 threshold，不輸出圖片)
+13    | clean_014.png                | PASS_SKIPPED    | 0.2254     | 0      | (未超過 threshold，不輸出圖片)
+14    | escape_crack_005.png         | PASS_SKIPPED    | 0.2200     | 0      | (未超過 threshold，不輸出圖片)
+15    | clean_019.png                | PASS_SKIPPED    | 0.2193     | 0      | (未超過 threshold，不輸出圖片)
+16    | clean_000.png                | PASS_SKIPPED    | 0.2038     | 0      | (未超過 threshold，不輸出圖片)
+17    | clean_020.png                | PASS_SKIPPED    | 0.1867     | 0      | (未超過 threshold，不輸出圖片)
+18    | clean_009.png                | PASS_SKIPPED    | 0.1808     | 0      | (未超過 threshold，不輸出圖片)
+19    | clean_013.png                | PASS_SKIPPED    | 0.1772     | 0      | (未超過 threshold，不輸出圖片)
+20    | clean_008.png                | PASS_SKIPPED    | 0.1730     | 0      | (未超過 threshold，不輸出圖片)
+21    | clean_010.png                | PASS_SKIPPED    | 0.1717     | 0      | (未超過 threshold，不輸出圖片)
+22    | clean_011.png                | PASS_SKIPPED    | 0.1502     | 0      | (未超過 threshold，不輸出圖片)
+23    | clean_015.png                | PASS_SKIPPED    | 0.1343     | 0      | (未超過 threshold，不輸出圖片)
+24    | clean_004.png                | PASS_SKIPPED    | 0.1276     | 0      | (未超過 threshold，不輸出圖片)
+25    | clean_003.png                | PASS_SKIPPED    | 0.1267     | 0      | (未超過 threshold，不輸出圖片)
+26    | clean_018.png                | PASS_SKIPPED    | 0.1241     | 0      | (未超過 threshold，不輸出圖片)
+27    | clean_005.png                | PASS_SKIPPED    | 0.1180     | 0      | (未超過 threshold，不輸出圖片)
+28    | clean_001.png                | GOLDEN_PASS     | 0.0284     | 0      | (未超過 threshold，不輸出圖片)
+29    | clean_017.png                | GOLDEN_PASS     | 0.0247     | 0      | (未超過 threshold，不輸出圖片)
+30    | clean_022.png                | GOLDEN_PASS     | 0.0234     | 0      | (未超過 threshold，不輸出圖片)
+31    | clean_016.png                | GOLDEN_PASS     | 0.0188     | 0      | (未超過 threshold，不輸出圖片)
+
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:01.72 (1.72 秒)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.08 (0.08 秒)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:13:58.77 (838.77 秒)
+  ⏱️ 整體訓練階段總時間            : 00:14:00.57 (840.57 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_sim_4shot/train/capsule
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_sim_4shot/golden_full_res_backup/capsule
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體訓練階段總時間 (Total Training Time)  : 00:14:00.57 (840.57 秒)
+      ├─ Step 1 自動挑選 Golden Image            : 00:00:01.72 (1.72 秒)
+      ├─ Step 1.5 Golden 高解析度切塊            : 00:00:00.08 (0.08 秒)
+      └─ Step 2 FoundAD 模型訓練 (2000 Epochs)   : 00:13:58.77 (838.77 秒)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:27.96 (27.96 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (31 塊)   : 00:00:11.84 (11.84 秒)
+      ├─ Step 3.2 FoundAD 模型推論               : 00:00:15.01 (15.01 秒)
+      ├─ Step 4 全解析度縫合、門檻篩選與精準畫框 : 00:00:01.10 (1.10 秒)
+      └─ 平均每張原圖推論耗時 (31 張原圖)         : 0.90 秒/張
+---------------------------------------------------------------------------
+  [3] 任務全程總執行時間 (Total Wall Time)      : 00:14:28.56 (868.56 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計 (Threshold = 0.2500):
+      🚨 超過門檻判定異常並畫框輸出 : 10 張
+      ✅ 未達門檻判定正常直接略過   : 21 張 (不輸出圖片)
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 訓練權重檔資料夾           : /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt/20261031_200753/log.txt
+===========================================================================

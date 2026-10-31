@@ -1,5 +1,0 @@
-=== Auto-Selected Golden Images (Medoid Centrality) ===
-Golden #1 (-> 000.png): wafer_0023_clean.png | Centrality: 0.999326
-Golden #2 (-> 001.png): wafer_0017_clean.png | Centrality: 0.999315
-Golden #3 (-> 002.png): wafer_0002_clean.png | Centrality: 0.999276
-Golden #4 (-> 003.png): wafer_0018_clean.png | Centrality: 0.999267
