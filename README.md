@@ -161,11 +161,11 @@ cd /path/to/FoundAD
 
 * **公司外背景執行：**
   ```bash
-  nohup bash run_outside.sh > train_outside.log 2>&1 &
+  nohup ./run_outside.sh > train_outside.log 2>&1 &
   ```
 * **公司內）背景執行：**
   ```bash
-  nohup bash run_inside.sh > train_inside.log 2>&1 &
+  nohup ./run_inside.sh > train_inside.log 2>&1 &
   ```
 
 #### 常用 nohup 監控與管理指令：

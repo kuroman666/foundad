@@ -1,4 +1,6 @@
+# 檔案位置: FoundAD/foundad/main.py (全選覆蓋並存檔)
 import os
+import sys
 import logging
 import multiprocessing as mp
 
@@ -19,7 +21,6 @@ def process_main(rank: int, cfg_dict: dict, world_size: int):
     cfg_dict: dict config
     world_size: len(devices)
     """
-    # ----
     logging.basicConfig()
     logger = logging.getLogger()
     logger.setLevel(logging.INFO if rank == 0 else logging.ERROR)
@@ -34,69 +35,79 @@ def process_main(rank: int, cfg_dict: dict, world_size: int):
     dev_str = devices[rank]
     os.environ["CUDA_VISIBLE_DEVICES"] = str(dev_str.split(":")[-1])
 
-    params = cfg_dict.get("app", {}) # model config
-
+    params = cfg_dict.get("app", {})
     params.update(cfg_dict)
 
     logger.info("Params:")
     pp = pprint.PrettyPrinter(indent=2)
     pp.pprint(params)
 
-    # ---- DDP    
+    # ---- DDP
     os.environ["MASTER_ADDR"] = master_addr
     os.environ["MASTER_PORT"] = master_port
     torch.distributed.init_process_group(
         backend=backend,
         world_size=world_size,
-        rank=rank
+        rank=rank,
     )
 
-    if mode == "train":
-        if rank==0:
-            log_dir = params["logging"]["folder"]
-            os.makedirs(log_dir, exist_ok=True)
-            params_save_path = os.path.join(log_dir, "params.yaml")
-            with open(params_save_path, "w") as f:
-                yaml.safe_dump(params, f, default_flow_style=False, sort_keys=False)
-            print(f"Config saved to {params_save_path}")
+    try:
+        if mode == "train":
+            if rank == 0:
+                log_dir = params["logging"]["folder"]
+                os.makedirs(log_dir, exist_ok=True)
+                params_save_path = os.path.join(log_dir, "params.yaml")
+                with open(params_save_path, "w") as f:
+                    yaml.safe_dump(params, f, default_flow_style=False, sort_keys=False)
+                print(f"Config saved to {params_save_path}", flush=True)
 
-        app_main_mvtec(args=params)
-    elif mode == "AD":
-        load_path = os.path.join('logs', cfg_dict['data']['data_name'], params.get('model_name','')+cfg_dict['diy_name'])
-        saved_path = os.path.join(load_path,"params.yaml")
-        if os.path.exists(saved_path):
-            with open(saved_path, "r") as f:
-                saved_params = yaml.safe_load(f)
-                assert cfg_dict['diy_name']==saved_params['diy_name']
-                params['meta'] = saved_params['meta']
-                params["ckpt_path"] = os.path.join(saved_params["logging"]["folder"],f"train-step{params['ckpt_step']}.pth.tar")
-                params["logging"]["folder"] = os.path.join(saved_params["logging"]["folder"],f"eval/{str(params['ckpt_step'])}")
-            AD(args=params)
+            app_main_mvtec(args=params)
+        elif mode == "AD":
+            load_path = os.path.join(
+                "logs", cfg_dict["data"]["data_name"], params.get("model_name", "") + cfg_dict["diy_name"]
+            )
+            saved_path = os.path.join(load_path, "params.yaml")
+            if os.path.exists(saved_path):
+                with open(saved_path, "r") as f:
+                    saved_params = yaml.safe_load(f)
+                    assert cfg_dict["diy_name"] == saved_params["diy_name"]
+                    params["meta"] = saved_params["meta"]
+                    params["ckpt_path"] = os.path.join(
+                        saved_params["logging"]["folder"], f"train-step{params['ckpt_step']}.pth.tar"
+                    )
+                    params["logging"]["folder"] = os.path.join(
+                        saved_params["logging"]["folder"], f"eval/{str(params['ckpt_step'])}"
+                    )
+                AD(args=params)
+            else:
+                raise FileNotFoundError(f"No ckpt path is found at {saved_path}")
+        elif mode == "demo":
+            load_path = os.path.join(
+                "logs", cfg_dict["data"]["data_name"], params.get("model_name", "") + cfg_dict["diy_name"]
+            )
+            saved_path = os.path.join(load_path, "params.yaml")
+            if os.path.exists(saved_path):
+                with open(saved_path, "r") as f:
+                    saved_params = yaml.safe_load(f)
+                    assert cfg_dict["diy_name"] == saved_params["diy_name"]
+                    params["meta"] = saved_params["meta"]
+                    params["ckpt_path"] = os.path.join(saved_params["logging"]["folder"], "pretrained.pth.tar")
+                    params["logging"]["folder"] = os.path.join(saved_params["logging"]["folder"], "demo")
+                print(f"loading {params['ckpt_path']}...", flush=True)
+                _demo(params["ckpt_path"], params)
+            else:
+                raise FileNotFoundError(f"No ckpt is found at {saved_path}")
         else:
-            print("No ckpt path is found.")
-    elif mode == "demo":
-        load_path = os.path.join('logs', cfg_dict['data']['data_name'], params.get('model_name','')+cfg_dict['diy_name'])
-        saved_path = os.path.join(load_path,"params.yaml")
-        if os.path.exists(saved_path):
-            with open(saved_path, "r") as f:
-                saved_params = yaml.safe_load(f)
-                assert cfg_dict['diy_name']==saved_params['diy_name']
-                params['meta'] = saved_params['meta']
-                params["ckpt_path"] = os.path.join(saved_params["logging"]["folder"],f"pretrained.pth.tar")
-                params["logging"]["folder"] = os.path.join(saved_params["logging"]["folder"],"demo")
-            print(f"loading {params['ckpt_path']}...")
-            _demo(params["ckpt_path"], params)
-        else:
-            print("No ckpt is found.")
-    else:
-        if rank == 0:
-            logger.error(f"Unknown mode: {mode}")
+            if rank == 0:
+                logger.error(f"Unknown mode: {mode}")
+    finally:
+        if torch.distributed.is_initialized():
+            torch.distributed.destroy_process_group()
+
 
 @hydra.main(version_base="1.3", config_path="configs", config_name="config")
 def main(cfg: DictConfig):
-
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
-
     devices = cfg_dict.get("devices", ["cuda:0"])
     world_size = len(devices)
 
@@ -109,6 +120,9 @@ def main(cfg: DictConfig):
 
     for p in procs:
         p.join()
+        if p.exitcode != 0:
+            sys.exit(p.exitcode)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,0 +1,188 @@
+
+======================================================================
+[Task 1 啟動時間] 2026-10-31 13:57:28
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/1_public_with_gt/20261031_135728
+======================================================================
+
+============================================================
+[CMD] python foundad/src/sample.py source=/home/kenny/project/FoundAD/datasets/mvtec target=/home/kenny/project/FoundAD/datasets/mvtec_4shot num_samples=4 seed=42
+============================================================
+[✓] transistor: copied 4/213 from 'train/good'
+[✓] cable: copied 4/224 from 'train/good'
+[✓] tile: copied 4/230 from 'train/good'
+[✓] bottle: copied 4/209 from 'train/good'
+[✓] capsule: copied 4/219 from 'train/good'
+[✓] grid: copied 4/264 from 'train/good'
+[⏱️ 計時] 少樣本抽樣耗時: 00:00:00.16 (0.16 秒)
+
+============================================================
+[CMD] python foundad/main.py mode=train data.batch_size=16 data.dataset=mvtec data.data_name=mvtec_4shot data.data_path=/home/kenny/project/FoundAD/datasets data.train_root=/home/kenny/project/FoundAD/datasets/mvtec_4shot data.mvtec_classnames='[bottle,cable,capsule,grid,tile,transistor]' diy_name=dbug app=train_dinov3
+============================================================
+INFO:root:Params:
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+{ 'app': <Recursion on dict with id=136328546042688>,
+  'data': { 'batch_size': 16,
+            'data_name': 'mvtec_4shot',
+            'data_path': '/home/kenny/project/FoundAD/datasets',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'grid',
+                                  'tile',
+                                  'transistor'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/path/to/dataset',
+            'train_root': '/home/kenny/project/FoundAD/datasets/mvtec_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 40112},
+  'diy_name': 'dbug',
+  'logging': {'folder': 'logs/mvtec_4shot/dinov3dbug', 'write_tag': 'train'},
+  'meta': { 'crop_size': 512,
+            'feat_normed': False,
+            'if_pred_pe': False,
+            'loss_mode': 'l2',
+            'model': 'dinov3',
+            'n_layer': 3,
+            'pred_depth': 6,
+            'pred_emb_dim': 384,
+            'use_bfloat16': False},
+  'mode': 'train',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+Config saved to logs/mvtec_4shot/dinov3dbug/params.yaml
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+INFO:src.train:Loss mode l2
+Totally 24 will be trained..
+INFO:root:Using AdamW
+INFO:root:Constant lr, lr=0.001
+INFO:src.train:Epoch 1
+/home/kenny/project/FoundAD/foundad/src/train.py:120: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(dtype=torch.bfloat16, enabled=self.use_bf16):
+INFO:src.train:[E 1 I 0] loss 1.105311 (avg 1.105311) mem 9591.74MB (585.9ms)
+INFO:src.train:    grad: [1.54e-02 1.48e-02] (1.48e-02 5.00e-01)
+INFO:src.train:Epoch 1 complete. Avg loss 1.105311, lr 0.001000
+INFO:src.train:Epoch 2
+INFO:src.train:[E 2 I 0] loss 0.846809 (avg 0.846809) mem 9681.04MB (204.1ms)
+INFO:src.train:    grad: [8.36e-03 9.57e-03] (8.36e-03 4.64e-01)
+INFO:src.train:Epoch 2 complete. Avg loss 0.846809, lr 0.001000
+INFO:src.train:Epoch 3
+INFO:src.train:[E 3 I 0] loss 0.700128 (avg 0.700128) mem 9681.51MB (204.0ms)
+INFO:src.train:    grad: [4.28e-03 4.12e-03] (4.12e-03 4.17e-01)
+INFO:src.train:Epoch 3 complete. Avg loss 0.700128, lr 0.001000
+INFO:src.train:Epoch 4
+INFO:src.train:[E 4 I 0] loss 0.637731 (avg 0.637731) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [5.62e-03 3.60e-03] (3.60e-03 3.40e-01)
+INFO:src.train:Epoch 4 complete. Avg loss 0.637731, lr 0.001000
+INFO:src.train:Epoch 5
+INFO:src.train:[E 5 I 0] loss 0.598478 (avg 0.598478) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [8.58e-03 4.13e-03] (4.13e-03 2.94e-01)
+INFO:src.train:Epoch 5 complete. Avg loss 0.598478, lr 0.001000
+INFO:src.train:Epoch 6
+INFO:src.train:[E 6 I 0] loss 0.550407 (avg 0.550407) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [8.58e-03 3.87e-03] (3.87e-03 2.76e-01)
+INFO:src.train:Epoch 6 complete. Avg loss 0.550407, lr 0.001000
+INFO:src.train:Epoch 7
+INFO:src.train:[E 7 I 0] loss 0.505275 (avg 0.505275) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [4.74e-03 2.74e-03] (2.74e-03 2.83e-01)
+INFO:src.train:Epoch 7 complete. Avg loss 0.505275, lr 0.001000
+INFO:src.train:Epoch 8
+INFO:src.train:[E 8 I 0] loss 0.489057 (avg 0.489057) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [6.82e-03 3.99e-03] (3.99e-03 2.60e-01)
+INFO:src.train:Epoch 8 complete. Avg loss 0.489057, lr 0.001000
+INFO:src.train:Epoch 9
+INFO:src.train:[E 9 I 0] loss 0.450142 (avg 0.450142) mem 9681.51MB (204.0ms)
+INFO:src.train:    grad: [3.51e-03 1.83e-03] (1.78e-03 2.45e-01)
+INFO:src.train:Epoch 9 complete. Avg loss 0.450142, lr 0.001000
+INFO:src.train:Epoch 10
+INFO:src.train:[E 10 I 0] loss 0.433646 (avg 0.433646) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [5.89e-03 3.47e-03] (3.37e-03 2.19e-01)
+INFO:src.train:Epoch 10 complete. Avg loss 0.433646, lr 0.001000
+INFO:src.train:Epoch 11
+INFO:src.train:[E 11 I 0] loss 0.423536 (avg 0.423536) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [3.11e-03 1.96e-03] (1.96e-03 2.05e-01)
+INFO:src.train:Epoch 11 complete. Avg loss 0.423536, lr 0.001000
+INFO:src.train:Epoch 12
+INFO:src.train:[E 12 I 0] loss 0.398185 (avg 0.398185) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [5.31e-03 2.68e-03] (2.20e-03 1.99e-01)
+INFO:src.train:Epoch 12 complete. Avg loss 0.398185, lr 0.001000
+INFO:src.train:Epoch 13
+INFO:src.train:[E 13 I 0] loss 0.380721 (avg 0.380721) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [3.22e-03 2.65e-03] (2.10e-03 1.85e-01)
+INFO:src.train:Epoch 13 complete. Avg loss 0.380721, lr 0.001000
+INFO:src.train:Epoch 14
+INFO:src.train:[E 14 I 0] loss 0.353515 (avg 0.353515) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [4.33e-03 1.41e-03] (1.39e-03 1.83e-01)
+INFO:src.train:Epoch 14 complete. Avg loss 0.353515, lr 0.001000
+INFO:src.train:Epoch 15
+INFO:src.train:[E 15 I 0] loss 0.347472 (avg 0.347472) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [4.04e-03 2.48e-03] (1.91e-03 1.69e-01)
+INFO:src.train:Epoch 15 complete. Avg loss 0.347472, lr 0.001000
+INFO:src.train:Epoch 16
+INFO:src.train:[E 16 I 0] loss 0.328197 (avg 0.328197) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [1.76e-03 1.58e-03] (1.31e-03 1.69e-01)
+INFO:src.train:Epoch 16 complete. Avg loss 0.328197, lr 0.001000
+INFO:src.train:Epoch 17
+INFO:src.train:[E 17 I 0] loss 0.325264 (avg 0.325264) mem 9681.51MB (204.1ms)
+INFO:src.train:    grad: [3.64e-03 1.23e-03] (1.13e-03 1.55e-01)
+INFO:src.train:Epoch 17 complete. Avg loss 0.325264, lr 0.001000
+INFO:src.train:Epoch 18
+INFO:src.train:[E 18 I 0] loss 0.319766 (avg 0.319766) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [3.00e-03 1.74e-03] (1.35e-03 1.48e-01)
+INFO:src.train:Epoch 18 complete. Avg loss 0.319766, lr 0.001000
+INFO:src.train:Epoch 19
+INFO:src.train:[E 19 I 0] loss 0.300191 (avg 0.300191) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [2.85e-03 1.41e-03] (1.21e-03 1.42e-01)
+INFO:src.train:Epoch 19 complete. Avg loss 0.300191, lr 0.001000
+INFO:src.train:Epoch 20
+INFO:src.train:[E 20 I 0] loss 0.298989 (avg 0.298989) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [3.08e-03 9.49e-04] (9.49e-04 1.35e-01)
+INFO:src.train:Epoch 20 complete. Avg loss 0.298989, lr 0.001000
+INFO:src.train:Epoch 21
+INFO:src.train:[E 21 I 0] loss 0.291576 (avg 0.291576) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [4.05e-03 1.40e-03] (1.22e-03 1.27e-01)
+INFO:src.train:Epoch 21 complete. Avg loss 0.291576, lr 0.001000
+INFO:src.train:Epoch 22
+INFO:src.train:[E 22 I 0] loss 0.281363 (avg 0.281363) mem 9681.51MB (204.2ms)
+INFO:src.train:    grad: [2.97e-03 9.66e-04] (9.38e-04 1.21e-01)
+INFO:src.train:Epoch 22 complete. Avg loss 0.281363, lr 0.001000
+INFO:src.train:Epoch 23

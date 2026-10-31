@@ -1,0 +1,45 @@
+=== FoundAD Metrics Report (20261031_135827) ===
+Command: python foundad/main.py mode=AD data.dataset=mvtec data.data_name=mvtec_4shot data.mvtec_classnames='[bottle,cable,capsule,grid,tile,transistor]' diy_name=dbug data.test_root=/home/kenny/project/FoundAD/datasets/mvtec app=test app.ckpt_step=2000
+---------------------------------------------------------------------------
+INFO:evaluator:Evaluating train-step2000.pth.tar on mvtec
+Evaluating bottle...
+INFO:evaluator:bottle | AUROC_i 1.0000 | AUPR_i 1.0000 | AUROC_p 0.9873 | PRO-AUC 0.9646
+Evaluating cable...
+INFO:evaluator:cable | AUROC_i 0.9327 | AUPR_i 0.9678 | AUROC_p 0.9596 | PRO-AUC 0.9111
+Evaluating capsule...
+INFO:evaluator:capsule | AUROC_i 0.9569 | AUPR_i 0.9911 | AUROC_p 0.9899 | PRO-AUC 0.9527
+Evaluating grid...
+INFO:evaluator:grid | AUROC_i 1.0000 | AUPR_i 1.0000 | AUROC_p 0.9928 | PRO-AUC 0.9652
+Evaluating tile...
+INFO:evaluator:tile | AUROC_i 1.0000 | AUPR_i 1.0000 | AUROC_p 0.9760 | PRO-AUC 0.9565
+Evaluating transistor...
+INFO:evaluator:transistor | AUROC_i 0.9500 | AUPR_i 0.9330 | AUROC_p 0.8637 | PRO-AUC 0.6463
+INFO:evaluator:Mean | AUROC_i 0.9733 | AUPR_i 0.9820 | AUROC_p 0.9615 | PRO-AUC 0.8994
+
+
+======================================================================
+ [✅ 訓練階段完成 — 時間與權重檔儲存位置]
+----------------------------------------------------------------------
+  ⏱️ 少樣本抽樣時間   : 00:00:00.16 (0.16 秒)
+  ⏱️ 模型訓練時間     : 01:08:12.39 (4092.39 秒)
+  ⏱️ 整體訓練總時間   : 01:08:12.55 (4092.55 秒)
+  📁 訓練樣本資料夾   : /home/kenny/project/FoundAD/datasets/mvtec_4shot
+  📦 權重檔主資料夾   : /home/kenny/project/FoundAD/logs/mvtec_4shot/dinov3dbug
+  📦 產生的權重檔案   :
+      └── /home/kenny/project/FoundAD/logs/mvtec_4shot/dinov3dbug/train-step2000.pth.tar
+======================================================================
+
+======================================================================
+ [✅ 推論階段完成 — 整體時間與結果檔案儲存位置]
+----------------------------------------------------------------------
+  ⏱️ 整體訓練總時間       : 01:08:12.55 (4092.55 秒)
+  ⏱️ 整體推論總時間       : 00:08:50.72 (530.72 秒)
+  ⏱️ 任務全程總耗時       : 01:17:03.37 (4623.37 秒)
+----------------------------------------------------------------------
+  📦 訓練權重檔所在資料夾 : /home/kenny/project/FoundAD/logs/mvtec_4shot/dinov3dbug
+  📂 本次推論結果主資料夾 : /home/kenny/project/FoundAD/output/1_public_with_gt/20261031_135827
+      ├── 分割結果圖片夾  : /home/kenny/project/FoundAD/output/1_public_with_gt/20261031_135827/segmentation
+      ├── 評估指標報表TXT : /home/kenny/project/FoundAD/output/1_public_with_gt/20261031_135827/metrics_summary.txt
+      ├── 評估指標報表CSV : /home/kenny/project/FoundAD/output/1_public_with_gt/20261031_135827/metrics_summary.csv
+      └── 本次執行日誌檔  : /home/kenny/project/FoundAD/output/1_public_with_gt/20261031_135827/log.txt
+======================================================================
