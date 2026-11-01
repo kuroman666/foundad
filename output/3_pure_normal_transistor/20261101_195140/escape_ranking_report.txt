@@ -1,0 +1,117 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Threshold Mode: hybrid | Effective Threshold: 0.2700 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 2 | Skipped Normal Images: 58
+Non-Golden Normal Score Dist: Max=0.3258 | P99=0.3055 | P95=0.2017 | Median=0.1387 | Mean=0.1457 | Std=0.0422
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1879 | mean+2*std=0.2301 | mean+3*std=0.2723
+------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename            | Status               | Max_Score  | BBoxes | Saved_Anomaly_Filename
+------------------------------------------------------------------------------------------------------------------------
+1     | clean_039.png                | ANOMALY              | 0.3258     | 1      | Rank001_Score0.3258_Box01_clean_039.png
+2     | clean_053.png                | ANOMALY              | 0.2888     | 1      | Rank002_Score0.2888_Box01_clean_053.png
+3     | clean_002.png                | PASS_SKIPPED         | 0.2144     | 0      | (未超過動態門檻，不輸出圖片)
+4     | clean_056.png                | PASS_SKIPPED         | 0.1975     | 0      | (未超過動態門檻，不輸出圖片)
+5     | clean_003.png                | PASS_SKIPPED         | 0.1920     | 0      | (未超過動態門檻，不輸出圖片)
+6     | clean_057.png                | PASS_SKIPPED         | 0.1904     | 0      | (未超過動態門檻，不輸出圖片)
+7     | clean_028.png                | PASS_SKIPPED         | 0.1843     | 0      | (未超過動態門檻，不輸出圖片)
+8     | clean_014.png                | PASS_SKIPPED         | 0.1797     | 0      | (未超過動態門檻，不輸出圖片)
+9     | clean_055.png                | PASS_SKIPPED         | 0.1772     | 0      | (未超過動態門檻，不輸出圖片)
+10    | clean_029.png                | PASS_SKIPPED         | 0.1768     | 0      | (未超過動態門檻，不輸出圖片)
+11    | clean_046.png                | PASS_SKIPPED         | 0.1738     | 0      | (未超過動態門檻，不輸出圖片)
+12    | clean_044.png                | PASS_SKIPPED         | 0.1713     | 0      | (未超過動態門檻，不輸出圖片)
+13    | clean_016.png                | PASS_SKIPPED         | 0.1646     | 0      | (未超過動態門檻，不輸出圖片)
+14    | clean_054.png                | PASS_SKIPPED         | 0.1631     | 0      | (未超過動態門檻，不輸出圖片)
+15    | clean_000.png                | PASS_SKIPPED         | 0.1610     | 0      | (未超過動態門檻，不輸出圖片)
+16    | clean_047.png                | PASS_SKIPPED         | 0.1606     | 0      | (未超過動態門檻，不輸出圖片)
+17    | clean_006.png                | PASS_SKIPPED         | 0.1585     | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_013.png                | PASS_SKIPPED         | 0.1567     | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_027.png                | PASS_SKIPPED         | 0.1564     | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_018.png                | PASS_SKIPPED         | 0.1524     | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_001.png                | PASS_SKIPPED         | 0.1482     | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_012.png                | PASS_SKIPPED         | 0.1471     | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_058.png                | PASS_SKIPPED         | 0.1466     | 0      | (未超過動態門檻，不輸出圖片)
+24    | clean_017.png                | PASS_SKIPPED         | 0.1460     | 0      | (未超過動態門檻，不輸出圖片)
+25    | clean_004.png                | PASS_SKIPPED         | 0.1455     | 0      | (未超過動態門檻，不輸出圖片)
+26    | clean_040.png                | PASS_SKIPPED         | 0.1433     | 0      | (未超過動態門檻，不輸出圖片)
+27    | clean_011.png                | PASS_SKIPPED         | 0.1423     | 0      | (未超過動態門檻，不輸出圖片)
+28    | clean_022.png                | PASS_SKIPPED         | 0.1396     | 0      | (未超過動態門檻，不輸出圖片)
+29    | clean_026.png                | PASS_SKIPPED         | 0.1379     | 0      | (未超過動態門檻，不輸出圖片)
+30    | clean_021.png                | PASS_SKIPPED         | 0.1354     | 0      | (未超過動態門檻，不輸出圖片)
+31    | clean_032.png                | PASS_SKIPPED         | 0.1321     | 0      | (未超過動態門檻，不輸出圖片)
+32    | clean_037.png                | PASS_SKIPPED         | 0.1296     | 0      | (未超過動態門檻，不輸出圖片)
+33    | clean_045.png                | PASS_SKIPPED         | 0.1288     | 0      | (未超過動態門檻，不輸出圖片)
+34    | clean_024.png                | PASS_SKIPPED         | 0.1277     | 0      | (未超過動態門檻，不輸出圖片)
+35    | clean_007.png                | PASS_SKIPPED         | 0.1258     | 0      | (未超過動態門檻，不輸出圖片)
+36    | clean_008.png                | PASS_SKIPPED         | 0.1239     | 0      | (未超過動態門檻，不輸出圖片)
+37    | clean_041.png                | PASS_SKIPPED         | 0.1231     | 0      | (未超過動態門檻，不輸出圖片)
+38    | clean_052.png                | PASS_SKIPPED         | 0.1218     | 0      | (未超過動態門檻，不輸出圖片)
+39    | clean_034.png                | PASS_SKIPPED         | 0.1183     | 0      | (未超過動態門檻，不輸出圖片)
+40    | clean_019.png                | PASS_SKIPPED         | 0.1169     | 0      | (未超過動態門檻，不輸出圖片)
+41    | clean_049.png                | PASS_SKIPPED         | 0.1163     | 0      | (未超過動態門檻，不輸出圖片)
+42    | clean_038.png                | PASS_SKIPPED         | 0.1148     | 0      | (未超過動態門檻，不輸出圖片)
+43    | clean_050.png                | PASS_SKIPPED         | 0.1144     | 0      | (未超過動態門檻，不輸出圖片)
+44    | clean_051.png                | PASS_SKIPPED         | 0.1142     | 0      | (未超過動態門檻，不輸出圖片)
+45    | clean_043.png                | PASS_SKIPPED         | 0.1114     | 0      | (未超過動態門檻，不輸出圖片)
+46    | clean_030.png                | PASS_SKIPPED         | 0.1105     | 0      | (未超過動態門檻，不輸出圖片)
+47    | clean_036.png                | PASS_SKIPPED         | 0.1100     | 0      | (未超過動態門檻，不輸出圖片)
+48    | clean_010.png                | PASS_SKIPPED         | 0.1096     | 0      | (未超過動態門檻，不輸出圖片)
+49    | clean_005.png                | PASS_SKIPPED         | 0.1072     | 0      | (未超過動態門檻，不輸出圖片)
+50    | clean_033.png                | PASS_SKIPPED         | 0.1071     | 0      | (未超過動態門檻，不輸出圖片)
+51    | clean_035.png                | PASS_SKIPPED         | 0.1063     | 0      | (未超過動態門檻，不輸出圖片)
+52    | clean_042.png                | PASS_SKIPPED         | 0.1060     | 0      | (未超過動態門檻，不輸出圖片)
+53    | clean_009.png                | PASS_SKIPPED         | 0.1058     | 0      | (未超過動態門檻，不輸出圖片)
+54    | clean_020.png                | PASS_SKIPPED         | 0.1054     | 0      | (未超過動態門檻，不輸出圖片)
+55    | clean_059.png                | PASS_SKIPPED         | 0.0990     | 0      | (未超過動態門檻，不輸出圖片)
+56    | clean_025.png                | PASS_SKIPPED         | 0.0948     | 0      | (未超過動態門檻，不輸出圖片)
+57    | clean_015.png                | GOLDEN_PASS          | 0.0221     | 0      | (未超過動態門檻，不輸出圖片)
+58    | clean_048.png                | GOLDEN_PASS          | 0.0220     | 0      | (未超過動態門檻，不輸出圖片)
+59    | clean_031.png                | GOLDEN_PASS          | 0.0211     | 0      | (未超過動態門檻，不輸出圖片)
+60    | clean_023.png                | GOLDEN_PASS          | 0.0180     | 0      | (未超過動態門檻，不輸出圖片)
+
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:02.76 (2.76 秒)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.09 (0.09 秒)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:23:05.94 (1385.94 秒)
+  ⏱️ 整體訓練階段總時間            : 00:23:08.80 (1388.80 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_sim_4shot/train/transistor
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_sim_4shot/golden_full_res_backup/transistor
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體訓練階段總時間 (Total Training Time)  : 00:23:08.80 (1388.80 秒)
+      ├─ Step 1 自動挑選 Golden Image            : 00:00:02.76 (2.76 秒)
+      ├─ Step 1.5 Golden 高解析度切塊            : 00:00:00.09 (0.09 秒)
+      └─ Step 2 FoundAD 模型訓練 (2000 Epochs)   : 00:23:05.94 (1385.94 秒)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:48.18 (48.18 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (60 塊)   : 00:00:24.46 (24.46 秒)
+      ├─ Step 3.2 FoundAD 模型推論               : 00:00:21.06 (21.06 秒)
+      ├─ Step 4 全解析度縫合、邊緣與微塵抑制畫框 : 00:00:02.66 (2.66 秒)
+      └─ 平均每張原圖推論耗時 (60 張原圖)         : 0.80 秒/張
+---------------------------------------------------------------------------
+  [3] 任務全程總執行時間 (Total Wall Time)      : 00:23:57.01 (1437.01 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計與非 Golden 正常圖分數分佈 (Mode=hybrid, Effective_Threshold=0.2700):
+      🚨 超過門檻判定異常並畫框輸出 : 2 張
+      ✅ 未達門檻或微塵濾除直接略過 : 58 張 (不輸出圖片)
+      📊 非 Golden 正常圖分數分佈    : Max=0.3258 | P99=0.3055 | P95=0.2017 | Median=0.1387 | Mean=0.1457 | Std=0.0422
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1879 | mean+2*std=0.2301 | mean+3*std=0.2723
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 訓練權重檔資料夾           : /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261101_195140/log.txt
+===========================================================================

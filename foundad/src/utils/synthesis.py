@@ -72,7 +72,7 @@ def generate_target_foreground_mask(img: np.ndarray, subclass: str) -> np.ndarra
         target_background_mask = target_background_mask.astype(bool).astype(int)
         target_foreground_mask = 1 - target_background_mask
     else:
-        return np.ones((img.shape[0], img.shape[1]), dtype=np.uint8) # 支援 wafer 等自訂類別
+        return np.ones_like(img_gray, dtype=np.uint8)  # 正確回傳 (H, W) 全前景遮罩 (支援 wafer 等自訂類別)
 
     target_foreground_mask = morphology.closing(
         target_foreground_mask, morphology.square(6))
