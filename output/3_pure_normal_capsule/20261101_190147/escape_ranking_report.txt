@@ -1,0 +1,76 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Threshold Mode: hybrid | Effective Threshold: 0.3601 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 0 | Skipped Normal Images: 23
+------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename            | Status               | Max_Score  | BBoxes | Saved_Anomaly_Filename
+------------------------------------------------------------------------------------------------------------------------
+1     | clean_002.png                | PASS_SKIPPED         | 0.2330     | 0      | (未超過動態門檻，不輸出圖片)
+2     | clean_012.png                | PASS_SKIPPED         | 0.2163     | 0      | (未超過動態門檻，不輸出圖片)
+3     | clean_007.png                | PASS_SKIPPED         | 0.2143     | 0      | (未超過動態門檻，不輸出圖片)
+4     | clean_019.png                | PASS_SKIPPED         | 0.2123     | 0      | (未超過動態門檻，不輸出圖片)
+5     | clean_021.png                | PASS_SKIPPED         | 0.2059     | 0      | (未超過動態門檻，不輸出圖片)
+6     | clean_006.png                | PASS_SKIPPED         | 0.2054     | 0      | (未超過動態門檻，不輸出圖片)
+7     | clean_014.png                | PASS_SKIPPED         | 0.1981     | 0      | (未超過動態門檻，不輸出圖片)
+8     | clean_013.png                | PASS_SKIPPED         | 0.1941     | 0      | (未超過動態門檻，不輸出圖片)
+9     | clean_000.png                | PASS_SKIPPED         | 0.1710     | 0      | (未超過動態門檻，不輸出圖片)
+10    | clean_020.png                | PASS_SKIPPED         | 0.1595     | 0      | (未超過動態門檻，不輸出圖片)
+11    | clean_009.png                | PASS_SKIPPED         | 0.1551     | 0      | (未超過動態門檻，不輸出圖片)
+12    | clean_010.png                | PASS_SKIPPED         | 0.1537     | 0      | (未超過動態門檻，不輸出圖片)
+13    | clean_008.png                | PASS_SKIPPED         | 0.1466     | 0      | (未超過動態門檻，不輸出圖片)
+14    | clean_011.png                | PASS_SKIPPED         | 0.1456     | 0      | (未超過動態門檻，不輸出圖片)
+15    | clean_015.png                | PASS_SKIPPED         | 0.1214     | 0      | (未超過動態門檻，不輸出圖片)
+16    | clean_018.png                | PASS_SKIPPED         | 0.1214     | 0      | (未超過動態門檻，不輸出圖片)
+17    | clean_005.png                | PASS_SKIPPED         | 0.1154     | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_003.png                | PASS_SKIPPED         | 0.1129     | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_004.png                | PASS_SKIPPED         | 0.1116     | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_022.png                | GOLDEN_PASS          | 0.0209     | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_016.png                | GOLDEN_PASS          | 0.0188     | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_001.png                | GOLDEN_PASS          | 0.0187     | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_017.png                | GOLDEN_PASS          | 0.0186     | 0      | (未超過動態門檻，不輸出圖片)
+
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:01.29 (1.29 秒)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.08 (0.08 秒)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:13:48.51 (828.51 秒)
+  ⏱️ 整體訓練階段總時間            : 00:13:49.88 (829.88 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_sim_4shot/train/capsule
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_sim_4shot/golden_full_res_backup/capsule
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體訓練階段總時間 (Total Training Time)  : 00:13:49.88 (829.88 秒)
+      ├─ Step 1 自動挑選 Golden Image            : 00:00:01.29 (1.29 秒)
+      ├─ Step 1.5 Golden 高解析度切塊            : 00:00:00.08 (0.08 秒)
+      └─ Step 2 FoundAD 模型訓練 (2000 Epochs)   : 00:13:48.51 (828.51 秒)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:21.47 (21.47 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (23 塊)   : 00:00:08.76 (8.76 秒)
+      ├─ Step 3.2 FoundAD 模型推論               : 00:00:11.81 (11.81 秒)
+      ├─ Step 4 全解析度縫合、邊緣與微塵抑制畫框 : 00:00:00.91 (0.91 秒)
+      └─ 平均每張原圖推論耗時 (23 張原圖)         : 0.93 秒/張
+---------------------------------------------------------------------------
+  [3] 任務全程總執行時間 (Total Wall Time)      : 00:14:11.38 (851.38 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計 (Mode=hybrid, Effective_Threshold=0.3601):
+      🚨 超過門檻判定異常並畫框輸出 : 0 張
+      ✅ 未達門檻或微塵濾除直接略過 : 23 張 (不輸出圖片)
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 訓練權重檔資料夾           : /home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261101_190147/log.txt
+===========================================================================
