@@ -38,10 +38,10 @@ APP_TRAIN="train_dinov3"
 APP_TEST="test"
 SKIP_FAB_TRAIN=""                     # 第一次跑設為 "" (會訓練 2000 epochs)；訓練完後可改 "--skip_train" 秒速重測不同門檻
 
-# 高解析度切塊與縫合參數 (MVTec 約 1000x1000 可設 1024 不切塊或設 512 測試切塊；公司 5000x5000 設 512)
-TILE_SIZE=1024
+# 高解析度切塊與縫合參數 (設 512 可在公司外直接實測 MVTec 切塊與餘弦縫合；若不切塊可設 1024)
+TILE_SIZE=512
 TILE_OVERLAP=64
-MAX_TRAIN_TILES=48                    # 涵蓋更多局部結構與跨 Golden 圖公差，不增加訓練時間但大幅減少結構誤報
+MAX_TRAIN_TILES=48                    # 涵蓋更多局部結構與跨 Golden 圖公差，大幅減少結構誤報
 TRAIN_BATCH_SIZE=8
 BG_STD_THRESH=1.5
 # ===============================================================
@@ -65,7 +65,7 @@ python 1_run_public_with_gt.py \
     ${SKIP_GT_SAMPLE} ${SKIP_GT_TRAIN}
 
 echo "============================================================"
-echo " [Task 2] 執行無 GT 盲池測試 (Mode=${THRESH_MODE}, SIGMA_K=${SIGMA_K}) -> ${OUTPUT_ROOT}/2_fab_no_gt/<當下時間>"
+echo " [Task 2] 執行無 GT 盲池測試 (Mode=${THRESH_MODE}, SIGMA_K=${SIGMA_K}, TILE=${TILE_SIZE}) -> ${OUTPUT_ROOT}/2_fab_no_gt/<當下時間>"
 echo "============================================================"
 python 2_run_fab_no_gt.py \
     --mock_from_mvtec "${MOCK_SOURCE_CAT}" \
@@ -117,12 +117,16 @@ if not csv_files:
 latest_csv = csv_files[-1]
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
+overfit_line = ""
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(500)
+        txt_head = tf.read(1200)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
+        m_ov = re.search(r"Overfit Diagnostic\s*:\s*(.+)", txt_head)
+        if m_ov:
+            overfit_line = m_ov.group(1).strip()
 
 records = []
 with open(latest_csv, "r", encoding="utf-8") as f:
@@ -165,6 +169,8 @@ print(f"  📂 報表位置                   : {latest_csv}")
 print(f"  🖼️ 盲池圖片結構               : 總計 {total} 張 (Golden: {total - len(non_golden)} 張 | 非Golden正常圖: {len(target_normal)} 張 | 隱藏Escape瑕疵: {len(escape_defects)} 張)")
 print(f"  🎚️ 本次動態對齊後有效門檻      : {eff_thresh:.4f}")
 print(f"  🎯 抓漏與誤報表現             : 成功抓出瑕疵 {len(caught_escape)}/{len(escape_defects)} 張 | 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張")
+if overfit_line:
+    print(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")
 print("-" * 80)
 print(f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}")
 print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}")

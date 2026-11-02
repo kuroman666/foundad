@@ -1,6 +1,7 @@
 # 檔案位置: FoundAD/foundad/main.py (全選覆蓋並存檔)
 import os
 import sys
+import socket
 import logging
 import multiprocessing as mp
 
@@ -13,6 +14,35 @@ from src.AD import main as AD, _demo
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
+
+
+def resolve_safe_master_port(dist_cfg: dict) -> int:
+    """
+    自動分配安全且未被佔用的 DDP master_port，徹底根除 Port 40112 Address already in use：
+    1. 優先讀取外部啟動腳本傳入之環境變數 FAB_MASTER_PORT（並驗證是否可用）。
+    2. 若設定檔指定非 40112 之自訂 Port，先驗證是否可用。
+    3. 若為預設 40112 或上述 Port 已被佔用，自動由 OS 動態分配保證空閒的本地 Port。
+    """
+    env_port = os.environ.get("FAB_MASTER_PORT", "").strip()
+    candidates = []
+    if env_port.isdigit():
+        candidates.append(int(env_port))
+
+    req_port = int(dist_cfg.get("master_port", 40112))
+    if req_port != 40112 and req_port not in candidates:
+        candidates.append(req_port)
+
+    for port in candidates:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.bind(("127.0.0.1", port))
+                return port
+            except OSError:
+                pass
+
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return int(s.getsockname()[1])
 
 
 def process_main(rank: int, cfg_dict: dict, world_size: int):
@@ -108,6 +138,10 @@ def process_main(rank: int, cfg_dict: dict, world_size: int):
 @hydra.main(version_base="1.3", config_path="configs", config_name="config")
 def main(cfg: DictConfig):
     cfg_dict = OmegaConf.to_container(cfg, resolve=True)
+    if "dist" not in cfg_dict or not isinstance(cfg_dict["dist"], dict):
+        cfg_dict["dist"] = {}
+    cfg_dict["dist"]["master_port"] = resolve_safe_master_port(cfg_dict["dist"])
+
     devices = cfg_dict.get("devices", ["cuda:0"])
     world_size = len(devices)
 

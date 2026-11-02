@@ -2,7 +2,6 @@
 import os
 import glob
 import shutil
-import argparse
 import numpy as np
 from PIL import Image
 import torch
@@ -11,6 +10,20 @@ import torch.nn.functional as F
 from torchvision import transforms
 
 IMG_EXTENSIONS = (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
+
+
+def load_pil_rgb_uint8(img_path: str) -> Image.Image:
+    """安全讀取 8-bit / 16-bit TIFF 或單通道灰階圖，統一正規化為 8-bit RGB PIL Image。"""
+    with Image.open(img_path) as pil_img:
+        if pil_img.mode in ("I;16", "I;16B", "I;16L", "I", "F"):
+            arr = np.array(pil_img, dtype=np.float32)
+            a_min, a_max = float(np.min(arr)), float(np.max(arr))
+            if a_max > a_min:
+                arr = (arr - a_min) / (a_max - a_min) * 255.0
+            arr_u8 = np.clip(arr, 0, 255).astype(np.uint8)
+            rgb_arr = np.stack([arr_u8, arr_u8, arr_u8], axis=-1)
+            return Image.fromarray(rgb_arr, mode="RGB")
+        return pil_img.convert("RGB")
 
 
 def resolve_dino_ckpt_path(ckpt_path: str) -> str:
@@ -30,7 +43,6 @@ def resolve_dino_ckpt_path(ckpt_path: str) -> str:
             for ext in ("*.pth", "*.pt", "*.bin"):
                 candidates.extend(glob.glob(os.path.join(d, "**", ext), recursive=True))
 
-    # 依優先順序挑選: dinov3 > dinov2 > dino
     for keyword in ("dinov3", "dinov2", "dino"):
         matched = [p for p in candidates if keyword in os.path.basename(p).lower()]
         if matched:
@@ -113,7 +125,7 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
     print(f"[Auto-Golden] 正在從 {len(sample_imgs)} 張無標註圖片提取特徵以尋找純淨中心點...")
     for path in sample_imgs:
         try:
-            img = Image.open(path).convert("RGB")
+            img = load_pil_rgb_uint8(path)
             x = transform(img).unsqueeze(0).to(device)
             tokens = proj_conv(x).flatten(2).transpose(1, 2)
             tokens = F.layer_norm(tokens, (tokens.shape[-1],))
@@ -138,7 +150,6 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
     selected_indices = sorted_indices[:shots]
     selected_paths = [valid_paths[idx] for idx in selected_indices]
 
-    # 建立 FoundAD 訓練目錄格式: <out_dir>/train/<category>/000.png
     dest_dir = os.path.join(out_dir, "train", category)
     if os.path.exists(dest_dir):
         shutil.rmtree(dest_dir)
@@ -157,7 +168,6 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
             print("  " + log_line)
             f.write(log_line + "\n")
 
-    # 同步將挑選紀錄複製到統一的 output 資料夾
     if report_dir:
         os.makedirs(report_dir, exist_ok=True)
         shutil.copy2(record_txt, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))

@@ -1,0 +1,8 @@
+{
+  "pool_signature": "b67521d0491e6d9f70c3c6e5f701ba6a",
+  "tile_config_key": "t1024_ov64_bg1.5_dt0",
+  "ckpt_signature": "76d88d3540f7c16aeaadbf673a1514b9",
+  "actual_step": 2000,
+  "diy_name": "sim_escape",
+  "created_at": "20261102_214532"
+}

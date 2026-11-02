@@ -9,7 +9,6 @@ DATASETS_DIR="./datasets"
 DINO_CKPT_PATH="auto"                 # 公司外設 "auto"；進公司改為本地 DINO 權重路徑
 
 # --- 1. 選擇測試來源 (支援單一類別或一次跑完 6 大類別) ---
-# 可填入單一類別如 ("tile")，或一次驗證全部類別 ("bottle" "cable" "capsule" "grid" "tile" "transistor")
 CATEGORIES=("bottle" "cable" "capsule" "grid" "tile" "transistor")
 
 # 若在公司內部測試真實 100% 正常晶圓資料夾，請填寫下方路徑 (留空則預設跑上方 MVTec CATEGORIES)
@@ -32,18 +31,15 @@ BORDER_RATIO=0.02                     # 影像四週矩形邊框抑制比例 (2%
 SPECKLE_FILTER_RATIO=0.008            # 灰階形態學開運算濾除單點微塵尖峰 (解決 tile/grid 單點極值誤報)
 MIN_AREA_RATIO=0.00012                # 有效缺陷最小面積比例
 
-APP_TRAIN="train_dinov3"              # 公司外用 "train_dinov3"；進公司若用預設設定可改為 "train"
+APP_TRAIN="train_dinov3"
 APP_TEST="test"
 
-# 若該類別剛訓練過且權重還在 ./logs/mvtec_sim_4shot/ 下，可設為 "--skip_train" 秒速重測推論！
-# 注意：若一次迴圈跑多個不同類別，每個類別結構不同，請維持 SKIP_FAB_TRAIN="" 讓每個類別各自訓練
+# 若該類別已訓練過且權重還在 ./logs/ 下，可設為 "--skip_train" 秒速重測不同門檻！
 SKIP_FAB_TRAIN=""
-
-DATA_NAME="mvtec_sim_${SHOTS}shot"
-DIY_NAME="sim_escape"
+DIY_NAME="pure_fpr"
 
 # --- 3. 高解析度切塊與縫合參數 ---
-TILE_SIZE=1024                        # MVTec 約 1000x1000 設 1024；公司 5000x5000 設 512
+TILE_SIZE=1024                        # MVTec 約 1000x1000 可設 1024 或 512；公司 5000x5000 設 512
 TILE_OVERLAP=64
 MAX_TRAIN_TILES=48
 TRAIN_BATCH_SIZE=8
@@ -53,6 +49,7 @@ BG_STD_THRESH=1.5
 run_single_category() {
     local CAT="$1"
     local TARGET_POOL_DIR=""
+    local CAT_DATA_NAME="mvtec_pure_${CAT}_${SHOTS}shot"
 
     if [ -n "${CUSTOM_PURE_NORMAL_DIR}" ]; then
         TARGET_POOL_DIR="${CUSTOM_PURE_NORMAL_DIR}"
@@ -97,7 +94,7 @@ run_single_category() {
         --datasets_dir "${DATASETS_DIR}" \
         --ckpt "${DINO_CKPT_PATH}" \
         --out_dir "${SAVE_BASE_DIR}" \
-        --data_name "${DATA_NAME}" \
+        --data_name "${CAT_DATA_NAME}" \
         --category "${CAT}" \
         --app_train "${APP_TRAIN}" \
         --app_test "${APP_TEST}" \
@@ -141,12 +138,16 @@ if not csv_files:
 latest_csv = csv_files[-1]
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
+overfit_line = ""
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(500)
+        txt_head = tf.read(1200)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
+        m_ov = re.search(r"Overfit Diagnostic\s*:\s*(.+)", txt_head)
+        if m_ov:
+            overfit_line = m_ov.group(1).strip()
 
 records = []
 with open(latest_csv, "r", encoding="utf-8") as f:
@@ -184,6 +185,8 @@ print("-" * 80)
 print(f"  📂 報表位置                   : {latest_csv}")
 print(f"  🖼️ 測試池純正常圖片總數        : {total} 張 (含 {total - len(non_golden)} 張 Golden 圖)")
 print(f"  🎚️ 動態對齊後有效門檻          : {eff_thresh:.4f}")
+if overfit_line:
+    print(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")
 print("-" * 80)
 print(f"  ✅ 正確放行 (PASS)             : {len(pass_All)} 張")
 print(f"  🚨 誤報張數 (False Positives)  : {len(fp_All)} 張")

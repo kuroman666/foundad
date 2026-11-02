@@ -22,9 +22,9 @@ MIN_THRESHOLD=0.28       # 動態門檻的絕對最低安全底線 (適用於 hy
 AUTO_PERCENTILE=95.0     # 自動對齊盲池分位數 (例如 95.0 代表 P95；若想更嚴格防誤報可設 98.0)
 TOP_K=0                  # 若設 > 0 (例如 10)，則限制每次最多只輸出最可疑的前 K 張晶圓供工程師複檢 (設 0 代表不限制)
 CORE_RATIO=0.55          # 紅框核心收斂比例 (0.45~0.65，越高紅框越緊貼最高分缺陷中心)
-APP_TRAIN="train"        # 對應 foundad/configs/app/ 下的訓練設定檔
-APP_TEST="test"          # 對應 foundad/configs/app/ 下的測試設定檔
-SKIP_TRAIN=""            # 第一次跑設為 ""；若已訓練完只想秒速重調門檻或邊緣參數，可設為 "--skip_train"
+APP_TRAIN="train_dinov3" # 對齊公司外驗證通過的 foundad/configs/app/train_dinov3.yaml
+APP_TEST="test"          # 對應 foundad/configs/app/test.yaml
+SKIP_TRAIN=""            # 第一次跑設為 ""；若已訓練完只想秒速重調門檻或換 ckpt_step，可設為 "--skip_train"
 
 # 5. 晶圓圓周邊緣抑制 (Wafer Bevel Exclusion) 與單點微塵濾除參數
 WAFER_EDGE_MODE="on"     # 進公司跑圓形晶圓強烈建議設 "on" (或 "auto")，自動抑制晶圓最外圈圓弧倒角反光與 Notch 邊緣誤報
@@ -36,7 +36,7 @@ MIN_AREA_RATIO=0.00012   # 有效缺陷最小面積比例 (低於此面積之微
 # 6. 5000x5000 高解析度防失真切塊 (Tiling) 與無縫縫合參數
 TILE_SIZE=512            # 切塊大小 (512 對應模型原生輸入解析度，達成 1:1 零壓縮失真；若想加速可設 1024)
 TILE_OVERLAP=64          # 相鄰圖塊重疊像素 (用於 2D 餘弦平滑拼接，消除邊界接縫)
-MAX_TRAIN_TILES=48       # 調大至 48 (或 64)，涵蓋中心、中環、外環與跨 Golden 晶圓公差，訓練時間不變但大幅降低結構誤報！
+MAX_TRAIN_TILES=48       # 涵蓋中心、中環、外環與跨 Golden 晶圓公差，大幅降低結構誤報
 TRAIN_BATCH_SIZE=8       # 訓練 Batch Size 上限 (防止高解析度 OOM)
 BG_STD_THRESH=1.5        # 自動跳過純黑/純白背景角落塊的標準差門檻
 # =================================================================
@@ -44,12 +44,41 @@ BG_STD_THRESH=1.5        # 自動跳過純黑/純白背景角落塊的標準差�
 # 強制設定離線環境變數，防止任何套件在公司內網嘗試連外網而卡死
 export HF_HUB_OFFLINE=1
 export TRANSFORMERS_OFFLINE=1
-# 讓 foundad.py 自動讀取公司內的本地 DINO .pth 權重與本地 repo 資料夾
 export FAB_LOCAL_DINO_CKPT="${COMPANY_DINO_CKPT}"
 export FAB_LOCAL_DINO_REPO="./hub_cache/facebookresearch_dinov3_main"  # 若用 dinov2 可留空
 
+# ===================== [啟動前 Pre-Flight 自動防呆檢查] =====================
+if [ ! -d "${WAFER_POOL_DIR}" ]; then
+    echo "❌ [設定錯誤] 找不到晶圓圖片池目錄 WAFER_POOL_DIR: ${WAFER_POOL_DIR}"
+    echo "   請先修改 run_inside.sh 第 6 行的 WAFER_POOL_DIR 為公司內實際路徑！"
+    exit 1
+fi
+
+if [ "${COMPANY_DINO_CKPT}" != "auto" ] && [ ! -f "${COMPANY_DINO_CKPT}" ]; then
+    echo "❌ [設定錯誤] 找不到本地 DINO 權重檔 COMPANY_DINO_CKPT: ${COMPANY_DINO_CKPT}"
+    echo "   請先修改 run_inside.sh 第 9 行的 COMPANY_DINO_CKPT 為公司內實際 .pth 路徑！"
+    exit 1
+fi
+
+if [ ! -f "foundad/configs/app/${APP_TRAIN}.yaml" ]; then
+    if [ -f "foundad/configs/app/train.yaml" ]; then
+        echo "⚠️ [自動切換] 找不到 foundad/configs/app/${APP_TRAIN}.yaml，自動改用 train.yaml"
+        APP_TRAIN="train"
+    else
+        echo "❌ [設定錯誤] 在 foundad/configs/app/ 下找不到 ${APP_TRAIN}.yaml！"
+        exit 1
+    fi
+fi
+
+if [ ! -f "foundad/configs/app/${APP_TEST}.yaml" ]; then
+    echo "❌ [設定錯誤] 在 foundad/configs/app/ 下找不到測試設定檔 ${APP_TEST}.yaml！"
+    exit 1
+fi
+# ============================================================================
+
 echo "============================================================"
 echo " [Fab Escape 5000x5000 高解析度抓漏啟動] 圖片池: ${WAFER_POOL_DIR}"
+echo " [設定檔對齊] APP_TRAIN=${APP_TRAIN}.yaml | APP_TEST=${APP_TEST}.yaml"
 echo " [防誤報設定] THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}, P${AUTO_PERCENTILE}, Min=${MIN_THRESHOLD}) | WAFER_EDGE=${WAFER_EDGE_MODE} (${WAFER_EDGE_MARGIN})"
 echo "============================================================"
 
@@ -99,12 +128,16 @@ if not csv_files:
 latest_csv = csv_files[-1]
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
+overfit_line = ""
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(500)
+        txt_head = tf.read(1200)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
+        m_ov = re.search(r"Overfit Diagnostic\s*:\s*(.+)", txt_head)
+        if m_ov:
+            overfit_line = m_ov.group(1).strip()
 
 records = []
 with open(latest_csv, "r", encoding="utf-8") as f:
@@ -138,6 +171,8 @@ print("-" * 80)
 print(f"  📂 報表位置                   : {latest_csv}")
 print(f"  🖼️ 測試池圖片總數              : {total} 張 (含 {total - len(non_golden)} 張 Golden 圖, 抓出 {len(anom_all)} 張異常)")
 print(f"  🎚️ 本次動態對齊後有效門檻      : {eff_thresh:.4f}")
+if overfit_line:
+    print(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")
 print("-" * 80)
 print(f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}")
 print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}")

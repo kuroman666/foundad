@@ -5,6 +5,7 @@ import time
 import stat
 import glob
 import csv
+import socket
 import shutil
 import argparse
 import subprocess
@@ -17,6 +18,13 @@ def format_duration(seconds: float) -> str:
     m, s = divmod(seconds, 60)
     h, m = divmod(int(m), 60)
     return f"{h:02d}:{m:02d}:{s:05.2f} ({seconds:.2f} 秒)"
+
+
+def get_free_port() -> int:
+    """由作業系統動態分配保證空閒的本地 Port，徹底避免 DDP Port 40112 衝突。"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return int(s.getsockname()[1])
 
 
 def log_and_print(msg: str, log_files: List[str]):
@@ -103,11 +111,12 @@ def run_and_log(cmd: str, log_files: List[str]) -> str:
 
     run_env = os.environ.copy()
     run_env["PYTHONUNBUFFERED"] = "1"
+    run_env["FAB_MASTER_PORT"] = str(get_free_port())
 
     files_to_write = [open(lf, "a", encoding="utf-8") for lf in log_files if lf]
     try:
         for f in files_to_write:
-            f.write(f"\n{'='*60}\n[CMD] {cmd}\n{'='*60}\n")
+            f.write(f"\n{'='*60}\n[CMD] {cmd} (PORT={run_env['FAB_MASTER_PORT']})\n{'='*60}\n")
             f.flush()
 
         process = subprocess.Popen(
