@@ -1,0 +1,8 @@
+{
+  "pool_signature": "0f0f6f1a87cd92e41d9c5f917ba455b2",
+  "tile_config_key": "t1024_ov64_bg1.5_dt0",
+  "ckpt_signature": "a03dd0d57dd9cb9f86727ff2cdd5d295",
+  "actual_step": 2000,
+  "diy_name": "pure_fpr",
+  "created_at": "20261103_143816"
+}

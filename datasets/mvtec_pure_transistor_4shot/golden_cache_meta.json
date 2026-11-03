@@ -1,0 +1,12 @@
+{
+  "pool_signature": "0f0f6f1a87cd92e41d9c5f917ba455b2",
+  "category": "transistor",
+  "shots": 4,
+  "golden_filenames": [
+    "clean_015.png",
+    "clean_048.png",
+    "clean_031.png",
+    "clean_023.png"
+  ],
+  "num_train_samples": 4
+}

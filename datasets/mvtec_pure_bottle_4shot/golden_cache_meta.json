@@ -1,0 +1,12 @@
+{
+  "pool_signature": "e6277661f0a70a99ec1f45bd75edf94a",
+  "category": "bottle",
+  "shots": 4,
+  "golden_filenames": [
+    "clean_007.png",
+    "clean_004.png",
+    "clean_011.png",
+    "clean_019.png"
+  ],
+  "num_train_samples": 4
+}

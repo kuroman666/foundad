@@ -1,0 +1,12 @@
+{
+  "pool_signature": "b67521d0491e6d9f70c3c6e5f701ba6a",
+  "category": "grid",
+  "shots": 4,
+  "golden_filenames": [
+    "clean_016.png",
+    "clean_011.png",
+    "clean_017.png",
+    "clean_015.png"
+  ],
+  "num_train_samples": 4
+}

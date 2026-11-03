@@ -1,0 +1,12 @@
+{
+  "pool_signature": "fc91474fa443a792346382f21c70ff45",
+  "category": "capsule",
+  "shots": 4,
+  "golden_filenames": [
+    "clean_022.png",
+    "clean_016.png",
+    "clean_017.png",
+    "clean_001.png"
+  ],
+  "num_train_samples": 4
+}

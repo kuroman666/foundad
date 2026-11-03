@@ -1,12 +1,12 @@
 {
-  "pool_signature": "33cef25644be732eab7144e3195a8f6e",
-  "category": "tile",
+  "pool_signature": "0f0f6f1a87cd92e41d9c5f917ba455b2",
+  "category": "transistor",
   "shots": 4,
   "golden_filenames": [
-    "clean_026.png",
-    "clean_004.png",
-    "clean_024.png",
-    "clean_031.png"
+    "clean_015.png",
+    "clean_048.png",
+    "clean_031.png",
+    "clean_023.png"
   ],
   "num_train_samples": 4
 }

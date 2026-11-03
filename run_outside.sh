@@ -37,6 +37,7 @@ MIN_AREA_RATIO=0.00012                # 有效缺陷最小面積比例
 APP_TRAIN="train_dinov3"
 APP_TEST="test"
 SKIP_FAB_TRAIN=""                     # 第一次跑設為 "" (會訓練 2000 epochs)；訓練完後可改 "--skip_train" 秒速重測不同門檻
+RAW_SCORE_MODE=""                     # 預設設為 "" (啟用四合一防誤報濾波)；若想對照完全不經過四合一濾波的原生分數，設為 "--raw_score_mode"
 
 # 高解析度切塊與縫合參數 (設 512 可在公司外直接實測 MVTec 切塊與餘弦縫合；若不切塊可設 1024)
 TILE_SIZE=512
@@ -65,7 +66,7 @@ python 1_run_public_with_gt.py \
     ${SKIP_GT_SAMPLE} ${SKIP_GT_TRAIN}
 
 echo "============================================================"
-echo " [Task 2] 執行無 GT 盲池測試 (Mode=${THRESH_MODE}, SIGMA_K=${SIGMA_K}, TILE=${TILE_SIZE}) -> ${OUTPUT_ROOT}/2_fab_no_gt/<當下時間>"
+echo " [Task 2] 執行無 GT 盲池測試 (Mode=${THRESH_MODE}, SIGMA_K=${SIGMA_K}, TILE=${TILE_SIZE}, RAW_MODE=${RAW_SCORE_MODE:-OFF}) -> ${OUTPUT_ROOT}/2_fab_no_gt/<當下時間>"
 echo "============================================================"
 python 2_run_fab_no_gt.py \
     --mock_from_mvtec "${MOCK_SOURCE_CAT}" \
@@ -97,7 +98,7 @@ python 2_run_fab_no_gt.py \
     --max_train_tiles "${MAX_TRAIN_TILES}" \
     --train_batch_size "${TRAIN_BATCH_SIZE}" \
     --bg_std_thresh "${BG_STD_THRESH}" \
-    ${SKIP_FAB_TRAIN}
+    ${SKIP_FAB_TRAIN} ${RAW_SCORE_MODE}
 
 python - "${OUTPUT_ROOT}/2_fab_no_gt" "${MOCK_SOURCE_CAT}" << 'EOF'
 import os
@@ -118,15 +119,19 @@ latest_csv = csv_files[-1]
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
 overfit_line = ""
+score_mode_str = "FILTERED_ROBUST"
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(1200)
+        txt_head = tf.read(1500)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
         m_ov = re.search(r"Overfit Diagnostic\s*:\s*(.+)", txt_head)
         if m_ov:
             overfit_line = m_ov.group(1).strip()
+        m_sm = re.search(r"Score Mode:\s*([A-Z_]+)", txt_head)
+        if m_sm:
+            score_mode_str = m_sm.group(1).strip()
 
 records = []
 with open(latest_csv, "r", encoding="utf-8") as f:
@@ -147,7 +152,9 @@ escape_defects = [
 ]
 
 target_normal = non_golden_normal if non_golden_normal else non_golden
-non_g_scores = [float(r["Max_Score"]) for r in target_normal] if target_normal else [float(r["Max_Score"]) for r in records]
+if not target_normal:
+    target_normal = records
+non_g_scores = [float(r["Max_Score"]) for r in target_normal]
 
 max_s = float(np.max(non_g_scores))
 p99_s = float(np.percentile(non_g_scores, 99))
@@ -163,7 +170,7 @@ fp_normal = [r for r in target_normal if "ANOMALY" in r["Status"]]
 caught_escape = [r for r in escape_defects if "ANOMALY" in r["Status"]]
 
 print("\n" + "=" * 80)
-print(f" 🎯 [{cat_name.upper()} 模擬無 GT 盲池 — 非 Golden 正常圖分數分佈與 Threshold 參考]")
+print(f" 🎯 [{cat_name.upper()} 模擬無 GT 盲池 — 非 Golden 正常圖分數分佈與 Threshold 參考 ({score_mode_str})]")
 print("-" * 80)
 print(f"  📂 報表位置                   : {latest_csv}")
 print(f"  🖼️ 盲池圖片結構               : 總計 {total} 張 (Golden: {total - len(non_golden)} 張 | 非Golden正常圖: {len(target_normal)} 張 | 隱藏Escape瑕疵: {len(escape_defects)} 張)")
@@ -174,6 +181,10 @@ if overfit_line:
 print("-" * 80)
 print(f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}")
 print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}")
+if "Raw_Max_Score" in target_normal[0] and "Filtered_Max_Score" in target_normal[0]:
+    raw_arr = [float(r["Raw_Max_Score"]) for r in target_normal]
+    flt_arr = [float(r["Filtered_Max_Score"]) for r in target_normal]
+    print(f"  🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max={float(np.max(raw_arr)):.4f}, Mean={float(np.mean(raw_arr)):.4f}  vs  [四合一濾波] Max={float(np.max(flt_arr)):.4f}, Mean={float(np.mean(flt_arr)):.4f}")
 if escape_defects:
     esc_scores = [float(r["Max_Score"]) for r in escape_defects]
     print(f"  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min={float(np.min(esc_scores)):.4f} | Median={float(np.median(esc_scores)):.4f} | Max={float(np.max(esc_scores)):.4f}")

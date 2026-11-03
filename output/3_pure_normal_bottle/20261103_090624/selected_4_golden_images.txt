@@ -1,0 +1,5 @@
+=== Auto-Selected Golden Images (Medoid Centrality) ===
+Golden #1 (-> 000.png): clean_007.png | Centrality: 0.999643
+Golden #2 (-> 001.png): clean_004.png | Centrality: 0.999631
+Golden #3 (-> 002.png): clean_011.png | Centrality: 0.999626
+Golden #4 (-> 003.png): clean_019.png | Centrality: 0.999625

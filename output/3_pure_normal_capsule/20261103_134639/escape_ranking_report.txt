@@ -1,0 +1,89 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 0.3601 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 0 | Skipped Normal Images: 23
+Non-Golden Normal Score Dist: Max=0.2330 | P99=0.2300 | P95=0.2179 | Median=0.1595 | Mean=0.1681 | Std=0.0396
+Ablation Compare (Normal)   : Raw_Max=0.2442, Raw_Mean=0.1847 vs Filtered_Max=0.2330, Filtered_Mean=0.1681
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.2077 | mean+2*std=0.2473 | mean+3*std=0.2870
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) (Golden_Mean=0.0193, NonGolden_Med=0.1595, Ratio=8.28x, Gap=+0.1402)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1     | clean_002.png              | PASS_SKIPPED        | 0.2330    | 0.2442    | 0.2330     | -0.0112  | 0      | (未超過動態門檻，不輸出圖片)
+2     | clean_012.png              | PASS_SKIPPED        | 0.2163    | 0.2308    | 0.2163     | -0.0145  | 0      | (未超過動態門檻，不輸出圖片)
+3     | clean_007.png              | PASS_SKIPPED        | 0.2143    | 0.2256    | 0.2143     | -0.0113  | 0      | (未超過動態門檻，不輸出圖片)
+4     | clean_019.png              | PASS_SKIPPED        | 0.2123    | 0.2385    | 0.2123     | -0.0262  | 0      | (未超過動態門檻，不輸出圖片)
+5     | clean_021.png              | PASS_SKIPPED        | 0.2059    | 0.2303    | 0.2059     | -0.0243  | 0      | (未超過動態門檻，不輸出圖片)
+6     | clean_006.png              | PASS_SKIPPED        | 0.2054    | 0.2308    | 0.2054     | -0.0254  | 0      | (未超過動態門檻，不輸出圖片)
+7     | clean_014.png              | PASS_SKIPPED        | 0.1981    | 0.2179    | 0.1981     | -0.0197  | 0      | (未超過動態門檻，不輸出圖片)
+8     | clean_013.png              | PASS_SKIPPED        | 0.1941    | 0.2115    | 0.1941     | -0.0174  | 0      | (未超過動態門檻，不輸出圖片)
+9     | clean_000.png              | PASS_SKIPPED        | 0.1710    | 0.1912    | 0.1710     | -0.0202  | 0      | (未超過動態門檻，不輸出圖片)
+10    | clean_020.png              | PASS_SKIPPED        | 0.1595    | 0.1734    | 0.1595     | -0.0139  | 0      | (未超過動態門檻，不輸出圖片)
+11    | clean_009.png              | PASS_SKIPPED        | 0.1551    | 0.1730    | 0.1551     | -0.0179  | 0      | (未超過動態門檻，不輸出圖片)
+12    | clean_010.png              | PASS_SKIPPED        | 0.1537    | 0.1724    | 0.1537     | -0.0187  | 0      | (未超過動態門檻，不輸出圖片)
+13    | clean_008.png              | PASS_SKIPPED        | 0.1466    | 0.1661    | 0.1466     | -0.0195  | 0      | (未超過動態門檻，不輸出圖片)
+14    | clean_011.png              | PASS_SKIPPED        | 0.1456    | 0.1565    | 0.1456     | -0.0109  | 0      | (未超過動態門檻，不輸出圖片)
+15    | clean_015.png              | PASS_SKIPPED        | 0.1214    | 0.1370    | 0.1214     | -0.0157  | 0      | (未超過動態門檻，不輸出圖片)
+16    | clean_018.png              | PASS_SKIPPED        | 0.1214    | 0.1332    | 0.1214     | -0.0118  | 0      | (未超過動態門檻，不輸出圖片)
+17    | clean_005.png              | PASS_SKIPPED        | 0.1154    | 0.1251    | 0.1154     | -0.0097  | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_003.png              | PASS_SKIPPED        | 0.1129    | 0.1255    | 0.1129     | -0.0126  | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_004.png              | PASS_SKIPPED        | 0.1116    | 0.1254    | 0.1116     | -0.0138  | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_022.png              | GOLDEN_PASS         | 0.0209    | 0.0221    | 0.0209     | -0.0012  | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_016.png              | GOLDEN_PASS         | 0.0188    | 0.0195    | 0.0188     | -0.0007  | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_001.png              | GOLDEN_PASS         | 0.0187    | 0.0200    | 0.0187     | -0.0013  | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_017.png              | GOLDEN_PASS         | 0.0186    | 0.0196    | 0.0186     | -0.0009  | 0      | (未超過動態門檻，不輸出圖片)
+
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:01.25 (1.25 秒)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.13 (0.13 秒)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:13:57.45 (837.45 秒)
+  ⏱️ 整體訓練階段總時間            : 00:13:58.82 (838.82 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_pure_capsule_4shot/train/capsule
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/datasets/mvtec_pure_capsule_4shot/golden_full_res_backup/capsule
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/mvtec_pure_capsule_4shot/dinov3pure_fpr
+      └── /home/kenny/project/FoundAD/logs/mvtec_pure_capsule_4shot/dinov3pure_fpr/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_pure_capsule_4shot/dinov3pure_fpr/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體訓練階段總時間 (Total Training Time)  : 00:13:58.82 (838.82 秒)
+      ├─ Step 1 自動挑選 Golden Image            : 00:00:01.25 (1.25 秒)
+      ├─ Step 1.5 Golden 高解析度切塊            : 00:00:00.13 (0.13 秒)
+      └─ Step 2 FoundAD 模型訓練 (step=2000)     : 00:13:57.45 (837.45 秒)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:19.47 (19.47 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (23 塊)   : 00:00:08.83 (8.83 秒)
+      ├─ Step 3.2 FoundAD 模型推論               : 00:00:09.66 (9.66 秒)
+      ├─ Step 4 全解析度串流縫合與四合一濾波畫框 : 00:00:00.98 (0.98 秒)
+      └─ 平均每張原圖推論耗時 (23 張原圖)         : 0.85 秒/張
+---------------------------------------------------------------------------
+  [3] 任務全程總執行時間 (Total Wall Time)      : 00:14:18.31 (858.31 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.3601):
+      🚨 超過門檻判定異常並畫框輸出 : 0 張
+      ✅ 未達門檻或微塵濾除直接略過 : 23 張 (不輸出圖片)
+      📊 非 Golden 正常圖分數分佈 (四合一濾波後) : Max=0.2330 | P99=0.2300 | P95=0.2179 | Median=0.1595 | Mean=0.1681 | Std=0.0396
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.2077 | mean+2*std=0.2473 | mean+3*std=0.2870
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.2442, Mean=0.1847, Std=0.0419  vs  [四合一濾波] Max=0.2330, Mean=0.1681, Std=0.0396
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0193 vs 非Golden中位數=0.1595 | Overfit_Ratio=8.28x | Gap=+0.1402]
+  [⚠️ 過擬合自檢建議] 非 Golden 正常晶圓中位數 (0.1595) 顯著高於 Golden 訓練圖平均 (0.0193) [Overfit_Ratio=8.28x, Gap=+0.1402]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可不重訓直接改載入較早步數權重 (例如設定 --skip_train --ckpt_step 1000) 或調降 --max_train_tiles。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 訓練權重檔資料夾           : /home/kenny/project/FoundAD/logs/mvtec_pure_capsule_4shot/dinov3pure_fpr
+      ⚡ 子圖塊熱力圖快取資料夾     : /home/kenny/project/FoundAD/datasets/mvtec_pure_capsule_4shot_tile_amap_cache/pure_fpr_step2000_t1024_ov64_bg1.5_dt0
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/3_pure_normal_capsule/20261103_134639/log.txt
+===========================================================================

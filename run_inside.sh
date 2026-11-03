@@ -25,6 +25,7 @@ CORE_RATIO=0.55          # 紅框核心收斂比例 (0.45~0.65，越高紅框越
 APP_TRAIN="train_dinov3" # 對齊公司外驗證通過的 foundad/configs/app/train_dinov3.yaml
 APP_TEST="test"          # 對應 foundad/configs/app/test.yaml
 SKIP_TRAIN=""            # 第一次跑設為 ""；若已訓練完只想秒速重調門檻或換 ckpt_step，可設為 "--skip_train"
+RAW_SCORE_MODE=""        # 預設設為 "" (啟用四合一防誤報濾波)；若想對照完全不經過四合一濾波的原生分數，設為 "--raw_score_mode"
 
 # 5. 晶圓圓周邊緣抑制 (Wafer Bevel Exclusion) 與單點微塵濾除參數
 WAFER_EDGE_MODE="on"     # 進公司跑圓形晶圓強烈建議設 "on" (或 "auto")，自動抑制晶圓最外圈圓弧倒角反光與 Notch 邊緣誤報
@@ -79,7 +80,7 @@ fi
 echo "============================================================"
 echo " [Fab Escape 5000x5000 高解析度抓漏啟動] 圖片池: ${WAFER_POOL_DIR}"
 echo " [設定檔對齊] APP_TRAIN=${APP_TRAIN}.yaml | APP_TEST=${APP_TEST}.yaml"
-echo " [防誤報設定] THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}, P${AUTO_PERCENTILE}, Min=${MIN_THRESHOLD}) | WAFER_EDGE=${WAFER_EDGE_MODE} (${WAFER_EDGE_MARGIN})"
+echo " [防誤報設定] THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}, P${AUTO_PERCENTILE}, Min=${MIN_THRESHOLD}) | WAFER_EDGE=${WAFER_EDGE_MODE} (${WAFER_EDGE_MARGIN}) | RAW_MODE=${RAW_SCORE_MODE:-OFF}"
 echo "============================================================"
 
 python 2_run_fab_no_gt.py \
@@ -110,7 +111,7 @@ python 2_run_fab_no_gt.py \
     --max_train_tiles "${MAX_TRAIN_TILES}" \
     --train_batch_size "${TRAIN_BATCH_SIZE}" \
     --bg_std_thresh "${BG_STD_THRESH}" \
-    ${SKIP_TRAIN}
+    ${SKIP_TRAIN} ${RAW_SCORE_MODE}
 
 python - "${FAB_RESULT_DIR}" << 'EOF'
 import os
@@ -129,15 +130,19 @@ latest_csv = csv_files[-1]
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
 overfit_line = ""
+score_mode_str = "FILTERED_ROBUST"
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(1200)
+        txt_head = tf.read(1500)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
         m_ov = re.search(r"Overfit Diagnostic\s*:\s*(.+)", txt_head)
         if m_ov:
             overfit_line = m_ov.group(1).strip()
+        m_sm = re.search(r"Score Mode:\s*([A-Z_]+)", txt_head)
+        if m_sm:
+            score_mode_str = m_sm.group(1).strip()
 
 records = []
 with open(latest_csv, "r", encoding="utf-8") as f:
@@ -154,7 +159,8 @@ non_golden = [r for r in records if not r["Status"].startswith("GOLDEN")]
 pass_non_golden = [r for r in non_golden if "PASS" in r["Status"]]
 anom_all = [r for r in records if "ANOMALY" in r["Status"]]
 
-non_g_scores = [float(r["Max_Score"]) for r in non_golden] if non_golden else scores
+target_recs = non_golden if non_golden else records
+non_g_scores = [float(r["Max_Score"]) for r in target_recs]
 max_s = float(np.max(non_g_scores))
 p99_s = float(np.percentile(non_g_scores, 99))
 p95_s = float(np.percentile(non_g_scores, 95))
@@ -166,7 +172,7 @@ m2std = mean_s + 2.0 * std_s
 m3std = mean_s + 3.0 * std_s
 
 print("\n" + "=" * 80)
-print(" 🎯 [公司內部無 GT 晶圓池 — 非 Golden 正常圖分數分佈與 Threshold 參考總結]")
+print(f" 🎯 [公司內部無 GT 晶圓池 — 非 Golden 正常圖分數分佈與 Threshold 參考總結 ({score_mode_str})]")
 print("-" * 80)
 print(f"  📂 報表位置                   : {latest_csv}")
 print(f"  🖼️ 測試池圖片總數              : {total} 張 (含 {total - len(non_golden)} 張 Golden 圖, 抓出 {len(anom_all)} 張異常)")
@@ -176,6 +182,10 @@ if overfit_line:
 print("-" * 80)
 print(f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}")
 print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}")
+if "Raw_Max_Score" in target_recs[0] and "Filtered_Max_Score" in target_recs[0]:
+    raw_arr = [float(r["Raw_Max_Score"]) for r in target_recs]
+    flt_arr = [float(r["Filtered_Max_Score"]) for r in target_recs]
+    print(f"  🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max={float(np.max(raw_arr)):.4f}, Mean={float(np.mean(raw_arr)):.4f}  vs  [四合一濾波] Max={float(np.max(flt_arr)):.4f}, Mean={float(np.mean(flt_arr)):.4f}")
 if pass_non_golden and len(pass_non_golden) < len(non_golden):
     pg_scores = [float(r["Max_Score"]) for r in pass_non_golden]
     pg_max = float(np.max(pg_scores))

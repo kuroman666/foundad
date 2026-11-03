@@ -36,6 +36,7 @@ APP_TEST="test"
 
 # 若該類別已訓練過且權重還在 ./logs/ 下，可設為 "--skip_train" 秒速重測不同門檻！
 SKIP_FAB_TRAIN=""
+RAW_SCORE_MODE=""                     # 預設設為 "" (啟用四合一防誤報濾波)；若想對照完全不經過四合一濾波的原生分數，設為 "--raw_score_mode"
 DIY_NAME="pure_fpr"
 
 # --- 3. 高解析度切塊與縫合參數 ---
@@ -85,7 +86,7 @@ run_single_category() {
     local SAVE_BASE_DIR="${OUTPUT_ROOT}/3_pure_normal_${CAT}"
 
     echo "============================================================"
-    echo " [啟動無 GT 純正常池誤報測試] CATEGORY=${CAT} | THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K})"
+    echo " [啟動無 GT 純正常池誤報測試] CATEGORY=${CAT} | THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}) | RAW_MODE=${RAW_SCORE_MODE:-OFF}"
     echo " -> 輸出根目錄: ${SAVE_BASE_DIR}/<當下時間>"
     echo "============================================================"
 
@@ -118,7 +119,7 @@ run_single_category() {
         --max_train_tiles "${MAX_TRAIN_TILES}" \
         --train_batch_size "${TRAIN_BATCH_SIZE}" \
         --bg_std_thresh "${BG_STD_THRESH}" \
-        ${SKIP_FAB_TRAIN}
+        ${SKIP_FAB_TRAIN} ${RAW_SCORE_MODE}
 
     python - "${SAVE_BASE_DIR}" "${CAT}" << 'EOF'
 import os
@@ -139,15 +140,19 @@ latest_csv = csv_files[-1]
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
 overfit_line = ""
+score_mode_str = "FILTERED_ROBUST"
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(1200)
+        txt_head = tf.read(1500)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
         m_ov = re.search(r"Overfit Diagnostic\s*:\s*(.+)", txt_head)
         if m_ov:
             overfit_line = m_ov.group(1).strip()
+        m_sm = re.search(r"Score Mode:\s*([A-Z_]+)", txt_head)
+        if m_sm:
+            score_mode_str = m_sm.group(1).strip()
 
 records = []
 with open(latest_csv, "r", encoding="utf-8") as f:
@@ -168,7 +173,8 @@ fp_non_golden = [r for r in non_golden if "ANOMALY" in r["Status"]]
 fpr_total = len(fp_All) / total * 100.0
 fpr_non_golden = (len(fp_non_golden) / len(non_golden) * 100.0) if non_golden else 0.0
 
-non_g_scores = [float(r["Max_Score"]) for r in non_golden] if non_golden else scores
+target_recs = non_golden if non_golden else records
+non_g_scores = [float(r["Max_Score"]) for r in target_recs]
 max_s = float(np.max(non_g_scores))
 p99_s = float(np.percentile(non_g_scores, 99))
 p95_s = float(np.percentile(non_g_scores, 95))
@@ -180,7 +186,7 @@ m2std = mean_s + 2.0 * std_s
 m3std = mean_s + 3.0 * std_s
 
 print("\n" + "=" * 80)
-print(f" 🎯 [{cat_name.upper()} 100% 純正常資料集 — 誤報率 (FPR) 驗算總結]")
+print(f" 🎯 [{cat_name.upper()} 100% 純正常資料集 — 誤報率 (FPR) 驗算總結 ({score_mode_str})]")
 print("-" * 80)
 print(f"  📂 報表位置                   : {latest_csv}")
 print(f"  🖼️ 測試池純正常圖片總數        : {total} 張 (含 {total - len(non_golden)} 張 Golden 圖)")
@@ -195,6 +201,10 @@ print(f"  📈 扣除 Golden 後誤報率 (FPR)  : {fpr_non_golden:.2f}% ({len(f
 print("-" * 80)
 print(f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}")
 print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}")
+if "Raw_Max_Score" in target_recs[0] and "Filtered_Max_Score" in target_recs[0]:
+    raw_arr = [float(r["Raw_Max_Score"]) for r in target_recs]
+    flt_arr = [float(r["Filtered_Max_Score"]) for r in target_recs]
+    print(f"  🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max={float(np.max(raw_arr)):.4f}, Mean={float(np.mean(raw_arr)):.4f}  vs  [四合一濾波] Max={float(np.max(flt_arr)):.4f}, Mean={float(np.mean(flt_arr)):.4f}")
 print("=" * 80 + "\n")
 EOF
 }

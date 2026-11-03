@@ -1,0 +1,19 @@
+
+===========================================================================
+[Task 2 無GT抓漏啟動時間] 2026-11-03 09:05:31
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/3_pure_normal_bottle/20261103_090531
+===========================================================================
+[⏱️ 計時] Step 1 自動挑選 4 張 Golden Image 耗時: 00:00:01.03 (1.03 秒)
+[Tiling] 原始圖片尺寸 (900x900) <= tile_size (1024)，保持原圖訓練。
+
+[Step 2] 執行 FoundAD 高解析度圖塊訓練 (train_tiles=4, batch_size=4, iters_per_epoch=1):
+
+============================================================
+[CMD] python foundad/main.py mode=train data.batch_size=4 data.dataset=mvtec data.data_name=mvtec_pure_bottle_4shot data.data_path=/home/kenny/project/FoundAD/datasets data.train_root=/home/kenny/project/FoundAD/datasets/mvtec_pure_bottle_4shot data.mvtec_classnames='[bottle]' diy_name=pure_fpr app=train_dinov3 (PORT=50719)
+============================================================
+Traceback (most recent call last):
+  File "/home/kenny/project/FoundAD/foundad/main.py", line 13, in <module>
+    from src.AD import main as AD, _demo
+  File "/home/kenny/project/FoundAD/foundad/src/AD.py", line 259
+    pool_dir=str(test_root),
+IndentationError: unexpected indent

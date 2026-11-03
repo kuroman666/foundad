@@ -1,0 +1,12 @@
+{
+  "pool_signature": "cc8bdd887d0bcad72f41f6bf15c0d6ce",
+  "category": "cable",
+  "shots": 4,
+  "golden_filenames": [
+    "clean_016.png",
+    "clean_017.png",
+    "clean_006.png",
+    "clean_013.png"
+  ],
+  "num_train_samples": 4
+}

@@ -215,7 +215,6 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
         overlay_rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
         Image.fromarray(overlay_rgb).save(save_path)
 
-    amap_dict = {}
     dump_dir = os.environ.get("FAB_AMAP_DUMP_DIR", "")
     if dump_dir:
         os.makedirs(dump_dir, exist_ok=True)
@@ -232,9 +231,8 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
         pix = F.interpolate(l.view(1, 1, h, w), size=img.shape[2:], mode="bilinear", align_corners=False)
         pix = pix.squeeze(0).squeeze(0)  # [H, W] 原始 2D 熱力圖
 
-        # [Hook 2] 儲存未經過單圖正規化的原始熱力圖供畫框使用
+        # [Hook 2] 儲存未經過單圖正規化的原始熱力圖 (.npy)
         raw_amap = pix.detach().cpu().numpy()
-        amap_dict[path.name] = raw_amap
         if dump_dir:
             np.save(os.path.join(dump_dir, f"{path.name}.npy"), raw_amap)
 
@@ -250,25 +248,6 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
 
         _save_overlay_heatmap(img_uint8, pix_norm.detach().cpu().numpy(), save_path)
         print(f"[{i}/{len(img_paths)}] Saved: {save_path}")
-
-    # 直接呼叫 bbox_visualizer 畫出紅色瑕疵外框並匯出排名表
-    sys.path.insert(0, os.getcwd())
-    from fab_tools.bbox_visualizer import export_no_gt_reports
-
-    bbox_out_dir = os.environ.get("FAB_BBOX_OUT_DIR", str(Path(cfg["logging"]["folder"]) / "fab_bbox_results"))
-    sigma_k = float(os.environ.get("FAB_SIGMA_K", "3.2"))
-    golden_list_str = os.environ.get("FAB_GOLDEN_NAMES", "")
-    golden_filenames = set(golden_list_str.split(",")) if golden_list_str else set()
-
-    print(f"\n[FoundAD -> BBox Visualizer] 正在根據 FoundAD 熱力圖框出瑕疵位置 (sigma_k={sigma_k})...")
-    export_no_gt_reports(
-        pool_dir=str(test_root),
-        anomaly_maps_dict=amap_dict,
-        golden_filenames=golden_filenames,
-        out_dir=bbox_out_dir,
-        sigma_k=sigma_k,
-        save_top_k=100,
-    )
 
 
 def main(args: Dict[str, Any]) -> None:
