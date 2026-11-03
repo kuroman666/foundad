@@ -113,7 +113,7 @@ FoundAD/
 ├── logs/                                     # [模型權重區] 訓練自動產生的 .pth.tar 權重檔與 params.yaml
 │   ├── mvtec_4shot/dinov3dbug/               # Task 1 有 GT 模式之訓練權重
 │   ├── mvtec_sim_4shot/dinov3sim_escape/     # Task 2/3 外部無 GT 模擬與純正常測試之訓練權重
-│   └── mvtec_fab_4shot/dinov3fab_h100/       # 公司內實測晶圓池之訓練權重
+│   └── mvtec_fab_4shot/dinov3fab_wafer/       # 公司內實測晶圓池之訓練權重
 ├── output/                                   # [外部測試唯一結果出口] 依任務與時間戳記分類存放
 │   ├── 1_public_with_gt/                     # Task 1 有 GT 公開資料集評估結果
 │   │   ├── <YYYYMMDD_HHMMSS>/                # 單次執行專屬目錄 (含 metrics_summary.csv/.txt, segmentation/, log.txt)
@@ -148,7 +148,7 @@ FoundAD/
 | **`2_run_fab_no_gt.py`** | **無 GT 晶圓抓漏核心引擎：** 自動挑 4 張 Golden 圖 -> 高解析度切塊訓練 -> 子圖塊推論與 2D 餘弦無縫拼接 -> 晶圓圓周與微塵抑制 -> 動態門檻篩選與畫紅框。 | `--pool_dir` 指定之無標註圖片池（或由 `--mock_from_mvtec` 自動自 MVTec 生成） | - Golden 訓練圖塊：`./datasets/<data_name>/train/<類別>/`<br>- Golden 原圖備份：`./datasets/<data_name>/golden_full_res_backup/<類別>/`<br>- 測試切塊池：`./datasets/<data_name>_tiled_pool/`<br>- 訓練權重：`./logs/<data_name>/dinov3<diy_name>/` | `<out_dir>/<YYYYMMDD_HHMMSS>/` |
 | **`run_outside.sh`** | **公司外一鍵綜合測試：** 依序自動執行 Task 1（6 類別有 GT 驗證）與 Task 2（無 GT 混合盲池抓漏驗證），最後印出抓漏率與正常圖分數分佈統計。 | `./datasets/mvtec/` | - `./datasets/mvtec_4shot/`<br>- `./datasets/sim_fab_capsule_pool/`<br>- `./datasets/mvtec_sim_4shot/`<br>- `./logs/mvtec_4shot/` & `./logs/mvtec_sim_4shot/` | - Task 1: `./output/1_public_with_gt/<時間戳>/`<br>- Task 2: `./output/2_fab_no_gt/<時間戳>/` |
 | **`run_pure_normal_test.sh`** | **100% 純正常池誤報率 (FPR) 驗證：** 自動從 `test/good` 建立 0 瑕疵純正常盲池（或讀取自訂純正常晶圓池），驗證防誤報濾波與動態門檻之穩定性。 | `./datasets/mvtec/<類別>/test/good/`（或 `CUSTOM_PURE_NORMAL_DIR`） | - 純正常盲池：`./datasets/sim_pure_normal_<類別>_pool/`<br>- 訓練圖塊：`./datasets/mvtec_sim_4shot/`<br>- 權重：`./logs/mvtec_sim_4shot/dinov3sim_escape/` | `./output/3_pure_normal_<類別>/<YYYYMMDD_HHMMSS>/` |
-| **`run_inside.sh`** | **公司內 5000x5000 晶圓實測部署：** 強制啟用斷網離線模式，讀取廠內本地 DINO 權重與工程師初篩過之無 GT 晶圓池，執行 512x512 原生切塊抓漏。 | - 圖片池：`WAFER_POOL_DIR`<br>- 本地權重：`COMPANY_DINO_CKPT`<br>- 本地架構：`./hub_cache/` | - Golden 圖塊：`./datasets/mvtec_fab_4shot/train/wafer/`<br>- 測試切塊池：`./datasets/mvtec_fab_4shot_tiled_pool/`<br>- 權重：`./logs/mvtec_fab_4shot/dinov3fab_h100/` | `./wafer_escape_results/<YYYYMMDD_HHMMSS>/` |
+| **`run_inside.sh`** | **公司內 5000x5000 晶圓實測部署：** 強制啟用斷網離線模式，讀取廠內本地 DINO 權重與工程師初篩過之無 GT 晶圓池，執行 512x512 原生切塊抓漏。 | - 圖片池：`WAFER_POOL_DIR`<br>- 本地權重：`COMPANY_DINO_CKPT`<br>- 本地架構：`./hub_cache/` | - Golden 圖塊：`./datasets/mvtec_fab_4shot/train/wafer/`<br>- 測試切塊池：`./datasets/mvtec_fab_4shot_tiled_pool/`<br>- 權重：`./logs/mvtec_fab_4shot/dinov3fab_wafer/` | `./wafer_escape_results/<YYYYMMDD_HHMMSS>/` |
 | **`foundad/src/utils/synthesis.py`** | **CutPaste 合成異常前景遮罩生成：** 支援 MVTec/VisA 原生類別，並對 `wafer` 等自訂類別回傳正確 `(H, W)` 全前景遮罩。 | 訓練階段載入之 Golden 圖片 Tensor `(C, H, W)` | 記憶體內即時合成異常 Patch 供 `train.py` 計算 Loss | 無獨立檔案輸出（直接影響訓練權重品質） |
 
 ---
@@ -299,7 +299,7 @@ python 2_run_fab_no_gt.py \
     --out_dir ./wafer_escape_results \
     --data_name mvtec_fab_4shot \
     --category wafer \
-    --diy_name fab_h100 \
+    --diy_name fab_wafer \
     --ckpt_step 2000 \
     --thresh_mode mean_std \
     --sigma_k 3.0 \
@@ -321,8 +321,8 @@ python 2_run_fab_no_gt.py \
   * 路徑：`./logs/mvtec_sim_4shot/dinov3sim_escape/train-step2000.pth.tar`
   * 對接權重：`./logs/mvtec_sim_4shot/dinov3sim_escape/pretrained.pth.tar`（由 `2_run_fab_no_gt.py` 自動複製對接，供 `mode=demo` 推論讀取）
 * **公司內晶圓實測（`run_inside.sh`）**
-  * 路徑：`./logs/mvtec_fab_4shot/dinov3fab_h100/train-step2000.pth.tar`
-  * 對接權重：`./logs/mvtec_fab_4shot/dinov3fab_h100/pretrained.pth.tar`
+  * 路徑：`./logs/mvtec_fab_4shot/dinov3fab_wafer/train-step2000.pth.tar`
+  * 對接權重：`./logs/mvtec_fab_4shot/dinov3fab_wafer/pretrained.pth.tar`
 
 可使用以下指令快速確認權重檔是否已生成：
 ```bash

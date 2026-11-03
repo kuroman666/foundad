@@ -110,7 +110,6 @@ def _evaluate_single_ckpt(ckpt: Path, cfg: Dict[str, Any]) -> None:
             img_buf.append(img.cpu())
             mask_buf.append(mask.cpu())
 
-            # [Hook 1] 若有設定環境變數則自動匯出 .npy
             dump_dir = os.environ.get("FAB_AMAP_DUMP_DIR", "")
             if dump_dir:
                 os.makedirs(dump_dir, exist_ok=True)
@@ -173,8 +172,16 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
 
     crop = cfg["meta"]["crop_size"]
     n_layer = cfg["meta"].get("n_layer", 3)
+
+    dump_dir = os.environ.get("FAB_AMAP_DUMP_DIR", "")
+    skip_tile_png = os.environ.get("FAB_SKIP_TILE_HEATMAP_PNG", "1" if dump_dir else "0") == "1"
+    infer_bs = max(1, int(os.environ.get("FAB_INFER_BATCH_SIZE", "16")))
+
     out_root = Path(cfg["logging"]["folder"]) / "heatmaps"
-    out_root.mkdir(parents=True, exist_ok=True)
+    if not skip_tile_png:
+        out_root.mkdir(parents=True, exist_ok=True)
+    if dump_dir:
+        os.makedirs(dump_dir, exist_ok=True)
 
     test_root = Path(cfg["data"]["test_root"])
     exts = (
@@ -187,24 +194,22 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
     img_paths = sorted(set(img_paths))
     if not img_paths:
         raise FileNotFoundError(f"No images found under: {test_root}")
-    print(f"[INFO] Found {len(img_paths)} images under {test_root}")
+    total_imgs = len(img_paths)
+    print(
+        f"[INFO] Found {total_imgs} tile images under {test_root} "
+        f"(BatchSize={infer_bs}, SaveTilePNG={'OFF' if skip_tile_png else 'ON'})"
+    )
 
     mean = torch.tensor([0.485, 0.456, 0.406], device=device).view(1, 3, 1, 1)
     std  = torch.tensor([0.229, 0.224, 0.225], device=device).view(1, 3, 1, 1)
 
-    def _load_and_preprocess(path: Path):
-        pil = Image.open(path).convert("RGB")
-        W0, H0 = pil.size
-        pil_resized = pil.resize((crop, crop), Image.BILINEAR)
-        img = torch.from_numpy(np.array(pil_resized)).float() / 255.0
-        img = img.permute(2, 0, 1).unsqueeze(0).to(device)
-        img = (img - mean) / std
-        return pil, (W0, H0), img
-
-    def _to_numpy_image(t_img: torch.Tensor):
-        x = (t_img * std + mean).clamp(0, 1)
-        x = x[0].permute(1, 2, 0).detach().cpu().numpy()
-        return (x * 255.0).astype(np.uint8)
+    def _load_tensor(path: Path) -> torch.Tensor:
+        with Image.open(path) as pil:
+            pil_rgb = pil.convert("RGB")
+            if pil_rgb.size != (crop, crop):
+                pil_rgb = pil_rgb.resize((crop, crop), Image.BILINEAR)
+            arr = np.array(pil_rgb, dtype=np.float32) / 255.0
+        return torch.from_numpy(arr).permute(2, 0, 1)
 
     def _save_overlay_heatmap(rgb_uint8: np.ndarray, heat: np.ndarray, save_path: Path, alpha: float = 0.5):
         import cv2
@@ -215,39 +220,41 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
         overlay_rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
         Image.fromarray(overlay_rgb).save(save_path)
 
-    dump_dir = os.environ.get("FAB_AMAP_DUMP_DIR", "")
-    if dump_dir:
-        os.makedirs(dump_dir, exist_ok=True)
+    for start_idx in range(0, total_imgs, infer_bs):
+        batch_paths = img_paths[start_idx:start_idx + infer_bs]
+        batch_tensors = torch.stack([_load_tensor(p) for p in batch_paths], dim=0).to(device, non_blocking=True)
+        batch_norm = (batch_tensors - mean) / std
+        str_paths = [str(p) for p in batch_paths]
 
-    for i, path in enumerate(img_paths, 1):
-        pil_orig, (W0, H0), img = _load_and_preprocess(path)
-
-        enc = model.target_features(img, [str(path)], n_layer=n_layer)
+        enc = model.target_features(batch_norm, str_paths, n_layer=n_layer)
         pred = model.predict(enc)
 
         l = F.mse_loss(enc, pred, reduction="none").mean(dim=2)
-
         h = w = int(math.sqrt(l.size(1)))
-        pix = F.interpolate(l.view(1, 1, h, w), size=img.shape[2:], mode="bilinear", align_corners=False)
-        pix = pix.squeeze(0).squeeze(0)  # [H, W] 原始 2D 熱力圖
+        pix_batch = F.interpolate(
+            l.view(-1, 1, h, w), size=(crop, crop), mode="bilinear", align_corners=False
+        ).squeeze(1)
 
-        # [Hook 2] 儲存未經過單圖正規化的原始熱力圖 (.npy)
-        raw_amap = pix.detach().cpu().numpy()
-        if dump_dir:
-            np.save(os.path.join(dump_dir, f"{path.name}.npy"), raw_amap)
+        pix_np_batch = pix_batch.detach().cpu().numpy()
 
-        pmin, pmax = pix.min(), pix.max()
-        pix_norm = (pix - pmin) / (pmax - pmin + 1e-8)
+        for b_idx, path in enumerate(batch_paths):
+            raw_amap = pix_np_batch[b_idx]
+            if dump_dir:
+                np.save(os.path.join(dump_dir, f"{path.name}.npy"), raw_amap)
 
-        img_uint8 = _to_numpy_image(img)
+            if not skip_tile_png:
+                pmin, pmax = float(raw_amap.min()), float(raw_amap.max())
+                pix_norm = (raw_amap - pmin) / (pmax - pmin + 1e-8)
+                img_uint8 = (batch_tensors[b_idx].permute(1, 2, 0).detach().cpu().numpy() * 255.0).clip(0, 255).astype(np.uint8)
+                rel = path.relative_to(test_root)
+                save_dir = out_root / rel.parent
+                save_dir.mkdir(parents=True, exist_ok=True)
+                save_path = save_dir / f"{path.stem}_heatmap.png"
+                _save_overlay_heatmap(img_uint8, pix_norm, save_path)
 
-        rel = path.relative_to(test_root)
-        save_dir = out_root / rel.parent
-        save_dir.mkdir(parents=True, exist_ok=True)
-        save_path = save_dir / f"{path.stem}_heatmap.png"
-
-        _save_overlay_heatmap(img_uint8, pix_norm.detach().cpu().numpy(), save_path)
-        print(f"[{i}/{len(img_paths)}] Saved: {save_path}")
+        done_cnt = min(start_idx + infer_bs, total_imgs)
+        if done_cnt == total_imgs or (done_cnt // infer_bs) % 5 == 0:
+            print(f"[Tile-Infer] Progress: [{done_cnt}/{total_imgs}] tiles processed (.npy saved)")
 
 
 def main(args: Dict[str, Any]) -> None:

@@ -91,7 +91,7 @@ python 2_run_fab_no_gt.py \
     --category "wafer" \
     --app_train "${APP_TRAIN}" \
     --app_test "${APP_TEST}" \
-    --diy_name "fab_h100" \
+    --diy_name "fab_wafer" \
     --ckpt_step "${CKPT_STEP}" \
     --shots "${SHOTS}" \
     --thresh_mode "${THRESH_MODE}" \

@@ -142,6 +142,19 @@ def compute_ckpt_signature(ckpt_files: List[str]) -> str:
     return h.hexdigest()
 
 
+def _robust_normalize_to_uint8(arr: np.ndarray) -> np.ndarray:
+    """使用 P0.1 ~ P99.9 穩健百分位數將 16-bit / float 陣列轉為 uint8，防止單點飽和亮點壓扁對比度。"""
+    arr_f = arr.astype(np.float32)
+    p_low, p_high = np.percentile(arr_f, [0.1, 99.9])
+    if p_high <= p_low:
+        p_low, p_high = float(np.min(arr_f)), float(np.max(arr_f))
+    if p_high > p_low:
+        arr_f = (arr_f - p_low) / (p_high - p_low) * 255.0
+    else:
+        arr_f = np.zeros_like(arr_f, dtype=np.float32)
+    return np.clip(arr_f, 0, 255).astype(np.uint8)
+
+
 def load_image_rgb_uint8(img_path: str) -> np.ndarray:
     """
     安全讀取影像並統一轉為 (H, W, 3) uint8 RGB 格式。
@@ -150,11 +163,7 @@ def load_image_rgb_uint8(img_path: str) -> np.ndarray:
     try:
         with Image.open(img_path) as pil_img:
             if pil_img.mode in ("I;16", "I;16B", "I;16L", "I", "F"):
-                arr = np.array(pil_img, dtype=np.float32)
-                a_min, a_max = float(np.min(arr)), float(np.max(arr))
-                if a_max > a_min:
-                    arr = (arr - a_min) / (a_max - a_min) * 255.0
-                arr_u8 = np.clip(arr, 0, 255).astype(np.uint8)
+                arr_u8 = _robust_normalize_to_uint8(np.array(pil_img))
                 return np.stack([arr_u8, arr_u8, arr_u8], axis=-1)
             return np.array(pil_img.convert("RGB"), dtype=np.uint8)
     except Exception:
@@ -162,11 +171,7 @@ def load_image_rgb_uint8(img_path: str) -> np.ndarray:
         if raw is None:
             raise ValueError(f"無法讀取影像檔案: {img_path}")
         if raw.dtype != np.uint8:
-            r_min, r_max = float(np.min(raw)), float(np.max(raw))
-            if r_max > r_min:
-                raw = ((raw.astype(np.float32) - r_min) / (r_max - r_min) * 255.0).astype(np.uint8)
-            else:
-                raw = np.zeros_like(raw, dtype=np.uint8)
+            raw = _robust_normalize_to_uint8(raw)
         if raw.ndim == 2:
             return cv2.cvtColor(raw, cv2.COLOR_GRAY2RGB)
         if raw.shape[2] == 4:
@@ -960,7 +965,7 @@ def compute_dynamic_effective_threshold(
     - mean_std   : 直接使用非 Golden 正常圖之 mean + sigma_k * std 作為門檻 (不受 min_threshold 強制墊高影響)。
     - percentile : 自動對齊盲池 P95/P98 分位數，並以 min_threshold 保底。
     - top_k      : 自動對齊盲池第 K 高分 (最多輸出 Top-K 張)，並以 min_threshold 保底。
-    - hybrid     : 結合 P95 分位數 + 抗極端值之 MAD 穩健統計上界 (Median + k * Robust_Sigma) + min_threshold 保底。
+    - hybrid     : 結合 P95 分位數 + 抗極端值之 MAD 穩健上界 + 去極端值 Trimmed Mean+k*Std 上界 + min_threshold 保底。
     """
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
@@ -972,14 +977,27 @@ def compute_dynamic_effective_threshold(
     std_val = float(np.std(scores_arr))
     mean_std_bound = mean_val + sigma_k * std_val
 
+    # 計算排除最高 5% 極端值後的穩健 Trimmed Mean + k*Std (兼顧抗 Escape 污染與抗反光右偏尾端)
+    if scores_arr.size >= 10:
+        p95_cut = float(np.percentile(scores_arr, 95.0))
+        trimmed_arr = scores_arr[scores_arr <= p95_cut]
+        if trimmed_arr.size >= 5:
+            trim_mean = float(np.mean(trimmed_arr))
+            trim_std = float(np.std(trimmed_arr))
+        else:
+            trim_mean, trim_std = mean_val, std_val
+    else:
+        trim_mean, trim_std = mean_val, std_val
+    trimmed_stat_bound = trim_mean + sigma_k * max(trim_std, 0.012)
+
     med = float(np.median(scores_arr))
     q75, q25 = np.percentile(scores_arr, [75.0, 25.0])
     iqr_sigma = float((q75 - q25) / 1.349)
     mad_sigma = float(1.4826 * np.median(np.abs(scores_arr - med)))
-    robust_sigma = max(iqr_sigma, mad_sigma, 0.012)
+    robust_sigma = max(iqr_sigma, mad_sigma, trim_std, 0.012)
 
     p_val = float(np.percentile(scores_arr, np.clip(auto_percentile, 50.0, 99.9)))
-    mad_bound = med + sigma_k * robust_sigma
+    mad_bound = max(med + sigma_k * robust_sigma, trimmed_stat_bound)
 
     topk_bound = 0.0
     if top_k > 0 and scores_arr.size > top_k:
@@ -1012,7 +1030,7 @@ def compute_dynamic_effective_threshold(
         eff = max(float(min_threshold), float(user_threshold), p_val, mad_bound, topk_bound)
         desc = (
             f"Hybrid 智慧動態門檻 = {eff:.4f} "
-            f"[P{auto_percentile:g}={p_val:.4f}, MAD上界(med+{sigma_k:g}σ)={mad_bound:.4f}, "
+            f"[P{auto_percentile:g}={p_val:.4f}, 穩健統計上界(med+{sigma_k:g}σ)={mad_bound:.4f}, "
             f"MinFloor={max(float(min_threshold), float(user_threshold)):.4f}"
             f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
         )
@@ -1045,7 +1063,7 @@ def evaluate_overfitting_diagnostics(
             f"  [⚠️ 過擬合自檢建議] 非 Golden 正常晶圓中位數 ({ng_med:.4f}) 顯著高於 Golden 訓練圖平均 ({g_mean:.4f}) "
             f"[Overfit_Ratio={overfit_ratio:.2f}x, Gap=+{golden_gap:.4f}]！\n"
             f"                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，\n"
-            f"                     可不重訓直接改載入較早步數權重 (例如設定 --skip_train --ckpt_step 1000) 或調降 --max_train_tiles。"
+            f"                     可直接調高門檻倍數 (例如設定 --skip_train --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。"
         )
     elif overfit_ratio >= 1.25 and golden_gap >= 0.025:
         status_badge = "🟡 注意: 輕微過擬合傾向 (Mild Overfit — 已由動態門檻自動補償)"
@@ -1594,6 +1612,7 @@ def main():
     parser.add_argument("--tile_overlap", type=int, default=64, help="相鄰子圖塊重疊像素寬度 (用於無縫平滑拼接)")
     parser.add_argument("--max_train_tiles", type=int, default=48, help="從 Golden 大圖抽出的代表性高解析度訓練圖塊上限")
     parser.add_argument("--train_batch_size", type=int, default=8, help="訓練時的最大 Batch Size，防止高解析度圖塊 OOM")
+    parser.add_argument("--infer_batch_size", type=int, default=16, help="推論子圖塊時的 Mini-Batch 大小，大幅加速 5000x5000 推論")
     parser.add_argument("--bg_std_thresh", type=float, default=1.5, help="過濾純背景角落塊的標準差門檻")
     parser.add_argument("--disable_tiling", action="store_true", help="若設定此旗標則關閉切塊，退回整張推論模式")
     args = parser.parse_args()
@@ -1664,6 +1683,8 @@ def main():
                 g_meta.get("pool_signature") == pool_signature
                 and g_meta.get("category") == args.category
                 and int(g_meta.get("shots", -1)) == int(args.shots)
+                and int(g_meta.get("tile_size", -1)) == int(args.tile_size)
+                and int(g_meta.get("max_train_tiles", -1)) == int(args.max_train_tiles)
                 and g_meta.get("golden_filenames")
             ):
                 golden_filenames = list(g_meta["golden_filenames"])
@@ -1720,6 +1741,8 @@ def main():
                         "pool_signature": pool_signature,
                         "category": args.category,
                         "shots": args.shots,
+                        "tile_size": args.tile_size,
+                        "max_train_tiles": args.max_train_tiles,
                         "golden_filenames": golden_filenames,
                         "num_train_samples": num_train_samples,
                     },
@@ -1732,6 +1755,12 @@ def main():
 
     effective_batch_size = min(max(1, num_train_samples), args.train_batch_size)
     iters_per_epoch = max(1, int(np.ceil(num_train_samples / float(effective_batch_size))))
+    # 動態折算訓練 Epochs：當切塊數較多 (iters_per_epoch > 1) 時，防止總梯度更新步數暴增 6 倍導致嚴重過擬合與耗時過長
+    effective_epochs = (
+        max(400, int(np.ceil(args.ckpt_step / float(iters_per_epoch))))
+        if iters_per_epoch > 1 else args.ckpt_step
+    )
+    total_grad_updates = effective_epochs * iters_per_epoch
 
     model_train_sec = 0.0
     if not args.skip_train:
@@ -1741,12 +1770,13 @@ def main():
             f"data.dataset=mvtec data.data_name={args.data_name} "
             f"data.data_path={abs_datasets_dir} data.train_root={shot_dir} "
             f"data.mvtec_classnames='[{args.category}]' "
+            f"optimization.epochs={effective_epochs} "
             f"diy_name={args.diy_name} app={args.app_train}"
         )
         log_and_print(
             f"\n[Step 2] 執行 FoundAD 高解析度圖塊訓練 "
             f"(train_tiles={num_train_samples}, batch_size={effective_batch_size}, "
-            f"iters_per_epoch={iters_per_epoch}):",
+            f"iters_per_epoch={iters_per_epoch}, epochs={effective_epochs}, total_updates={total_grad_updates}):",
             log_files,
         )
         run_cmd_and_log(train_cmd, log_files)
@@ -1756,7 +1786,7 @@ def main():
 
     total_train_time = golden_select_sec + train_tile_sec + model_train_sec
     actual_step, ckpt_dirs, ckpt_files = prepare_ckpt_for_demo(
-        args.data_name, args.diy_name, args.ckpt_step, log_files
+        args.data_name, args.diy_name, effective_epochs if not args.skip_train else args.ckpt_step, log_files
     )
     ckpt_signature = compute_ckpt_signature(ckpt_files)
 
@@ -1868,7 +1898,8 @@ def main():
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
         env["FAB_AMAP_DUMP_DIR"] = os.path.abspath(tile_amap_cache_dir)
-        # 設為空字串，避免 AD.py 在子圖塊階段浪費時間產生 _tile_bbox_tmp 與 bbox_visualizations
+        env["FAB_SKIP_TILE_HEATMAP_PNG"] = "1"
+        env["FAB_INFER_BATCH_SIZE"] = str(args.infer_batch_size)
         env["FAB_BBOX_OUT_DIR"] = ""
         env["FAB_SIGMA_K"] = str(args.sigma_k)
         env["FAB_GOLDEN_NAMES"] = ""
@@ -1879,12 +1910,18 @@ def main():
             f"data.data_name={args.data_name} diy_name={args.diy_name} "
             f"data.test_root={os.path.abspath(tiled_pool_dir)} app={args.app_test} app.ckpt_step={actual_step}"
         )
-        log_and_print(f"\n[Step 3] 執行 FoundAD 子圖塊高解析度推論 (快取寫入 -> {os.path.abspath(tile_amap_cache_dir)}):", log_files)
+        log_and_print(
+            f"\n[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 "
+            f"(BatchSize={args.infer_batch_size}, 關閉冗餘子圖塊 PNG 輸出 -> {os.path.abspath(tile_amap_cache_dir)}):",
+            log_files,
+        )
         run_cmd_and_log(demo_cmd, log_files, env=env)
         model_infer_sec = time.perf_counter() - t_infer_start
 
         for old_viz in glob.glob(f"./logs/{args.data_name}/**/no_gt_results", recursive=True):
             safe_rmtree(old_viz)
+        for old_hm in glob.glob(f"./logs/{args.data_name}/**/demo/heatmaps", recursive=True):
+            safe_rmtree(old_hm)
 
         try:
             with open(os.path.join(tile_amap_cache_dir, "cache_info.json"), "w", encoding="utf-8") as f:

@@ -2,6 +2,8 @@
   "pool_signature": "0f0f6f1a87cd92e41d9c5f917ba455b2",
   "category": "transistor",
   "shots": 4,
+  "tile_size": 1024,
+  "max_train_tiles": 48,
   "golden_filenames": [
     "clean_015.png",
     "clean_048.png",
