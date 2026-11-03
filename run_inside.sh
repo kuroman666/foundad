@@ -6,7 +6,7 @@ set -e
 # 1. 工程師初篩為正常品、無 Ground Truth 的 5000x5000 圖片資料夾路徑 (保留原始檔名不更動)
 WAFER_POOL_DIR="/path/to/company/engineer_passed_wafers"
 
-# 2. 公司內部 H100 上的本地 DINOv3 或 DINOv2 .pth 權重路徑
+# 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
 COMPANY_DINO_CKPT="/path/to/company/dinov3_or_dinov2.pth"
 
 # 3. 輸出結果根資料夾 (每次執行會自動在底下建立 <YYYYMMDD_HHMMSS> 時間資料夾，絕不覆蓋)

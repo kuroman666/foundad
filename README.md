@@ -13,7 +13,7 @@
 ### 1.1 基礎環境需求
 * **作業系統：** Linux (Ubuntu 20.04 / 22.04+)
 * **Python 版本：** Python 3.10 ~ 3.12
-* **GPU 硬體：** 外部測試機 或 廠內伺服器（如 NVIDIA H100 / RTX 系列）
+* **GPU 硬體：** 外部測試機 或 廠內伺服器（如 NVIDIA RTX 系列）
 
 ### 1.2 情況 A：在「有網路」環境安裝（或進公司前打包環境）
 請依序執行以下指令建立 Conda 虛擬環境並安裝套件：
@@ -221,7 +221,7 @@ FoundAD/
   # 1. 工程師初篩為正常品、無 Ground Truth 的 5000x5000 圖片資料夾路徑 (保留原始檔名不更動)
   WAFER_POOL_DIR="/path/to/company/engineer_passed_wafers"
 
-  # 2. 公司內部 H100 上的本地 DINOv3 或 DINOv2 .pth 權重路徑
+  # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
   COMPANY_DINO_CKPT="/path/to/company/dinov3_or_dinov2.pth"
   ```
 * **執行指令：**
