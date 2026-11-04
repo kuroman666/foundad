@@ -12,7 +12,7 @@ COMPANY_DINO_CKPT="/你的本地DINOv3權重路徑.pth"
 FAB_RESULT_DIR="./wafer_escape_results/${LAYER_ID}"s"
 
 # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
-COMPANY_DINO_CKPT="/path/to/company/dinov3_or_dinov2.pth"
+COMPANY_DINO_CKPT="/workspace/model_weight/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
 
 # 3. 輸出結果根資料夾 (每次執行會自動在底下建立 <YYYYMMDD_HHMMSS> 時間資料夾，絕不覆蓋)
 FAB_RESULT_DIR="./wafer_escape_results"
@@ -92,11 +92,11 @@ python 2_run_fab_no_gt.py \
     --pool_dir "${WAFER_POOL_DIR}" \
     --ckpt "${COMPANY_DINO_CKPT}" \
     --out_dir "${FAB_RESULT_DIR}" \
-    --data_name "mvtec_fab_${SHOTS}shot" \
+    --data_name "wafer_${LAYER_ID}_${SHOTS}shot" \
     --category "wafer" \
     --app_train "${APP_TRAIN}" \
     --app_test "${APP_TEST}" \
-    --diy_name "fab_wafer" \
+    --diy_name "fab_${LAYER_ID}" \
     --ckpt_step "${CKPT_STEP}" \
     --shots "${SHOTS}" \
     --thresh_mode "${THRESH_MODE}" \
