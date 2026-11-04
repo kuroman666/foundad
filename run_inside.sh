@@ -4,7 +4,12 @@ set -e
 
 # ===================== [進公司只需改這區參數] =====================
 # 1. 工程師初篩為正常品、無 Ground Truth 的 5000x5000 圖片資料夾路徑 (保留原始檔名不更動)
-WAFER_POOL_DIR="/path/to/company/engineer_passed_wafers"
+LAYER_ID="${1:?請指定 Layer}"
+WAFER_POOL_DIR="${2:?請指定圖片資料夾路徑}"
+
+COMPANY_DINO_CKPT="/你的本地DINOv3權重路徑.pth"
+
+FAB_RESULT_DIR="./wafer_escape_results/${LAYER_ID}"s"
 
 # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
 COMPANY_DINO_CKPT="/path/to/company/dinov3_or_dinov2.pth"
