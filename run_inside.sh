@@ -7,15 +7,11 @@ set -e
 LAYER_ID="${1:?請指定 Layer}"
 WAFER_POOL_DIR="${2:?請指定圖片資料夾路徑}"
 
-COMPANY_DINO_CKPT="/你的本地DINOv3權重路徑.pth"
-
+# 各 Layer 獨立輸出
 FAB_RESULT_DIR="./wafer_escape_results/${LAYER_ID}"
 
 # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
 COMPANY_DINO_CKPT="/workspace/model_weight/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
-
-# 3. 輸出結果根資料夾 (每次執行會自動在底下建立 <YYYYMMDD_HHMMSS> 時間資料夾，絕不覆蓋)
-FAB_RESULT_DIR="./wafer_escape_results"
 
 # 4. 模型與動態異常門檻對齊超參數
 SHOTS=4                  # 自動挑選 4 張最純淨的 Golden Image
