@@ -3,7 +3,7 @@
 本專案基於 FoundAD (Few-Shot Anomaly Detection) 架構進行客製化擴充，專為「晶圓廠工程師初篩為正常品、完全無標註（No Ground Truth）之高解析度 Wafer 影像池」設計。系統支援三大核心驗證與部署模式：
 
 * **模式一：有 GT 公開資料集驗證模式（`1_run_public_with_gt.py` / 公司外基準測試）：** 自動完成少樣本抽樣、訓練，並將終端機之 `AUROC_i`、`AUPR_i`、`AUROC_p`、`PRO-AUC` 分數與各階段耗時匯出為 `.txt` 與 `.csv` 報表。
-* **模式二：無 GT 晶圓廠盲池抓漏模式（`2_run_fab_no_gt.py` & `run_inside.sh` / 公司內即插即用）：** 自動透過 DINO 特徵中心度（Medoid Centrality）從無標註圖片池挑出 4 張最純淨的 Golden Image -> 高解析度無損切塊（Tiling）訓練流形預測器 -> 全解析度餘弦權重無縫拼接（Feathering Stitching） -> 晶圓圓周邊緣抑制與微塵濾波 -> 支援 5 種動態統計門檻自動框出可疑瑕疵位置（紅色 Bounding Box）並輸出異常排名表（正常圖片自動略過不輸出）。
+* **模式二：無 GT 晶圓廠盲池抓漏模式（`2_run_fab_no_gt.py`、`run_inside.sh` & `run_all_layers.sh` / 公司內即插即用）：** 自動透過 DINO 特徵中心度（Medoid Centrality）從無標註圖片池挑出 4 張最純淨的 Golden Image -> 高解析度無損切塊（Tiling）訓練流形預測器 -> 全解析度餘弦權重無縫拼接（Feathering Stitching） -> 晶圓圓周邊緣抑制與微塵濾波 -> 支援 5 種動態統計門檻自動框出可疑瑕疵位置（紅色 Bounding Box）並輸出異常排名表（正常圖片自動略過不輸出）。支援單一製程層（`run_inside.sh`）或多製程層批次自動化執行與狀態追蹤（`run_all_layers.sh`），並提供 `fab_tools/3_split_eval_results.py` 進行評估結果拆分整理。
 * **模式三：100% 純正常資料集誤報率（FPR）專項驗證模式（`run_pure_normal_test.sh`）：** 針對完全無瑕疵（0 張異常）之純正常圖片池進行壓力測試，自動驗算整體誤報率（Overall FPR）、扣除 Golden 後誤報率，以及非 Golden 正常圖之分數分佈與 `mean + 1*std / 2*std / 3*std` 門檻參考值。
 
 ---
@@ -84,7 +84,7 @@ else:
 
 ## 2. 專案完整資料夾結構（含自動生成目錄說明）
 
-每次執行實驗時，系統皆會自動建立以當下時間命名的子資料夾（`<YYYYMMDD_HHMMSS>`），**絕不覆蓋歷史實驗結果**：
+每次執行實驗時，系統皆會自動建立以當下時間或製程層（Layer ID）命名的子資料夾（`<YYYYMMDD_HHMMSS>`），**絕不覆蓋歷史實驗結果**：
 
 ```text
 FoundAD/
@@ -93,13 +93,14 @@ FoundAD/
 │   ├── src/
 │   │   ├── AD.py                             # 評估與無 GT 熱力圖推論 (已內嵌 .npy 匯出與畫框 Hook)
 │   │   ├── foundad.py                        # 支援離線載入本地 DINOv2 / DINOv3 權重之視覺模組
-│   │   ├── train.py                          # 流形預測器 (Manifold Predictor) 訓練迴圈
+│   │   ├── train.py                          # 流形預測器訓練迴圈 (含訓練資料夾存在性防呆檢查與錯誤提示)
 │   │   ├── sample.py                         # 有 GT 模式之少樣本抽樣腳本
 │   │   └── utils/synthesis.py                # CutPaste 異常合成模組 (已修正支援 wafer 等自訂類別)
 │   └── main.py                               # FoundAD 主入口程式 (含 DDP 安全釋放機制)
 ├── fab_tools/                                # [晶圓廠專用外掛模組]
 │   ├── auto_golden.py                        # 無 GT 自動計算特徵中心挑選 4 張純淨 Golden Image
-│   └── bbox_visualizer.py                    # 輔助視覺化工具模組
+│   ├── bbox_visualizer.py                    # 輔助視覺化工具模組
+│   └── 3_split_eval_results.py               # 評估與抓漏結果拆分與後處理統計工具
 ├── hub_cache/                                # [離線快取] 存放 facebookresearch_dinov3_main 等本地架構檔
 ├── datasets/                                 # [資料集與自動生成訓練集專區]
 │   ├── mvtec/                                # (Input) 原始 MVTec AD 資料集 (bottle, cable, capsule...)
@@ -113,7 +114,7 @@ FoundAD/
 ├── logs/                                     # [模型權重區] 訓練自動產生的 .pth.tar 權重檔與 params.yaml
 │   ├── mvtec_4shot/dinov3dbug/               # Task 1 有 GT 模式之訓練權重
 │   ├── mvtec_sim_4shot/dinov3sim_escape/     # Task 2/3 外部無 GT 模擬與純正常測試之訓練權重
-│   └── mvtec_fab_4shot/dinov3fab_wafer/       # 公司內實測晶圓池之訓練權重
+│   └── mvtec_fab_4shot*/dinov3fab_wafer*/    # 公司內實測晶圓池之訓練權重 (支援依 Layer ID 獨立命名儲存)
 ├── output/                                   # [外部測試唯一結果出口] 依任務與時間戳記分類存放
 │   ├── 1_public_with_gt/                     # Task 1 有 GT 公開資料集評估結果
 │   │   ├── <YYYYMMDD_HHMMSS>/                # 單次執行專屬目錄 (含 metrics_summary.csv/.txt, segmentation/, log.txt)
@@ -124,32 +125,35 @@ FoundAD/
 │   └── 3_pure_normal_<類別>/                 # Task 3 100% 純正常池誤報率 (FPR) 驗證結果 (bottle, cable...)
 │       ├── <YYYYMMDD_HHMMSS>/                # 單次執行專屬目錄
 │       └── latest_log.txt                    # 最新一次執行的即時日誌連結副本
-├── wafer_escape_results/                     # [公司內唯一結果出口] run_inside.sh 實測 5000x5000 晶圓之輸出根目錄
-│   ├── <YYYYMMDD_HHMMSS>/                    # 單次執行專屬目錄
+├── wafer_escape_results/                     # [公司內唯一結果出口] 實測 5000x5000 晶圓之輸出根目錄 (FAB_RESULT_DIR)
+│   ├── <Layer_ID YYYYMMDD_HHMMSS 或>/        # 單次或各製程層專屬輸出目錄
 │   └── latest_log.txt                        # 最新一次執行的即時日誌連結副本
 ├── 1_run_public_with_gt.py                   # [核心腳本 1] 有 GT 公開資料集抽樣 + 訓練 + 評估自動化腳本
 ├── 2_run_fab_no_gt.py                        # [核心腳本 2] 無 GT 自動挑 Golden + 高解析度切塊訓練 + 縫合濾波畫紅框腳本
 ├── run_outside.sh                            # [執行檔 1] 公司外一鍵測試腳本 (連跑 Task 1 有 GT + Task 2 無 GT 模擬抓漏)
 ├── run_pure_normal_test.sh                   # [執行檔 2] 100% 純正常資料集誤報率 (FPR) 專項驗證腳本
-└── run_inside.sh                             # [執行檔 3] 公司內 5000x5000 晶圓盲池即插即用抓漏腳本
+├── run_inside.sh                             # [執行檔 3] 公司內 5000x5000 晶圓盲池即插即用抓漏腳本 (支援 Layer ID 與目錄參數)
+└── run_all_layers.sh                         # [執行檔 4] 公司內多製程層 (Multi-Layer) 批次自動執行與狀態追蹤腳本
 ```
 
 ---
 
 ## 3. 核心檔案用途、使用方式與 Input / Output 路徑對照總表
 
-以下詳細說明本專案 6 個核心修改與新增檔案的設計目的、輸入來源（Input）、輸出位置（Output）與操作方式：
+以下詳細說明本專案 8 個核心修改與新增檔案的設計目的、輸入來源（Input）、輸出位置（Output）與操作方式：
 
 ### 3.1 檔案一覽與 Input / Output 路徑速查表
 
 | 檔案名稱 | 核心目的與功能 | Input (輸入資料夾 / 檔案) | 中間產物與權重位置 (`datasets/` & `logs/`) | Output (最終結果輸出資料夾) |
 | :--- | :--- | :--- | :--- | :--- |
-| **`1_run_public_with_gt.py`** | **有 GT 公開資料集驗證：** 自動執行 Few-Shot 抽樣、模型訓練與 `mode=AD` 指標驗證，自動統計各階段耗時並匯出報表。 | `./datasets/mvtec/<類別>/` | - 抽樣訓練集：`./datasets/mvtec_4shot/`<br>- 訓練權重：`./logs/mvtec_4shot/dinov3dbug/train-step2000.pth.tar` | `./output/1_public_with_gt/<YYYYMMDD_HHMMSS>/` |
-| **`2_run_fab_no_gt.py`** | **無 GT 晶圓抓漏核心引擎：** 自動挑 4 張 Golden 圖 -> 高解析度切塊訓練 -> 子圖塊推論與 2D 餘弦無縫拼接 -> 晶圓圓周與微塵抑制 -> 動態門檻篩選與畫紅框。 | `--pool_dir` 指定之無標註圖片池（或由 `--mock_from_mvtec` 自動自 MVTec 生成） | - Golden 訓練圖塊：`./datasets/<data_name>/train/<類別>/`<br>- Golden 原圖備份：`./datasets/<data_name>/golden_full_res_backup/<類別>/`<br>- 測試切塊池：`./datasets/<data_name>_tiled_pool/`<br>- 訓練權重：`./logs/<data_name>/dinov3<diy_name>/` | `<out_dir>/<YYYYMMDD_HHMMSS>/` |
+| **`1_run_public_with_gt.py`** | **有 GT 公開資料集驗證：** 自動執行 Few-Shot 抽樣、模型訓練與 `mode=AD` 指標驗證，採用 `shell=False` 安全子程序呼叫，自動統計各階段耗時並匯出報表。 | `./datasets/mvtec/<類別>/` | - 抽樣訓練集：`./datasets/mvtec_4shot/`<br>- 訓練權重：`./logs/mvtec_4shot/dinov3dbug/train-step2000.pth.tar` | `./output/1_public_with_gt/<YYYYMMDD_HHMMSS>/` |
+| **`2_run_fab_no_gt.py`** | **無 GT 晶圓抓漏核心引擎：** 自動挑 4 張 Golden 圖 -> 高解析度切塊訓練 -> 子圖塊推論與 2D 餘弦無縫拼接 -> 晶圓圓周與微塵抑制 -> 動態門檻篩選與畫紅框（全面採用 `shell=False` 安全呼叫）。 | `--pool_dir` 指定之無標註圖片池（或由 `--mock_from_mvtec` 自動自 MVTec 生成） | - Golden 訓練圖塊：`./datasets/<data_name>/train/<類別>/`<br>- Golden 原圖備份：`./datasets/<data_name>/golden_full_res_backup/<類別>/`<br>- 測試切塊池：`./datasets/<data_name>_tiled_pool/`<br>- 訓練權重：`./logs/<data_name>/dinov3<diy_name>/` | `<out_dir>/<YYYYMMDD_HHMMSS>/` |
 | **`run_outside.sh`** | **公司外一鍵綜合測試：** 依序自動執行 Task 1（6 類別有 GT 驗證）與 Task 2（無 GT 混合盲池抓漏驗證），最後印出抓漏率與正常圖分數分佈統計。 | `./datasets/mvtec/` | - `./datasets/mvtec_4shot/`<br>- `./datasets/sim_fab_capsule_pool/`<br>- `./datasets/mvtec_sim_4shot/`<br>- `./logs/mvtec_4shot/` & `./logs/mvtec_sim_4shot/` | - Task 1: `./output/1_public_with_gt/<時間戳>/`<br>- Task 2: `./output/2_fab_no_gt/<時間戳>/` |
 | **`run_pure_normal_test.sh`** | **100% 純正常池誤報率 (FPR) 驗證：** 自動從 `test/good` 建立 0 瑕疵純正常盲池（或讀取自訂純正常晶圓池），驗證防誤報濾波與動態門檻之穩定性。 | `./datasets/mvtec/<類別>/test/good/`（或 `CUSTOM_PURE_NORMAL_DIR`） | - 純正常盲池：`./datasets/sim_pure_normal_<類別>_pool/`<br>- 訓練圖塊：`./datasets/mvtec_sim_4shot/`<br>- 權重：`./logs/mvtec_sim_4shot/dinov3sim_escape/` | `./output/3_pure_normal_<類別>/<YYYYMMDD_HHMMSS>/` |
-| **`run_inside.sh`** | **公司內 5000x5000 晶圓實測部署：** 強制啟用斷網離線模式，讀取廠內本地 DINO 權重與工程師初篩過之無 GT 晶圓池，執行 512x512 原生切塊抓漏。 | - 圖片池：`WAFER_POOL_DIR`<br>- 本地權重：`COMPANY_DINO_CKPT`<br>- 本地架構：`./hub_cache/` | - Golden 圖塊：`./datasets/mvtec_fab_4shot/train/wafer/`<br>- 測試切塊池：`./datasets/mvtec_fab_4shot_tiled_pool/`<br>- 權重：`./logs/mvtec_fab_4shot/dinov3fab_wafer/` | `./wafer_escape_results/<YYYYMMDD_HHMMSS>/` |
-| **`foundad/src/utils/synthesis.py`** | **CutPaste 合成異常前景遮罩生成：** 支援 MVTec/VisA 原生類別，並對 `wafer` 等自訂類別回傳正確 `(H, W)` 全前景遮罩。 | 訓練階段載入之 Golden 圖片 Tensor `(C, H, W)` | 記憶體內即時合成異常 Patch 供 `train.py` 計算 Loss | 無獨立檔案輸出（直接影響訓練權重品質） |
+| **`run_inside.sh`** | **公司內 5000x5000 晶圓實測部署：** 強制啟用斷網離線模式，支援傳入 Layer ID 與 `WAFER_POOL_DIR` 參數，自動對齊各層權重路徑、輸出資料命名與 `FAB_RESULT_DIR`，執行 512x512 原生切塊抓漏。 | - 圖片池：`WAFER_POOL_DIR`（支援依 Layer ID 傳入）<br>- 本地權重：`COMPANY_DINO_CKPT`<br>- 本地架構：`./hub_cache/` | - Golden 圖塊：`./datasets/<data_name>/train/wafer/`<br>- 測試切塊池：`./datasets/<data_name>_tiled_pool/`<br>- 權重：`./logs/<data_name>/dinov3<diy_name>/` | `FAB_RESULT_DIR`（預設 `./wafer_escape_results/` 下對應子目錄） |
+| **`run_all_layers.sh`** | **公司內多製程層 (Multi-Layer) 批次抓漏與狀態追蹤：** 自動迴圈遍歷多個晶圓 Layer 識別碼，依序呼叫執行抓漏流程並即時記錄各 Layer 執行狀態（成功/失敗/耗時）。 | 多個 Layer 對應之晶圓盲池目錄 | 各 Layer 獨立之 `datasets/` 切塊目錄與 `logs/` 訓練權重 | 各 Layer 對應之 `FAB_RESULT_DIR` 輸出目錄與執行狀態彙整 |
+| **`fab_tools/3_split_eval_results.py`** | **評估與抓漏結果拆分工具：** 針對模型評估或抓漏產出之報表與結果進行拆分、分類與統計後處理。 | 評估或抓漏產出之結果目錄 / 報表檔案 | 無（直接讀取既有結果進行解析） | 拆分後之子集報表與分類統計結果 |
+| **`foundad/src/train.py` & `synthesis.py`** | **訓練防呆驗證與自訂類別前景遮罩：** `train.py` 於啟動前強制驗證訓練資料夾存在性並格式化 `AssertionError` 提示；`synthesis.py` 支援 `wafer` 等自訂類別回傳正確 `(H, W)` 全前景遮罩。 | 訓練階段載入之 Golden 圖片資料夾與 Tensor `(C, H, W)` | 記憶體內即時合成異常 Patch 供 `train.py` 計算 Loss | 無獨立檔案輸出（確保訓練流程穩定與權重品質） |
 
 ---
 
@@ -159,6 +163,7 @@ FoundAD/
 * **功能亮點：**
   * 自動解除抽樣圖片唯讀權限（防止重新抽樣時發生 `PermissionError`）。
   * 新增 `--max_batch_size`（預設 16）自動限制多類別聯合訓練時的 Batch Size 上限，防止高解析度下 GPU OOM。
+  * 子程序呼叫（`subprocess`）全面重構為參數陣列搭配 `shell=False`，避免路徑空白或特殊字元引發 Shell 解析錯誤並提升安全性。
   * 自動對齊最新訓練步數權重（`find_latest_ckpt_info`），並精確記錄「少樣本抽樣耗時」、「模型訓練耗時」、「推論耗時」與「全程總耗時」。
 * **單獨使用指令：**
   ```bash
@@ -194,9 +199,10 @@ FoundAD/
      * `percentile`：自動對齊盲池分位數（`--auto_percentile`，如 `95.0` 或 `98.0`），並以 `--min_threshold` 保底。
      * `top_k`：自動對齊盲池第 $K$ 高分（搭配 `--top_k` 限制最多只輸出前 $K$ 張最可疑圖片），並以 `--min_threshold` 保底。
      * `fixed`：直接使用 `--threshold` 作為固定絕對門檻。
-  4. **智慧紅框收斂與「只輸出異常圖」機制：**
+  4. **智慧紅框收斂、「只輸出異常圖」與安全子程序呼叫機制：**
      * 透過峰值自適應核心收斂（`--core_ratio 0.55`）與最小有效缺陷面積過濾（`--min_area_ratio 0.00012`），自動合併重疊碎片框。
      * **僅有超過有效門檻且具備有效紅框的異常圖片才會輸出影像檔**，其餘正常圖片於報表中標記為 `PASS_SKIPPED` 或 `PASS_NOISE_FILTERED` 並直接略過不輸出圖片，大幅節省磁碟空間與工程師複檢時間。
+     * 內部訓練與推論指令呼叫統一重構為 `subprocess` 參數列表（`shell=False`），提升跨環境執行穩定性。
 
 #### (3) `run_outside.sh` — 公司外一鍵測試腳本（Task 1 有 GT + Task 2 無 GT 模擬抓漏）
 * **用途：** 在外部環境一次驗證「公開資料集指標」與「無 GT 混入 8 張隱藏 Escape 瑕疵的抓漏能力」。執行完畢後會自動解析最新 CSV 報表，在終端機印出 **成功抓出瑕疵張數、正常圖誤報張數、非 Golden 正常圖分數分佈（Max / P99 / P95 / Median / Mean / Std）以及 `mean + 1*std / 2*std / 3*std` 門檻參考值**。
@@ -214,19 +220,44 @@ FoundAD/
   bash run_pure_normal_test.sh
   ```
 
-#### (5) `run_inside.sh` — 公司內 $5000 \times 5000$ 晶圓盲池即插即用腳本
+#### (5) `run_inside.sh` — 公司內 $5000 \times 5000$ 晶圓盲池即插即用腳本（支援單層與參數化呼叫）
 * **用途：** 進公司部署的主力腳本。已預設 `TILE_SIZE=512`（1:1 對應模型原生輸入解析度，零壓縮失真）、`WAFER_EDGE_MODE="on"`（強制開啟晶圓圓周倒角反光抑制）、`HF_HUB_OFFLINE=1`（完全斷網模式）。
-* **進公司只需打開 `run_inside.sh` 修改最上方 2 個路徑變數：**
-  ```bash
-  # 1. 工程師初篩為正常品、無 Ground Truth 的 5000x5000 圖片資料夾路徑 (保留原始檔名不更動)
-  WAFER_POOL_DIR="/path/to/company/engineer_passed_wafers"
+* **功能亮點：**
+  * 支援透過命令列參數或環境變數傳入製程層識別碼（`LAYER_ID`）與晶圓圖片池路徑（`WAFER_POOL_DIR`）。
+  * 自動根據 Layer ID 對齊專屬權重儲存路徑（Checkpoint Path）、資料集命名（Output Data Naming）與最終結果輸出目錄 `FAB_RESULT_DIR`，避免不同 Layer 之間互相覆蓋。
+* **使用方式：**
+  * **方式 A（直接修改腳本內預設變數後單獨執行）：**
+    ```bash
+    # 1. 工程師初篩為正常品、無 Ground Truth 的 5000x5000 圖片資料夾路徑
+    WAFER_POOL_DIR="/path/to/company/engineer_passed_wafers"
 
-  # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
-  COMPANY_DINO_CKPT="/path/to/company/dinov3_or_dinov2.pth"
-  ```
+    # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
+    COMPANY_DINO_CKPT="/path/to/company/dinov3_or_dinov2.pth"
+    ```
+    執行：
+    ```bash
+    bash run_inside.sh
+    ```
+  * **方式 B（帶入 Layer ID 與盲池路徑參數執行，或由 `run_all_layers.sh` 自動呼叫）：**
+    ```bash
+    bash run_inside.sh <LAYER_ID> <WAFER_POOL_DIR>
+    ```
+
+#### (6) `run_all_layers.sh` — 公司內多製程層（Multi-Layer）批次執行與狀態追蹤腳本
+* **用途：** 當廠內有多個晶圓製程層（Layers）需要連續進行無 GT 盲池抓漏時，透過此腳本可一次排程跑完所有指定 Layer，無須人工逐層等待與手動切換路徑。
+* **功能亮點：**
+  * 內建修正後之各製程層識別碼（Layer Identifiers）清單，自動依序帶入對應之 `LAYER_ID` 與 `WAFER_POOL_DIR` 呼叫執行流程。
+  * 具備各 Layer 執行狀態追蹤機制（記錄每層之開始/結束時間、成功或失敗狀態碼），即使單一 Layer 因路徑缺失報錯也能清楚掌握各層執行進度。
 * **執行指令：**
   ```bash
-  bash run_inside.sh
+  bash run_all_layers.sh
+  ```
+
+#### (7) `fab_tools/3_split_eval_results.py` — 評估與抓漏結果拆分工具
+* **用途：** 提供評估報表與抓漏輸出結果之後處理拆分功能，方便將批次測試或多條件實驗之輸出結果依指定維度進行切分與彙整分析。
+* **執行指令：**
+  ```bash
+  python fab_tools/3_split_eval_results.py --help
   ```
 
 ---
@@ -248,11 +279,14 @@ bash run_outside.sh
 # 2. 100% 純正常資料集誤報率 (FPR) 驗證
 bash run_pure_normal_test.sh
 
-# 3. 公司內 5000x5000 無標註晶圓池抓漏實測
+# 3. 公司內單一 Layer 5000x5000 無標註晶圓池抓漏實測
 bash run_inside.sh
+
+# 4. 公司內多製程層 (Multi-Layer) 批次自動化抓漏實測
+bash run_all_layers.sh
 ```
 
-### 4.2 方式二：使用 nohup 背景執行（適合 5000x5000 大型圖片池、防止 SSH 斷線中斷）
+### 4.2 方式二：使用 nohup 背景執行（適合 5000x5000 大型圖片池或多 Layer 連跑、防止 SSH 斷線中斷）
 在連線至實驗室或公司伺服器時，建議使用 `nohup` 將任務掛在背景執行：
 
 ```bash
@@ -262,8 +296,11 @@ nohup ./run_outside.sh > train_outside.log 2>&1 &
 # 100% 純正常池 FPR 測試背景執行
 nohup ./run_pure_normal_test.sh > pure_normal_test.log 2>&1 &
 
-# 公司內實測背景執行
+# 公司內單一 Layer 實測背景執行
 nohup ./run_inside.sh > train_inside.log 2>&1 &
+
+# 公司內多 Layer 批次實測背景執行
+nohup ./run_all_layers.sh > train_all_layers.log 2>&1 &
 ```
 
 #### 常用進度監控指令：
@@ -272,6 +309,7 @@ nohup ./run_inside.sh > train_inside.log 2>&1 &
   tail -f ./output/2_fab_no_gt/latest_log.txt
   # 或在公司內：
   tail -f ./wafer_escape_results/latest_log.txt
+  tail -f train_all_layers.log
   ```
 * **確認背景程序與 GPU 狀態：**
   ```bash
@@ -289,7 +327,7 @@ THRESH_MODE="mean_std"        # 例如改測 mean + k*std 統計門檻模式 (�
 SIGMA_K=3.0                   # 調整標準差倍數 k (調小抓更細微瑕疵，調大更嚴格防誤報)
 SKIP_TRAIN="--skip_train"     # 關鍵：設為 "--skip_train" 即可跳過訓練，直接載入既有權重推論畫框！
 ```
-接著再次執行 `bash run_inside.sh`，即可在極短時間內產出全新時間戳記資料夾與新門檻下的紅框結果。
+接著再次執行 `bash run_inside.sh`（或 `bash run_all_layers.sh`），即可在極短時間內產出全新時間戳記資料夾與新門檻下的紅框結果。
 
 #### 作法 B：直接使用 Python 指令單獨重跑無 GT 推論
 ```bash
@@ -320,9 +358,9 @@ python 2_run_fab_no_gt.py \
 * **Task 2 & Task 3：外部無 GT 模擬盲池與純正常池測試（`run_outside.sh` / `run_pure_normal_test.sh`）**
   * 路徑：`./logs/mvtec_sim_4shot/dinov3sim_escape/train-step2000.pth.tar`
   * 對接權重：`./logs/mvtec_sim_4shot/dinov3sim_escape/pretrained.pth.tar`（由 `2_run_fab_no_gt.py` 自動複製對接，供 `mode=demo` 推論讀取）
-* **公司內晶圓實測（`run_inside.sh`）**
-  * 路徑：`./logs/mvtec_fab_4shot/dinov3fab_wafer/train-step2000.pth.tar`
-  * 對接權重：`./logs/mvtec_fab_4shot/dinov3fab_wafer/pretrained.pth.tar`
+* **公司內晶圓實測（`run_inside.sh` / `run_all_layers.sh`）**
+  * 路徑：`./logs/<依 Layer 命名之 data_name>/dinov3<diy_name>/train-step2000.pth.tar`
+  * 對接權重：`./logs/<依 Layer 命名之 data_name>/dinov3<diy_name>/pretrained.pth.tar`
 
 可使用以下指令快速確認權重檔是否已生成：
 ```bash
@@ -333,7 +371,7 @@ ls -lh ./logs/*/*/*.pth.tar
 
 ## 6. 檢驗測試結果與輸出報表說明 (`./output/` 與 `./wafer_escape_results/`)
 
-每次執行都會在對應的輸出根目錄下建立 `<YYYYMMDD_HHMMSS>/` 時間戳記資料夾：
+每次執行都會在對應的輸出根目錄（如 `FAB_RESULT_DIR`）下建立專屬子資料夾：
 
 ### 6.1 有 GT 公開資料集結果：`./output/1_public_with_gt/<YYYYMMDD_HHMMSS>/`
 
@@ -344,7 +382,7 @@ ls -lh ./logs/*/*/*.pth.tar
 | `segmentation/<類別名>/` | **四合一視覺化對照圖：** `[Original 原圖 -> GT 真實瑕疵遮罩 -> Anomaly Map 預測熱力圖 -> Segmentation 二值化預測結果]` |
 | `log.txt` | 本次執行的完整終端機輸出日誌（外層 `./output/1_public_with_gt/latest_log.txt` 會同步保留最新一次紀錄）。 |
 
-### 6.2 無 GT 盲池抓漏與純正常驗證結果：`./output/2_fab_no_gt/<時間戳>/`、`./output/3_pure_normal_<類別>/<時間戳>/` 或廠內 `./wafer_escape_results/<時間戳>/`
+### 6.2 無 GT 盲池抓漏與純正常驗證結果：`./output/2_fab_no_gt/<時間戳>/`、`./output/3_pure_normal_<類別>/<時間戳>/` 或廠內 `./wafer_escape_results/<Layer或時間戳>/`
 
 這是交給公司複檢與寫入研究報告的核心產出目錄：
 
@@ -353,7 +391,7 @@ ls -lh ./logs/*/*/*.pth.tar
 | `anomaly_images/` | **【核心產出 1】異常紅框三合一對照圖（僅輸出超過門檻之異常圖）：**<br>檔名格式為 `Rank001_Score0.3450_Box01_<原檔名>.png`（依異常分數由高至低排序，打開資料夾第一張即為最可疑的 Escape 晶圓）。<br>頂部附帶黃字狀態橫幅（顯示原檔名、分數、有效門檻、紅框數），下方由左至右為：`[左：原始圖 -> 中：純化後異常熱力疊圖 -> 右：紅色 Bounding Box 瑕疵定位框]`。 |
 | `anomaly_images/full_res_bbox_only/` | **【核心產出 2】1:1 原始全解析度紅框定位圖：**<br>維持原圖 $100\%$ 原始解析度（例如 $5000 \times 5000$ 不縮放），僅在原圖畫上紅色瑕疵框與局部最高分標籤，供工程師放大檢視微米級缺陷細節。 |
 | `escape_ranking_report.txt` | **無 GT 異常抓漏總排名與統計報表（純文字版）：**<br>1. 標頭完整記錄本次門檻模式、有效門檻、非 Golden 正常圖分數分佈（`Max`, `P99`, `P95`, `Median`, `Mean`, `Std`）與 `mean + 1*std / 2*std / 3*std` 門檻參考值。<br>2. 表格依序排列所有圖片之 `Rank`、`Original_Filename`、`Status`（`ANOMALY` / `GOLDEN_PASS` / `PASS_SKIPPED` / `PASS_NOISE_FILTERED`）、`Max_Score`、`BBoxes` 數量與對應輸出檔名。<br>3. 檔案末尾自動附加訓練與推論各子階段的詳細計時總結。 |
-| `escape_ranking_report.csv` | 同上之 CSV 報表（含 `Max_Score`、`TopK_Mean_Score`、`Num_BBoxes`、`Resolution` 等欄位），方便匯入 Excel 篩選分析。 |
+| `escape_ranking_report.csv` | 同上之 CSV 報表（含 `Max_Score`、`TopK_Mean_Score`、`Num_BBoxes`、`Resolution` 等欄位），方便匯入 Excel 篩選分析或交由 `fab_tools/3_split_eval_results.py` 進一步拆分處理。 |
 | `selected_4_golden_images.txt` | **自動挑選之 Golden Image 紀錄：** 列出 Step 1 從無標註圖片池自動算出的前 4 名最純淨中心樣本原檔名與特徵中心度距離分數。 |
 | `amap_npy/` | **異常樣本之全解析度熱力圖矩陣（`.npy`）：** 儲存超過門檻之異常圖片縫合且濾波後的 2D 矩陣（若解析度 $> 2048$ 自動轉存 `float16` 節省空間）。 |
 | `tile_manifest.json` | 記錄每張測試原圖切分為高解析度子圖塊之 `(y, x, h, w)` 座標映射表。 |
@@ -395,3 +433,9 @@ ls -lh ./logs/*/*/*.pth.tar
 * **解法：**
   * 清除殘留程序：`pkill -f "foundad/main.py"`
   * 或在呼叫 `foundad/main.py` 時加上自訂 Port 參數：`dist.master_port=40125`。
+
+### Q5：執行訓練時報錯 `AssertionError` 提示訓練資料夾不存在？
+* **原因：** `foundad/src/train.py` 已內建訓練目錄存在性檢查（Directory Existence Validation），若 Step 1 抽樣或 Golden 切塊尚未生成對應之 `./datasets/<data_name>/train/<category>` 目錄，或傳入之 `LAYER_ID` / `WAFER_POOL_DIR` 路徑有誤導致前處理未產出訓練圖塊，便會提前攔截並拋出格式化之 `AssertionError`。
+* **解法：**
+  1. 檢查 `run_inside.sh` 或 `run_all_layers.sh` 中指定的 `WAFER_POOL_DIR` 是否存在且包含有效圖片。
+  2. 若使用了 `--skip_sample`，請確認 `./datasets/<data_name>/train/` 下確實已有先前抽樣或切分好的訓練圖片。
