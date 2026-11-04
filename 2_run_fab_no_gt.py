@@ -1,4 +1,5 @@
 # 檔案位置: FoundAD/2_run_fab_no_gt.py (全選覆蓋並存檔)
+import shlex
 import os
 import re
 import gc
@@ -63,8 +64,13 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
             f.flush()
 
         process = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=run_env
-        )
+            shelex.split(cmdshell=False,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+    bufsize=1,
+    env=run_env
+)
         for line in process.stdout:
             print(line, end="", flush=True)
             for f in files_to_write:
