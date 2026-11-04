@@ -63,7 +63,7 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
             f.flush()
 
         process = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=run_env
+            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=run_env
         )
         for line in process.stdout:
             print(line, end="", flush=True)
