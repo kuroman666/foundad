@@ -9,7 +9,7 @@ WAFER_POOL_DIR="${2:?請指定圖片資料夾路徑}"
 
 COMPANY_DINO_CKPT="/你的本地DINOv3權重路徑.pth"
 
-FAB_RESULT_DIR="./wafer_escape_results/${LAYER_ID}"s"
+FAB_RESULT_DIR="./wafer_escape_results/${LAYER_ID}"
 
 # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
 COMPANY_DINO_CKPT="/workspace/model_weight/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
