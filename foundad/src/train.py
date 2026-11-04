@@ -44,7 +44,8 @@ class Trainer:
 
         # ---------- data ----------
         dcfg = args["data"]
-        assert dcfg["dataset"] in dcfg["data_name"] # check if the dataset aligns with the few-shot folder
+       assert os.path.isdir(dcfg["train_root"]), \
+    f"Training directory not found: {dcfg['train_root']}"older
         _, self.loader, self.sampler = build_dataloader(
             mode="train",
             root=dcfg["train_root"],
