@@ -43,7 +43,7 @@ class Trainer:
         logger.info(f"Loss mode {self.loss_mode}")
 
         # ---------- data ----------
-               dcfg = args["data"]
+        dcfg = args["data"]
         assert os.path.isdir(dcfg["train_root"]), (
             f"Training directory not found: {dcfg['train_root']}"
         )
