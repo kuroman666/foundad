@@ -64,7 +64,8 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
             f.flush()
 
         process = subprocess.Popen(
-            shelex.split(cmdshell=False,
+    shlex.split(cmd),
+    shell=False,
     stdout=subprocess.PIPE,
     stderr=subprocess.STDOUT,
     text=True,
