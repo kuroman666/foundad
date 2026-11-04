@@ -19,7 +19,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from fab_tools.auto_golden import select_golden_images, IMG_EXTENSIONS
+from fab_tools.auto_golden import select_golden_images, scan_pool_images, IMG_EXTENSIONS
 
 
 def format_duration(seconds: float) -> str:
@@ -63,7 +63,7 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
             f.flush()
 
         process = subprocess.Popen(
-            cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=run_env
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=run_env
         )
         for line in process.stdout:
             print(line, end="", flush=True)
@@ -112,21 +112,19 @@ def safe_copy(src: str, dst: str):
 
 
 def compute_pool_signature(pool_dir: str) -> str:
-    """計算測試盲池所有有效影像之 (檔名, 檔案大小) MD5 指紋，用於判斷資料池是否變動。"""
+    """遞迴計算測試盲池所有有效影像之 (相對路徑, 檔案大小) MD5 指紋，用於判斷資料池是否變動。"""
     if not os.path.isdir(pool_dir):
         return ""
-    img_files = sorted([
-        f for f in os.listdir(pool_dir) if f.lower().endswith(IMG_EXTENSIONS)
-    ])
+    img_paths = scan_pool_images(pool_dir)
     h = hashlib.md5()
     h.update(os.path.abspath(pool_dir).encode("utf-8"))
-    for fname in img_files:
-        fpath = os.path.join(pool_dir, fname)
+    for fpath in img_paths:
+        rel_path = os.path.relpath(fpath, pool_dir).replace("\\", "/")
         try:
             sz = os.path.getsize(fpath)
         except OSError:
             sz = 0
-        h.update(f"{fname}:{sz};".encode("utf-8"))
+        h.update(f"{rel_path}:{sz};".encode("utf-8"))
     return h.hexdigest()
 
 
@@ -444,18 +442,16 @@ def prepare_tiled_test_pool(
     log_files: List[str],
 ) -> Dict:
     """
-    將測試盲池中的所有圖片切分為重疊子圖塊，並確保 tiled_pool_dir 內只有純圖片 (.png)，
-    同時將座標映射表儲存於 run_out_dir 與持久化快取 cached_manifest_path 中。
+    遞迴搜尋測試盲池 (含所有子資料夾) 中的所有圖片並切分為重疊子圖塊，
+    確保 tiled_pool_dir 內只有純圖片 (.png)，同時將座標映射表儲存於 run_out_dir 與持久化快取中。
     """
     safe_rmtree(tiled_pool_dir)
     os.makedirs(tiled_pool_dir, exist_ok=True)
 
     stride = max(1, tile_size - tile_overlap)
-    img_files = sorted([
-        f for f in os.listdir(pool_dir) if f.lower().endswith(IMG_EXTENSIONS)
-    ])
-    if not img_files:
-        raise FileNotFoundError(f"在 {pool_dir} 中找不到任何圖片！")
+    img_paths = scan_pool_images(pool_dir)
+    if not img_paths:
+        raise FileNotFoundError(f"在 {pool_dir} (含子資料夾) 中找不到任何圖片！")
 
     manifest = {
         "pool_signature": pool_signature,
@@ -467,9 +463,11 @@ def prepare_tiled_test_pool(
     total_tiles = 0
     skipped_bg_tiles = 0
 
-    for fname in img_files:
-        fpath = os.path.join(pool_dir, fname)
-        stem = os.path.splitext(fname)[0]
+    for fpath in img_paths:
+        rel_fname = os.path.relpath(fpath, pool_dir).replace("\\", "/")
+        rel_no_ext = os.path.splitext(rel_fname)[0]
+        stem = re.sub(r"[\\/]+", "__", rel_no_ext)
+
         img = load_image_rgb_uint8(fpath)
         h, w = img.shape[:2]
 
@@ -523,7 +521,7 @@ def prepare_tiled_test_pool(
             })
             total_tiles += 1
 
-        manifest["images"][fname] = {
+        manifest["images"][rel_fname] = {
             "stem": stem,
             "path": os.path.abspath(fpath),
             "height": int(h),
@@ -534,7 +532,7 @@ def prepare_tiled_test_pool(
 
     gc.collect()
     manifest["total_tiles"] = total_tiles
-    manifest["num_images"] = len(img_files)
+    manifest["num_images"] = len(img_paths)
 
     manifest_path = os.path.join(manifest_save_dir, "tile_manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as f:
@@ -545,7 +543,7 @@ def prepare_tiled_test_pool(
         safe_copy(manifest_path, cached_manifest_path)
 
     log_and_print(
-        f"[Tiling-Test] 已將 {len(img_files)} 張原圖準備為 {total_tiles} 張推論圖塊 "
+        f"[Tiling-Test] 已遞迴將 {len(img_paths)} 張原圖準備為 {total_tiles} 張推論圖塊 "
         f"(自動跳過 {skipped_bg_tiles} 張純背景角落塊) -> {os.path.abspath(tiled_pool_dir)}",
         log_files,
     )
@@ -1133,7 +1131,7 @@ def stitch_and_filter_anomalies(
     golden_maps: List[np.ndarray] = []
     if not raw_score_mode:
         for fname, meta in manifest["images"].items():
-            if fname in golden_set:
+            if fname in golden_set or os.path.basename(fname) in golden_set:
                 g_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap)
                 golden_maps.append(g_amap)
 
@@ -1160,6 +1158,7 @@ def stitch_and_filter_anomalies(
     non_golden_normal_scores = []
 
     for idx, (fname, meta) in enumerate(manifest["images"].items(), 1):
+        is_golden_img = (fname in golden_set) or (os.path.basename(fname) in golden_set)
         raw_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap)
         raw_flat = raw_amap.reshape(-1)
         raw_single_max = float(np.max(raw_flat))
@@ -1174,7 +1173,7 @@ def stitch_and_filter_anomalies(
             wafer_edge_mode=wafer_edge_mode,
             wafer_edge_margin=wafer_edge_margin,
             speckle_filter_ratio=speckle_filter_ratio,
-            golden_spatial_ref=golden_spatial_ref if fname not in golden_set else None,
+            golden_spatial_ref=golden_spatial_ref if not is_golden_img else None,
             golden_tol_weight=0.35,
         )
         ref_flat = refined_amap.reshape(-1)
@@ -1192,11 +1191,11 @@ def stitch_and_filter_anomalies(
         top_k_count = max(20, int(active_flat.size * 0.0005))
         top_k_score = float(np.mean(np.partition(active_flat, -top_k_count)[-top_k_count:]))
 
-        if fname in golden_set:
+        if is_golden_img:
             golden_max_scores.append(active_max_score)
         else:
             non_golden_all_scores.append(active_max_score)
-            if not fname.startswith("escape_"):
+            if not os.path.basename(fname).startswith("escape_"):
                 non_golden_normal_scores.append(active_max_score)
 
         cache_npy_path = os.path.join(refined_cache_dir, f"{idx:05d}_{meta['stem']}.npy")
@@ -1274,7 +1273,7 @@ def stitch_and_filter_anomalies(
         filter_delta = item["filter_delta"]
         top_k_score = item["top_k_score"]
         h, w = meta["height"], meta["width"]
-        is_golden = fname in golden_set
+        is_golden = (fname in golden_set) or (os.path.basename(fname) in golden_set)
 
         if max_score < effective_threshold:
             if cache_npy_path and os.path.exists(cache_npy_path):
@@ -1382,7 +1381,8 @@ def stitch_and_filter_anomalies(
         hm_color = cv2.applyColorMap((norm_map * 255).astype(np.uint8), cv2.COLORMAP_JET)
         overlay_bgr = cv2.addWeighted(orig_bgr, 0.55, hm_color, 0.45, 0)
 
-        prefixed_img_name = f"Rank{rank_idx:03d}_Score{max_score:.4f}_Box{len(bboxes):02d}_{fname}"
+        safe_out_fname = re.sub(r"[\\/]+", "__", fname)
+        prefixed_img_name = f"Rank{rank_idx:03d}_Score{max_score:.4f}_Box{len(bboxes):02d}_{safe_out_fname}"
 
         fullres_out_path = os.path.join(anomaly_fullres_bbox_dir, prefixed_img_name)
         cv2.imwrite(fullres_out_path, bbox_canvas)
@@ -1434,7 +1434,7 @@ def stitch_and_filter_anomalies(
     # 計算非 Golden 正常圖之「濾波後 vs 未濾波 Raw」分數分佈對照
     non_golden_recs = [r for r in ranking_records if not r["status"].startswith("GOLDEN")]
     non_golden_normal_recs = [
-        r for r in non_golden_recs if not r["filename"].startswith("escape_")
+        r for r in non_golden_recs if not os.path.basename(r["filename"]).startswith("escape_")
     ]
     target_recs = non_golden_normal_recs if non_golden_normal_recs else non_golden_recs
     if not target_recs:
@@ -1647,10 +1647,7 @@ def main():
     )
 
     if args.mock_from_mvtec:
-        existing_pool_imgs = (
-            [f for f in os.listdir(args.pool_dir) if f.lower().endswith(IMG_EXTENSIONS)]
-            if os.path.isdir(args.pool_dir) else []
-        )
+        existing_pool_imgs = scan_pool_images(args.pool_dir) if os.path.isdir(args.pool_dir) else []
         if args.skip_train and existing_pool_imgs and not args.force_infer:
             log_and_print(
                 f"[⚡ 模擬無GT盲池快取命中] 已設定 --skip_train，直接沿用既有 {len(existing_pool_imgs)} 張盲池圖片 "
@@ -1713,7 +1710,9 @@ def main():
             report_dir=run_out_dir,
         )
         golden_select_sec = time.perf_counter() - t_golden_start
-        golden_filenames = [os.path.basename(p) for p in golden_paths]
+        golden_filenames = [
+            os.path.relpath(p, args.pool_dir).replace("\\", "/") for p in golden_paths
+        ]
         log_and_print(
             f"[⏱️ 計時] Step 1 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
             log_files,

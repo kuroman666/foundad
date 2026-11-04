@@ -12,6 +12,19 @@ from torchvision import transforms
 IMG_EXTENSIONS = (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
 
 
+def scan_pool_images(pool_dir: str):
+    """遞迴搜尋資料夾與所有子資料夾內的圖片，回傳排序後的完整路徑清單。"""
+    if not os.path.isdir(pool_dir):
+        return []
+    img_paths = []
+    for root, dirs, files in os.walk(pool_dir):
+        dirs.sort()
+        for f in sorted(files):
+            if f.lower().endswith(IMG_EXTENSIONS) and not f.startswith("."):
+                img_paths.append(os.path.join(root, f))
+    return sorted(img_paths)
+
+
 def load_pil_rgb_uint8(img_path: str) -> Image.Image:
     """安全讀取 8-bit / 16-bit TIFF 或單通道灰階圖，統一正規化為 8-bit RGB PIL Image。"""
     with Image.open(img_path) as pil_img:
@@ -101,17 +114,11 @@ def inspect_and_extract_patch_proj(ckpt_path, device):
 
 
 @torch.no_grad()
-def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4, max_sample=300, report_dir=None):
+def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4, report_dir=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    all_imgs = sorted([
-        os.path.join(pool_dir, f) for f in os.listdir(pool_dir)
-        if f.lower().endswith(IMG_EXTENSIONS)
-    ])
+    all_imgs = scan_pool_images(pool_dir)
     if len(all_imgs) < shots:
-        raise ValueError(f"資料夾內圖片數量 ({len(all_imgs)}) 少於所需的 shots ({shots})！")
-
-    rng = np.random.default_rng(42)
-    sample_imgs = rng.choice(all_imgs, size=min(len(all_imgs), max_sample), replace=False).tolist()
+        raise ValueError(f"資料夾 (含子資料夾) 內圖片數量 ({len(all_imgs)}) 少於所需的 shots ({shots})！")
 
     proj_conv, qkv_weights, patch_size = inspect_and_extract_patch_proj(ckpt_path, device)
     img_size = 518 if patch_size == 14 else 512
@@ -122,8 +129,8 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
     ])
 
     features, valid_paths = [], []
-    print(f"[Auto-Golden] 正在從 {len(sample_imgs)} 張無標註圖片提取特徵以尋找純淨中心點...")
-    for path in sample_imgs:
+    print(f"[Auto-Golden] 遞迴掃描共找到 {len(all_imgs)} 張圖片，正在從全部 {len(all_imgs)} 張無標註圖片提取特徵以尋找純淨中心點...")
+    for path in all_imgs:
         try:
             img = load_pil_rgb_uint8(path)
             x = transform(img).unsqueeze(0).to(device)
@@ -141,10 +148,13 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
         except Exception as e:
             print(f"  [略過損毀圖片] {path}: {e}")
 
+    if len(valid_paths) < shots:
+        raise ValueError(f"有效可讀取圖片數量 ({len(valid_paths)}) 少於所需的 shots ({shots})！")
+
     feats_tensor = torch.cat(features, dim=0)
     sim_matrix = torch.mm(feats_tensor, feats_tensor.t()).numpy()
     np.fill_diagonal(sim_matrix, 0.0)
-    centrality_scores = sim_matrix.sum(axis=1) / (len(valid_paths) - 1)
+    centrality_scores = sim_matrix.sum(axis=1) / max(1, len(valid_paths) - 1)
 
     sorted_indices = np.argsort(centrality_scores)[::-1]
     selected_indices = sorted_indices[:shots]
@@ -164,7 +174,8 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
             ext = os.path.splitext(src_path)[1].lower()
             dst_path = os.path.join(dest_dir, f"{i:03d}{ext}")
             shutil.copy2(src_path, dst_path)
-            log_line = f"Golden #{i+1} (-> {i:03d}{ext}): {os.path.basename(src_path)} | Centrality: {score:.6f}"
+            rel_name = os.path.relpath(src_path, pool_dir).replace("\\", "/")
+            log_line = f"Golden #{i+1} (-> {i:03d}{ext}): {rel_name} | Centrality: {score:.6f}"
             print("  " + log_line)
             f.write(log_line + "\n")
 
