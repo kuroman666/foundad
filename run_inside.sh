@@ -4,11 +4,12 @@ set -e
 
 # ===================== [進公司只需改這區參數] =====================
 # 1. 工程師初篩為正常品、無 Ground Truth 的 5000x5000 圖片資料夾路徑 (保留原始檔名不更動)
-LAYER_ID="${1:?請指定 Layer}"
-WAFER_POOL_DIR="${2:?請指定圖片資料夾路徑}"
+DATASET_ID="${1:?請指定 Dataset}"
+LAYER_ID="${2:?請指定 Layer}"
+WAFER_POOL_DIR="${3:?請指定圖片資料夾路徑}"
 
 # 各 Layer 獨立輸出
-FAB_RESULT_DIR="./wafer_escape_results/${LAYER_ID}"
+FAB_RESULT_DIR="./wafer_escape_results/${DATASET_ID}/${LAYER_ID}"D}"
 
 # 2. 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑
 COMPANY_DINO_CKPT="/workspace/model_weight/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
