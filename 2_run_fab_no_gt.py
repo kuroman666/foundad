@@ -50,8 +50,8 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
     """執行子程序指令，自動注入空閒 FAB_MASTER_PORT，即時在 Terminal 顯示並同步寫入 log.txt。"""
     header = f"\n[EXEC] {cmd}\n" + "-" * 60
     print(header, flush=True)
-    output_lines = []
 
+    output_lines = []
     run_env = (env or os.environ).copy()
     run_env["PYTHONUNBUFFERED"] = "1"
     if "FAB_MASTER_PORT" not in run_env:
@@ -64,14 +64,14 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
             f.flush()
 
         process = subprocess.Popen(
-    shlex.split(cmd),
-    shell=False,
-    stdout=subprocess.PIPE,
-    stderr=subprocess.STDOUT,
-    text=True,
-    bufsize=1,
-    env=run_env
-)
+            shlex.split(cmd),
+            shell=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+            env=run_env,
+        )
         for line in process.stdout:
             print(line, end="", flush=True)
             for f in files_to_write:
@@ -135,18 +135,6 @@ def compute_pool_signature(pool_dir: str) -> str:
     return h.hexdigest()
 
 
-def compute_ckpt_signature(ckpt_files: List[str]) -> str:
-    """計算實際載入之模型權重檔指紋 (路徑 + 檔案大小 + 修改時間)，確保重新訓練後自動更新推論快取。"""
-    h = hashlib.md5()
-    for p in sorted(ckpt_files):
-        if os.path.basename(p) == "pretrained.pth.tar":
-            continue
-        if os.path.exists(p):
-            st = os.stat(p)
-            h.update(f"{os.path.abspath(p)}:{st.st_size}:{int(st.st_mtime)};".encode("utf-8"))
-    return h.hexdigest()
-
-
 def _robust_normalize_to_uint8(arr: np.ndarray) -> np.ndarray:
     """使用 P0.1 ~ P99.9 穩健百分位數將 16-bit / float 陣列轉為 uint8，防止單點飽和亮點壓扁對比度。"""
     arr_f = arr.astype(np.float32)
@@ -191,7 +179,10 @@ def load_image_bgr_uint8(img_path: str) -> np.ndarray:
 
 
 def prepare_ckpt_for_demo(
-    data_name: str, diy_name: str, req_step: int, log_files: List[str]
+    data_name: str,
+    diy_name: str,
+    req_step: int,
+    log_files: List[str],
 ) -> Tuple[int, List[str], List[str]]:
     """確認權重已生成並複製為 pretrained.pth.tar，回傳 (步數, 權重資料夾清單, 權重檔案清單)。"""
     log_dirs = glob.glob(f"./logs/{data_name}/*{diy_name}*") or glob.glob(f"./logs/{data_name}/*")
@@ -228,7 +219,10 @@ def prepare_ckpt_for_demo(
 
 
 def prepare_mock_unlabeled_pool_from_mvtec(
-    mvtec_cat_dir: str, mock_pool_dir: str, log_files: List[str], defect_limit: int = 8
+    mvtec_cat_dir: str,
+    mock_pool_dir: str,
+    log_files: List[str],
+    defect_limit: int = 8,
 ):
     """
     從 MVTec 建立模擬無 GT 盲池：
@@ -272,7 +266,6 @@ def prepare_mock_unlabeled_pool_from_mvtec(
 # =====================================================================
 # 高解析度 5000x5000 切塊 (Tiling) 與無縫縫合 (Feathering Stitching) 模組
 # =====================================================================
-
 def get_axis_positions(length: int, tile_size: int, stride: int) -> List[int]:
     """計算滑動視窗座標，最後一格自動回推對齊邊界，確保所有切塊維持固定正方形不變形。"""
     if length <= tile_size:
@@ -306,15 +299,19 @@ def prepare_tiled_golden_trainset(
     - 處理完畢立即釋放 Golden 原圖陣列，降低記憶體佔用。
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
-    golden_files = sorted([
-        os.path.join(cat_train_dir, f) for f in os.listdir(cat_train_dir)
-        if f.lower().endswith(IMG_EXTENSIONS)
-    ])
+    golden_files = sorted(
+        [
+            os.path.join(cat_train_dir, f)
+            for f in os.listdir(cat_train_dir)
+            if f.lower().endswith(IMG_EXTENSIONS)
+        ]
+    )
     if not golden_files:
         raise FileNotFoundError(f"在 {cat_train_dir} 中找不到 Golden 圖片！")
 
     full_backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
     os.makedirs(full_backup_dir, exist_ok=True)
+
     golden_imgs = []
     for p in golden_files:
         safe_copy(p, os.path.join(full_backup_dir, os.path.basename(p)))
@@ -358,10 +355,13 @@ def prepare_tiled_golden_trainset(
             best_g_idx = non_bg_items[0][0]
             safe_extra_indices = []
         else:
-            small = np.stack([
-                cv2.resize(item[1], (64, 64), interpolation=cv2.INTER_AREA).astype(np.float32).reshape(-1)
-                for item in non_bg_items
-            ], axis=0)
+            small = np.stack(
+                [
+                    cv2.resize(item[1], (64, 64), interpolation=cv2.INTER_AREA).astype(np.float32).reshape(-1)
+                    for item in non_bg_items
+                ],
+                axis=0,
+            )
             dist_sum = np.abs(small[:, None, :] - small[None, :, :]).mean(axis=-1).sum(axis=1)
             sorted_order = np.argsort(dist_sum)
             best_g_idx = non_bg_items[int(sorted_order[0])][0]
@@ -380,6 +380,7 @@ def prepare_tiled_golden_trainset(
             valid_candidates.append((0.0, y, x, 0, []))
 
     valid_candidates.sort(key=lambda item: item[0])
+
     if len(valid_candidates) > max_train_tiles:
         indices = np.linspace(0, len(valid_candidates) - 1, max_train_tiles, dtype=int)
         selected_specs = [
@@ -388,17 +389,16 @@ def prepare_tiled_golden_trainset(
         ]
     else:
         selected_specs = [(y, x, best_g_idx) for (_, y, x, best_g_idx, _) in valid_candidates]
-
-    if len(selected_specs) < max_train_tiles:
-        extra_needed = max_train_tiles - len(selected_specs)
-        for (_, y, x, _, safe_extra_indices) in valid_candidates:
-            if extra_needed <= 0:
-                break
-            for extra_g_idx in safe_extra_indices:
+        if len(selected_specs) < max_train_tiles:
+            extra_needed = max_train_tiles - len(selected_specs)
+            for (_, y, x, _, safe_extra_indices) in valid_candidates:
                 if extra_needed <= 0:
                     break
-                selected_specs.append((y, x, extra_g_idx))
-                extra_needed -= 1
+                for extra_g_idx in safe_extra_indices:
+                    if extra_needed <= 0:
+                        break
+                    selected_specs.append((y, x, extra_g_idx))
+                    extra_needed -= 1
 
     for f in os.listdir(cat_train_dir):
         if f.lower().endswith(IMG_EXTENSIONS):
@@ -500,15 +500,16 @@ def prepare_tiled_test_pool(
                 tile_stem = f"{stem}__tile_y{y:04d}_x{x:04d}_h{ch:04d}_w{cw:04d}"
                 tile_fname = f"{tile_stem}.png"
                 Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
-
-                tiles_info.append({
-                    "tile_stem": tile_stem,
-                    "tile_fname": tile_fname,
-                    "y": int(y),
-                    "x": int(x),
-                    "h": int(ch),
-                    "w": int(cw),
-                })
+                tiles_info.append(
+                    {
+                        "tile_stem": tile_stem,
+                        "tile_fname": tile_fname,
+                        "y": int(y),
+                        "x": int(x),
+                        "h": int(ch),
+                        "w": int(cw),
+                    }
+                )
                 total_tiles += 1
 
         if not tiles_info:
@@ -518,14 +519,16 @@ def prepare_tiled_test_pool(
             tile_stem = f"{stem}__tile_y{cy:04d}_x{cx:04d}_h{ch:04d}_w{cw:04d}"
             tile_fname = f"{tile_stem}.png"
             Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
-            tiles_info.append({
-                "tile_stem": tile_stem,
-                "tile_fname": tile_fname,
-                "y": int(cy),
-                "x": int(cx),
-                "h": int(ch),
-                "w": int(cw),
-            })
+            tiles_info.append(
+                {
+                    "tile_stem": tile_stem,
+                    "tile_fname": tile_fname,
+                    "y": int(cy),
+                    "x": int(cx),
+                    "h": int(ch),
+                    "w": int(cw),
+                }
+            )
             total_tiles += 1
 
         manifest["images"][rel_fname] = {
@@ -536,11 +539,10 @@ def prepare_tiled_test_pool(
             "tiles": tiles_info,
         }
         del img
+        gc.collect()
 
-    gc.collect()
     manifest["total_tiles"] = total_tiles
     manifest["num_images"] = len(img_paths)
-
     manifest_path = os.path.join(manifest_save_dir, "tile_manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
@@ -616,84 +618,38 @@ def is_tiled_png_pool_valid(
         return None
 
 
-def is_tile_amap_cache_valid(
-    tile_amap_cache_dir: str,
-    cached_manifest_path: str,
-    pool_signature: str,
-    tile_config_key: str,
-    ckpt_signature: str,
-    actual_step: int,
-    diy_name: str,
-) -> Optional[Dict]:
-    """
-    檢查子圖塊推論熱力圖 (.npy) 快取是否完整可用：
-    驗證 (1) 測試池指紋 (2) 切塊參數 (3) 權重檔指紋與訓練步數 (4) 所有子圖塊 .npy 皆存在。
-    """
-    cache_info_path = os.path.join(tile_amap_cache_dir, "cache_info.json")
-    if not os.path.isdir(tile_amap_cache_dir) or not os.path.isfile(cache_info_path) or not os.path.isfile(cached_manifest_path):
-        return None
-    try:
-        with open(cache_info_path, "r", encoding="utf-8") as f:
-            info = json.load(f)
-        if (
-            info.get("pool_signature") != pool_signature
-            or info.get("tile_config_key") != tile_config_key
-            or info.get("ckpt_signature") != ckpt_signature
-            or int(info.get("actual_step", -1)) != int(actual_step)
-            or info.get("diy_name") != diy_name
-        ):
-            return None
-
-        with open(cached_manifest_path, "r", encoding="utf-8") as f:
-            manifest = json.load(f)
-        if (
-            manifest.get("pool_signature") != pool_signature
-            or manifest.get("tile_config_key") != tile_config_key
-            or not manifest.get("images")
-        ):
-            return None
-
-        for meta in manifest["images"].values():
-            if not os.path.exists(meta.get("path", "")):
-                return None
-            for t in meta.get("tiles", []):
-                if not find_tile_npy(tile_amap_cache_dir, t["tile_stem"], t["tile_fname"]):
-                    return None
-        return manifest
-    except Exception:
-        return None
-
-
 def stitch_single_image_amap(
     img_meta: Dict,
     tile_amap_dir: str,
     tile_overlap: int,
+    delete_tiles: bool = True,
 ) -> np.ndarray:
-    """將單張大圖的所有子圖塊 .npy 無縫縫合回原圖完整解析度 (H, W)。"""
+    """
+    將單張大圖的所有子圖塊 .npy 直接於記憶體 (RAM) 內無縫縫合回原圖完整解析度 (H, W)，
+    並在拼回整張圖後立刻自動銷毀該圖所有切成碎片的 Tile .npy 檔案。
+    """
     h, w = img_meta["height"], img_meta["width"]
     canvas_sum = np.zeros((h, w), dtype=np.float32)
     weight_sum = np.zeros((h, w), dtype=np.float32)
-
     weight_cache: Dict[Tuple[int, int], np.ndarray] = {}
+    consumed_tile_npys: List[str] = []
 
     for t in img_meta["tiles"]:
         npy_path = find_tile_npy(tile_amap_dir, t["tile_stem"], t["tile_fname"])
         if not npy_path:
             continue
         amap = np.load(npy_path).astype(np.float32)
+        consumed_tile_npys.append(npy_path)
         amap = np.squeeze(amap)
         if amap.ndim != 2:
             continue
-
         th, tw = t["h"], t["w"]
         if amap.shape[0] != th or amap.shape[1] != tw:
             amap = cv2.resize(amap, (tw, th), interpolation=cv2.INTER_CUBIC)
-
         key = (th, tw)
         if key not in weight_cache:
             weight_cache[key] = build_2d_feather_weight(th, tw, tile_overlap)
         w2d = weight_cache[key]
-
         y, x = t["y"], t["x"]
         canvas_sum[y:y + th, x:x + tw] += amap * w2d
         weight_sum[y:y + th, x:x + tw] += w2d
@@ -701,10 +657,17 @@ def stitch_single_image_amap(
     valid_mask = weight_sum > 1e-6
     full_amap = np.zeros((h, w), dtype=np.float32)
     full_amap[valid_mask] = canvas_sum[valid_mask] / weight_sum[valid_mask]
-
     if np.any(valid_mask) and not np.all(valid_mask):
         baseline = float(np.percentile(full_amap[valid_mask], 5.0))
         full_amap[~valid_mask] = baseline
+
+    if delete_tiles:
+        for p in consumed_tile_npys:
+            try:
+                if os.path.exists(p):
+                    os.remove(p)
+            except OSError:
+                pass
 
     return full_amap
 
@@ -712,9 +675,12 @@ def stitch_single_image_amap(
 # =====================================================================
 # 防誤報核心演算法：晶圓圓周邊緣抑制 + 微塵單點尖峰濾除 + 動態門檻對齊
 # =====================================================================
-
 def detect_circular_wafer_geometry(
-    img_path: str, h: int, w: int, wafer_edge_mode: str, category: str
+    img_path: str,
+    h: int,
+    w: int,
+    wafer_edge_mode: str,
+    category: str,
 ) -> Tuple[bool, float, float, float]:
     """
     偵測影像是否為圓形晶圓/圓形工件，並回傳 (是否啟用圓周抑制, 圓心 cy, 圓心 cx, 半徑 R)。
@@ -736,12 +702,14 @@ def detect_circular_wafer_geometry(
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
 
         corner_sz = max(4, min(sh, sw) // 10)
-        corners = np.concatenate([
-            blur[:corner_sz, :corner_sz].reshape(-1),
-            blur[:corner_sz, -corner_sz:].reshape(-1),
-            blur[-corner_sz:, :corner_sz].reshape(-1),
-            blur[-corner_sz:, -corner_sz:].reshape(-1),
-        ])
+        corners = np.concatenate(
+            [
+                blur[:corner_sz, :corner_sz].reshape(-1),
+                blur[:corner_sz, -corner_sz:].reshape(-1),
+                blur[-corner_sz:, :corner_sz].reshape(-1),
+                blur[-corner_sz:, -corner_sz:].reshape(-1),
+            ]
+        )
         center_patch = blur[sh // 3:2 * sh // 3, sw // 3:2 * sw // 3].reshape(-1)
         corner_mean = float(np.mean(corners))
         center_mean = float(np.mean(center_patch))
@@ -774,7 +742,6 @@ def detect_circular_wafer_geometry(
 
     if mode == "on" or is_circular_cat:
         return True, h * 0.5, w * 0.5, min(h, w) * 0.48
-
     return False, h * 0.5, w * 0.5, min(h, w) * 0.5
 
 
@@ -825,33 +792,35 @@ def refine_amap_for_wafer_and_noise(
         work_map[:, -bx:] = img_median
 
     use_circle, cy, cx, radius = detect_circular_wafer_geometry(
-        img_path=img_path, h=h, w=w, wafer_edge_mode=wafer_edge_mode, category=category
+        img_path=img_path,
+        h=h,
+        w=w,
+        wafer_edge_mode=wafer_edge_mode,
+        category=category,
     )
     if use_circle and wafer_edge_margin > 0:
         yy, xx = np.ogrid[:h, :w]
         dist_from_center = np.hypot(yy - cy, xx - cx).astype(np.float32)
         inner_r = radius * (1.0 - wafer_edge_margin)
         outer_r = radius * (1.0 - wafer_edge_margin * 0.15)
-
         radial_weight = np.ones((h, w), dtype=np.float32)
         transition_mask = (dist_from_center > inner_r) & (dist_from_center < outer_r)
         if np.any(transition_mask):
             t = (dist_from_center[transition_mask] - inner_r) / max(outer_r - inner_r, 1.0)
             radial_weight[transition_mask] = 0.5 * (1.0 + np.cos(np.pi * t))
         radial_weight[dist_from_center >= outer_r] = 0.0
-
         work_map = img_median + radial_weight * (work_map - img_median)
 
     return work_map
 
 
 def merge_nearby_bboxes(
-    bboxes: List[Tuple[int, int, int, int, float, int]], merge_gap: int
+    bboxes: List[Tuple[int, int, int, int, float, int]],
+    merge_gap: int,
 ) -> List[Tuple[int, int, int, int, float, int]]:
     """自動合併重疊或距離極近的碎片紅框，避免單一瑕疵碎成多個小框。"""
     if len(bboxes) <= 1:
         return bboxes
-
     boxes = [list(b) for b in bboxes]
     merged = True
     while merged:
@@ -883,7 +852,6 @@ def merge_nearby_bboxes(
             new_boxes.append([x1, y1, x2, y2, score, area])
             used[i] = True
         boxes = new_boxes
-
     boxes.sort(key=lambda item: item[4], reverse=True)
     return [tuple(b) for b in boxes]
 
@@ -902,7 +870,6 @@ def extract_tight_bboxes_for_anomaly_image(
     """
     h, w = refined_amap.shape[:2]
     work_map = refined_amap.copy()
-
     img_median = float(np.median(work_map))
     max_score = float(np.max(work_map))
     if max_score < img_threshold:
@@ -974,7 +941,6 @@ def compute_dynamic_effective_threshold(
     """
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
-
     if scores_arr.size == 0:
         return max(user_threshold, min_threshold), "無樣本保底門檻"
 
@@ -982,7 +948,6 @@ def compute_dynamic_effective_threshold(
     std_val = float(np.std(scores_arr))
     mean_std_bound = mean_val + sigma_k * std_val
 
-    # 計算排除最高 5% 極端值後的穩健 Trimmed Mean + k*Std (兼顧抗 Escape 污染與抗反光右偏尾端)
     if scores_arr.size >= 10:
         p95_cut = float(np.percentile(scores_arr, 95.0))
         trimmed_arr = scores_arr[scores_arr <= p95_cut]
@@ -1039,7 +1004,6 @@ def compute_dynamic_effective_threshold(
             f"MinFloor={max(float(min_threshold), float(user_threshold)):.4f}"
             f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
         )
-
     return eff, desc
 
 
@@ -1103,11 +1067,11 @@ def stitch_and_filter_anomalies(
     log_files: List[str],
 ) -> Tuple[int, int, float, str, str, str]:
     """
-    三階段串流縫合與篩選（支援 --raw_score_mode 未濾波原生計分與四合一純化計分雙軌對照）：
-    - Pass 1: 縫合 4 張 Golden 圖建立空間結構容差基準 `golden_spatial_ref`，算完立即釋放 Golden 陣列。
-    - Pass 2: 逐張串流縫合，同時計算 Raw_Max_Score (未濾波) 與 Filtered_Max_Score (四合一純化後)，
-              並依 raw_score_mode 決定主用熱力圖與分數，將 `float16` 暫存於磁碟 `_refined_cache_tmp`。
-    - Pass 3: 僅針對超過有效門檻的異常圖片按需載入陣列畫紅框；正常圖片直接清理暫存檔略過。
+    三階段 RAM 串流縫合與篩選：
+    - Pass 1: 於 RAM 內縫合 Golden 圖建立空間結構容差基準 `golden_spatial_ref`，縫合後立即銷毀其碎片 Tile .npy。
+    - Pass 2: 逐張於 RAM 內縫合回整張 Wafer 熱力圖並立刻銷毀該圖所有碎片 Tile .npy，
+              全部縫合完畢後即刻刪除整個 `tile_amap_dir` 碎片目錄。
+    - Pass 3: 針對超過有效門檻的異常圖片畫紅框，並將拼好後的整張 Wafer .npy 儲存於 `output/.../amap_npy` (`final_amap_dir`)。
     """
     os.makedirs(final_amap_dir, exist_ok=True)
     anomaly_dir = os.path.join(out_dir, "anomaly_images")
@@ -1121,32 +1085,41 @@ def stitch_and_filter_anomalies(
     tile_overlap = manifest["tile_overlap"]
     golden_set = set(golden_filenames)
     total_imgs = len(manifest["images"])
+
     score_mode_label = (
         "RAW_UNFILTERED (未經四合一濾波 + 單點最大值 np.max)"
         if raw_score_mode
         else "FILTERED_ROBUST (四合一防誤報純化 + Top-0.015% 抗噪點峰值)"
     )
-
     log_and_print(
-        f"\n[Step 4.1] 啟動低記憶體串流縫合模式 (共 {total_imgs} 張原圖) | 計分模式: {score_mode_label}",
+        f"\n[Step 4.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 {total_imgs} 張原圖) | 計分模式: {score_mode_label}",
         log_files,
     )
 
     # -----------------------------------------------------------------
-    # Pass 1: 僅先縫合 Golden 圖 (通常僅 4 張) 計算跨片空間結構容差基準
+    # Pass 1: 於 RAM 先縫合 Golden 圖計算跨片空間結構容差基準，並當場銷毀其碎片 Tile .npy
     # -----------------------------------------------------------------
+    golden_raw_cache: Dict[str, np.ndarray] = {}
     golden_maps: List[np.ndarray] = []
     if not raw_score_mode:
         for fname, meta in manifest["images"].items():
             if fname in golden_set or os.path.basename(fname) in golden_set:
-                g_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap)
+                g_amap = stitch_single_image_amap(
+                    meta,
+                    tile_amap_dir,
+                    tile_overlap,
+                    delete_tiles=True,
+                )
+                golden_raw_cache[fname] = g_amap
                 golden_maps.append(g_amap)
 
     golden_spatial_ref: Optional[np.ndarray] = None
     if golden_maps:
         ref_h, ref_w = golden_maps[0].shape[:2]
         aligned_g = [
-            cv2.resize(gm, (ref_w, ref_h), interpolation=cv2.INTER_LINEAR) if gm.shape[:2] != (ref_h, ref_w) else gm
+            cv2.resize(gm, (ref_w, ref_h), interpolation=cv2.INTER_LINEAR)
+            if gm.shape[:2] != (ref_h, ref_w)
+            else gm
             for gm in golden_maps
         ]
         g_max_map = np.max(np.stack(aligned_g, axis=0), axis=0)
@@ -1157,7 +1130,7 @@ def stitch_and_filter_anomalies(
     gc.collect()
 
     # -----------------------------------------------------------------
-    # Pass 2: 單張串流縫合，同步計算「未濾波 Raw 分數」與「四合一濾波後分數」
+    # Pass 2: 單張於 RAM 串流縫合並立刻銷毀碎片 Tile .npy
     # -----------------------------------------------------------------
     stitched_info = []
     golden_max_scores = []
@@ -1166,7 +1139,16 @@ def stitch_and_filter_anomalies(
 
     for idx, (fname, meta) in enumerate(manifest["images"].items(), 1):
         is_golden_img = (fname in golden_set) or (os.path.basename(fname) in golden_set)
-        raw_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap)
+        if fname in golden_raw_cache:
+            raw_amap = golden_raw_cache.pop(fname)
+        else:
+            raw_amap = stitch_single_image_amap(
+                meta,
+                tile_amap_dir,
+                tile_overlap,
+                delete_tiles=True,
+            )
+
         raw_flat = raw_amap.reshape(-1)
         raw_single_max = float(np.max(raw_flat))
         peak_k = max(8, int(round(raw_flat.size * 0.00015)))
@@ -1210,26 +1192,34 @@ def stitch_and_filter_anomalies(
             np.save(cache_npy_path, active_amap.astype(np.float16))
         except Exception:
             cache_npy_path = ""
+
         del raw_amap, refined_amap, active_amap
-
-        stitched_info.append({
-            "filename": fname,
-            "stem": meta["stem"],
-            "meta": meta,
-            "cache_npy_path": cache_npy_path,
-            "max_score": active_max_score,
-            "raw_max_score": raw_single_max,
-            "raw_top_peak_score": raw_top_peak,
-            "filtered_max_score": filtered_robust_max,
-            "filter_delta": filtered_robust_max - raw_single_max,
-            "top_k_score": top_k_score,
-        })
-
+        stitched_info.append(
+            {
+                "filename": fname,
+                "stem": meta["stem"],
+                "meta": meta,
+                "cache_npy_path": cache_npy_path,
+                "max_score": active_max_score,
+                "raw_max_score": raw_single_max,
+                "raw_top_peak_score": raw_top_peak,
+                "filtered_max_score": filtered_robust_max,
+                "filter_delta": filtered_robust_max - raw_single_max,
+                "top_k_score": top_k_score,
+            }
+        )
         if idx % 25 == 0:
             gc.collect()
 
-    ref_normal_scores = non_golden_normal_scores if non_golden_normal_scores else non_golden_all_scores
+    # 所有圖片皆已在 RAM 拼接完成並銷毀個別碎片 Tile .npy，立即清除整個碎片暫存資料夾
+    golden_raw_cache.clear()
+    safe_rmtree(tile_amap_dir)
+    log_and_print(
+        f"[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> {os.path.abspath(tile_amap_dir)}",
+        log_files,
+    )
 
+    ref_normal_scores = non_golden_normal_scores if non_golden_normal_scores else non_golden_all_scores
     effective_threshold, thresh_mode_str = compute_dynamic_effective_threshold(
         non_golden_scores=ref_normal_scores,
         golden_scores=golden_max_scores,
@@ -1261,10 +1251,9 @@ def stitch_and_filter_anomalies(
         log_and_print(overfit_advice, log_files)
 
     # -----------------------------------------------------------------
-    # Pass 3: 依分數高低排序，僅針對超過門檻的圖片載入陣列並輸出紅框
+    # Pass 3: 依分數高低排序，針對超過門檻的圖片保存整張 Wafer .npy 至 output 並輸出紅框
     # -----------------------------------------------------------------
     stitched_info.sort(key=lambda item: item["max_score"], reverse=True)
-
     ranking_records = []
     anomaly_count = 0
     skipped_normal_count = 0
@@ -1290,19 +1279,21 @@ def stitch_and_filter_anomalies(
                     pass
             skipped_normal_count += 1
             status_tag = "GOLDEN_PASS" if is_golden else "PASS_SKIPPED"
-            ranking_records.append({
-                "rank": rank_idx,
-                "filename": fname,
-                "status": status_tag,
-                "max_score": max_score,
-                "raw_max_score": raw_max_score,
-                "filtered_max_score": filtered_max_score,
-                "filter_delta": filter_delta,
-                "top_k_score": top_k_score,
-                "num_bboxes": 0,
-                "saved_file": "(未超過動態門檻，不輸出圖片)",
-                "resolution": f"{w}x{h}",
-            })
+            ranking_records.append(
+                {
+                    "rank": rank_idx,
+                    "filename": fname,
+                    "status": status_tag,
+                    "max_score": max_score,
+                    "raw_max_score": raw_max_score,
+                    "filtered_max_score": filtered_max_score,
+                    "filter_delta": filter_delta,
+                    "top_k_score": top_k_score,
+                    "num_bboxes": 0,
+                    "saved_file": "(未超過動態門檻，不輸出圖片)",
+                    "resolution": f"{w}x{h}",
+                }
+            )
             continue
 
         if cache_npy_path and os.path.exists(cache_npy_path):
@@ -1312,22 +1303,7 @@ def stitch_and_filter_anomalies(
             except OSError:
                 pass
         else:
-            raw_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap)
-            if raw_score_mode:
-                active_amap = raw_amap
-            else:
-                active_amap = refine_amap_for_wafer_and_noise(
-                    full_amap=raw_amap,
-                    img_path=meta["path"],
-                    category=category,
-                    border_ratio=border_ratio,
-                    wafer_edge_mode=wafer_edge_mode,
-                    wafer_edge_margin=wafer_edge_margin,
-                    speckle_filter_ratio=speckle_filter_ratio,
-                    golden_spatial_ref=golden_spatial_ref if not is_golden else None,
-                    golden_tol_weight=0.35,
-                )
-                del raw_amap
+            active_amap = np.zeros((h, w), dtype=np.float32)
 
         bboxes, pixel_box_thresh = extract_tight_bboxes_for_anomaly_image(
             refined_amap=active_amap,
@@ -1341,23 +1317,25 @@ def stitch_and_filter_anomalies(
             del active_amap
             skipped_normal_count += 1
             status_tag = "GOLDEN_PASS" if is_golden else "PASS_NOISE_FILTERED"
-            ranking_records.append({
-                "rank": rank_idx,
-                "filename": fname,
-                "status": status_tag,
-                "max_score": max_score,
-                "raw_max_score": raw_max_score,
-                "filtered_max_score": filtered_max_score,
-                "filter_delta": filter_delta,
-                "top_k_score": top_k_score,
-                "num_bboxes": 0,
-                "saved_file": "(微小單點噪點已自動濾除，不輸出圖片)",
-                "resolution": f"{w}x{h}",
-            })
+            ranking_records.append(
+                {
+                    "rank": rank_idx,
+                    "filename": fname,
+                    "status": status_tag,
+                    "max_score": max_score,
+                    "raw_max_score": raw_max_score,
+                    "filtered_max_score": filtered_max_score,
+                    "filter_delta": filter_delta,
+                    "top_k_score": top_k_score,
+                    "num_bboxes": 0,
+                    "saved_file": "(微小單點噪點已自動濾除，不輸出圖片)",
+                    "resolution": f"{w}x{h}",
+                }
+            )
             continue
 
         anomaly_count += 1
-
+        # 保留存在 output 內的拼好後的整張 Wafer .npy
         save_dtype = np.float16 if max(active_amap.shape) > 2048 else np.float32
         np.save(
             os.path.join(final_amap_dir, f"Rank{rank_idx:03d}_Score{max_score:.4f}_{stem}.npy"),
@@ -1365,7 +1343,6 @@ def stitch_and_filter_anomalies(
         )
 
         orig_bgr = load_image_bgr_uint8(meta["path"])
-
         vis_scale = max(1.0, max(h, w) / 900.0)
         box_thickness = max(2, int(round(2.5 * vis_scale)))
         font_scale = max(0.5, 0.55 * vis_scale)
@@ -1379,8 +1356,14 @@ def stitch_and_filter_anomalies(
             ty1 = max(0, y1 - th_txt - 8)
             cv2.rectangle(bbox_canvas, (x1, ty1), (x1 + tw + 6, ty1 + th_txt + 6), (0, 0, 255), -1)
             cv2.putText(
-                bbox_canvas, label_txt, (x1 + 3, ty1 + th_txt + 2),
-                cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness, cv2.LINE_AA
+                bbox_canvas,
+                label_txt,
+                (x1 + 3, ty1 + th_txt + 2),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                font_scale,
+                (255, 255, 255),
+                font_thickness,
+                cv2.LINE_AA,
             )
 
         img_med = float(np.median(active_amap))
@@ -1390,7 +1373,6 @@ def stitch_and_filter_anomalies(
 
         safe_out_fname = re.sub(r"[\\/]+", "__", fname)
         prefixed_img_name = f"Rank{rank_idx:03d}_Score{max_score:.4f}_Box{len(bboxes):02d}_{safe_out_fname}"
-
         fullres_out_path = os.path.join(anomaly_fullres_bbox_dir, prefixed_img_name)
         cv2.imwrite(fullres_out_path, bbox_canvas)
 
@@ -1409,8 +1391,14 @@ def stitch_and_filter_anomalies(
             f"EffThresh:{effective_threshold:.4f}) | Status: ANOMALY (Boxes:{len(bboxes)})"
         )
         cv2.putText(
-            banner, banner_txt, (12, int(banner_h * 0.72)),
-            cv2.FONT_HERSHEY_SIMPLEX, max(0.5, banner_h / 55.0), (0, 220, 255), 2, cv2.LINE_AA
+            banner,
+            banner_txt,
+            (12, int(banner_h * 0.72)),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            max(0.5, banner_h / 55.0),
+            (0, 220, 255),
+            2,
+            cv2.LINE_AA,
         )
         final_vis = np.vstack([banner, tri_panel])
         vis_out_path = os.path.join(anomaly_dir, prefixed_img_name)
@@ -1420,19 +1408,21 @@ def stitch_and_filter_anomalies(
         gc.collect()
 
         status_tag = "GOLDEN_ANOMALY" if is_golden else "ANOMALY"
-        ranking_records.append({
-            "rank": rank_idx,
-            "filename": fname,
-            "status": status_tag,
-            "max_score": max_score,
-            "raw_max_score": raw_max_score,
-            "filtered_max_score": filtered_max_score,
-            "filter_delta": filter_delta,
-            "top_k_score": top_k_score,
-            "num_bboxes": len(bboxes),
-            "saved_file": prefixed_img_name,
-            "resolution": f"{w}x{h}",
-        })
+        ranking_records.append(
+            {
+                "rank": rank_idx,
+                "filename": fname,
+                "status": status_tag,
+                "max_score": max_score,
+                "raw_max_score": raw_max_score,
+                "filtered_max_score": filtered_max_score,
+                "filter_delta": filter_delta,
+                "top_k_score": top_k_score,
+                "num_bboxes": len(bboxes),
+                "saved_file": prefixed_img_name,
+                "resolution": f"{w}x{h}",
+            }
+        )
 
     safe_rmtree(refined_cache_dir)
     del golden_spatial_ref
@@ -1515,24 +1505,40 @@ def stitch_and_filter_anomalies(
 
     with open(report_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow([
-            "Rank", "Original_Filename", "Status", "Max_Score",
-            "Raw_Max_Score", "Filtered_Max_Score", "Filter_Delta",
-            "TopK_Mean_Score", "Num_BBoxes", "Saved_Anomaly_Filename", "Resolution"
-        ])
+        writer.writerow(
+            [
+                "Rank",
+                "Original_Filename",
+                "Status",
+                "Max_Score",
+                "Raw_Max_Score",
+                "Filtered_Max_Score",
+                "Filter_Delta",
+                "TopK_Mean_Score",
+                "Num_BBoxes",
+                "Saved_Anomaly_Filename",
+                "Resolution",
+            ]
+        )
         for r in ranking_records:
-            writer.writerow([
-                r["rank"], r["filename"], r["status"],
-                f"{r['max_score']:.6f}",
-                f"{r['raw_max_score']:.6f}",
-                f"{r['filtered_max_score']:.6f}",
-                f"{r['filter_delta']:+.6f}",
-                f"{r['top_k_score']:.6f}",
-                r["num_bboxes"], r["saved_file"], r["resolution"],
-            ])
+            writer.writerow(
+                [
+                    r["rank"],
+                    r["filename"],
+                    r["status"],
+                    f"{r['max_score']:.6f}",
+                    f"{r['raw_max_score']:.6f}",
+                    f"{r['filtered_max_score']:.6f}",
+                    f"{r['filter_delta']:+.6f}",
+                    f"{r['top_k_score']:.6f}",
+                    r["num_bboxes"],
+                    r["saved_file"],
+                    r["resolution"],
+                ]
+            )
 
     log_and_print(
-        f"[Step 4.3] 篩選與畫框完成：共 {anomaly_count} 張超過有效門檻 ({effective_threshold:.4f}) 已畫框輸出；"
+        f"[Step 4.3] 篩選與畫框完成：共 {anomaly_count} 張超過有效門檻 ({effective_threshold:.4f}) 已畫框並將整張 Wafer .npy 存於 output；"
         f"其餘 {skipped_normal_count} 張正常圖已自動略過不輸出。",
         log_files,
     )
@@ -1555,64 +1561,89 @@ def main():
 
     # 門檻與動態對齊參數
     parser.add_argument(
-        "--thresh_mode", type=str, default="hybrid",
+        "--thresh_mode",
+        type=str,
+        default="hybrid",
         choices=["hybrid", "mean_std", "percentile", "top_k", "fixed"],
-        help="門檻決定模式：hybrid(結合P95+MAD穩健統計+保底門檻)、mean_std(直接以 mean + sigma_k * std 作為門檻)、percentile(對齊分位數)、top_k(只抓前K高分)、fixed(固定threshold)"
+        help="門檻決定模式：hybrid(結合P95+MAD穩健統計+保底門檻)、mean_std(直接以 mean + sigma_k * std 作為門檻)、percentile(對齊分位數)、top_k(只抓前K高分)、fixed(固定threshold)",
     )
     parser.add_argument(
-        "--threshold", type=float, default=0.25,
-        help="當 thresh_mode=fixed 時作為固定門檻；當 thresh_mode=hybrid 時作為保底門檻下限之一"
+        "--threshold",
+        type=float,
+        default=0.25,
+        help="當 thresh_mode=fixed 時作為固定門檻；當 thresh_mode=hybrid 時作為保底門檻下限之一",
     )
     parser.add_argument(
-        "--min_threshold", type=float, default=0.27,
-        help="動態門檻的絕對最低安全底線 (適用於 hybrid / percentile / top_k 模式)"
+        "--min_threshold",
+        type=float,
+        default=0.27,
+        help="動態門檻的絕對最低安全底線 (適用於 hybrid / percentile / top_k 模式)",
     )
     parser.add_argument(
-        "--auto_percentile", type=float, default=95.0,
-        help="動態門檻自動對齊之盲池分位數 (例如 95.0 代表 P95，98.0 代表 P98)"
+        "--auto_percentile",
+        type=float,
+        default=95.0,
+        help="動態門檻自動對齊之盲池分位數 (例如 95.0 代表 P95，98.0 代表 P98)",
     )
     parser.add_argument(
-        "--top_k", type=int, default=0,
-        help="若設為 > 0 (例如 5 或 8)，則限制最多只輸出分數最高的前 K 張可疑圖片"
+        "--top_k",
+        type=int,
+        default=0,
+        help="若設為 > 0 (例如 5 或 8)，則限制最多只輸出分數最高的前 K 張可疑圖片",
     )
     parser.add_argument(
-        "--sigma_k", type=float, default=3.5,
-        help="當 thresh_mode=mean_std 時代表 mean + k*std 的倍數 k (如 1.0, 2.0, 3.0)；當為 hybrid 時代表 MAD 標準差倍數"
+        "--sigma_k",
+        type=float,
+        default=3.5,
+        help="當 thresh_mode=mean_std 時代表 mean + k*std 的倍數 k (如 1.0, 2.0, 3.0)；當為 hybrid 時代表 MAD 標準差倍數",
     )
 
     # 晶圓圓周邊緣抑制與微塵濾波參數 + Raw 未濾波對照開關
     parser.add_argument(
-        "--raw_score_mode", action="store_true",
-        help="若設定此旗標，將完全關閉四合一防誤報濾波，直接以縫合後之原始熱力圖與單點最大值 np.max(amap) 進行計分與畫框 (供消融實驗對照用)"
+        "--raw_score_mode",
+        action="store_true",
+        help="若設定此旗標，將完全關閉四合一防誤報濾波，直接以縫合後之原始熱力圖與單點最大值 np.max(amap) 進行計分與畫框 (供消融實驗對照用)",
     )
     parser.add_argument(
-        "--core_ratio", type=float, default=0.55,
-        help="異常熱區峰值核心收斂比例 (0.45~0.65，越高紅框越緊密貼合最高分缺陷核心)"
+        "--core_ratio",
+        type=float,
+        default=0.55,
+        help="異常熱區峰值核心收斂比例 (0.45~0.65，越高紅框越緊密貼合最高分缺陷核心)",
     )
     parser.add_argument(
-        "--border_ratio", type=float, default=0.02,
-        help="抑制影像四週矩形邊框 Padding 偽影的比例 (預設 0.02 即 2%%)"
+        "--border_ratio",
+        type=float,
+        default=0.02,
+        help="抑制影像四週矩形邊框 Padding 偽影的比例 (預設 0.02 即 2%%)",
     )
     parser.add_argument(
-        "--wafer_edge_mode", type=str, default="auto",
+        "--wafer_edge_mode",
+        type=str,
+        default="auto",
         choices=["auto", "on", "off"],
-        help="晶圓圓周邊緣 (Bevel/Notch) 抑制模式：auto(自動偵測圓形工件)、on(強制開啟)、off(關閉)"
+        help="晶圓圓周邊緣 (Bevel/Notch) 抑制模式：auto(自動偵測圓形工件)、on(強制開啟)、off(關閉)",
     )
     parser.add_argument(
-        "--wafer_edge_margin", type=float, default=0.04,
-        help="晶圓圓周外圈倒角抑制寬度佔半徑比例 (預設 0.04 即外圈 4%% 半徑平滑衰減)"
+        "--wafer_edge_margin",
+        type=float,
+        default=0.04,
+        help="晶圓圓周外圈倒角抑制寬度佔半徑比例 (預設 0.04 即外圈 4%% 半徑平滑衰減)",
     )
     parser.add_argument(
-        "--speckle_filter_ratio", type=float, default=0.008,
-        help="灰階形態學開運算濾除單點微塵尖峰之核大小比例 (預設 0.008，設 0 則關閉)"
+        "--speckle_filter_ratio",
+        type=float,
+        default=0.008,
+        help="灰階形態學開運算濾除單點微塵尖峰之核大小比例 (預設 0.008，設 0 則關閉)",
     )
     parser.add_argument(
-        "--min_area_ratio", type=float, default=0.00012,
-        help="有效異常紅框的最小面積佔全圖比例 (低於此面積之微小雜訊點不畫框、不誤報)"
+        "--min_area_ratio",
+        type=float,
+        default=0.00012,
+        help="有效異常紅框的最小面積佔全圖比例 (低於此面積之微小雜訊點不畫框、不誤報)",
     )
 
-    parser.add_argument("--skip_train", action="store_true", help="跳過訓練，並於快取命中時自動跳過切塊與 GPU 推論，3秒極速重調門檻")
-    parser.add_argument("--force_infer", action="store_true", help="即使設定 --skip_train 仍強制重新切塊並重跑 GPU 推論")
+    parser.add_argument("--skip_train", action="store_true", help="跳過訓練，直接沿用既有 Golden 與測試切塊進行推論")
+    parser.add_argument("--force_infer", action="store_true", help="強制重新切塊並重跑 GPU 推論")
     parser.add_argument("--mock_from_mvtec", type=str, default="")
 
     parser.add_argument("--tile_size", type=int, default=512, help="子圖塊像素大小 (建議 512 或 1024，避免大圖壓縮失真)")
@@ -1761,10 +1792,10 @@ def main():
 
     effective_batch_size = min(max(1, num_train_samples), args.train_batch_size)
     iters_per_epoch = max(1, int(np.ceil(num_train_samples / float(effective_batch_size))))
-    # 動態折算訓練 Epochs：當切塊數較多 (iters_per_epoch > 1) 時，防止總梯度更新步數暴增 6 倍導致嚴重過擬合與耗時過長
     effective_epochs = (
         max(400, int(np.ceil(args.ckpt_step / float(iters_per_epoch))))
-        if iters_per_epoch > 1 else args.ckpt_step
+        if iters_per_epoch > 1
+        else args.ckpt_step
     )
     total_grad_updates = effective_epochs * iters_per_epoch
 
@@ -1792,10 +1823,11 @@ def main():
 
     total_train_time = golden_select_sec + train_tile_sec + model_train_sec
     actual_step, ckpt_dirs, ckpt_files = prepare_ckpt_for_demo(
-        args.data_name, args.diy_name, effective_epochs if not args.skip_train else args.ckpt_step, log_files
+        args.data_name,
+        args.diy_name,
+        effective_epochs if not args.skip_train else args.ckpt_step,
+        log_files,
     )
-    ckpt_signature = compute_ckpt_signature(ckpt_files)
-
     train_tiles_dir = os.path.abspath(os.path.join(shot_dir, "train", args.category))
     golden_backup_dir = os.path.abspath(os.path.join(shot_dir, "golden_full_res_backup", args.category))
 
@@ -1818,139 +1850,96 @@ def main():
     log_and_print("\n".join(train_done_lines), log_files)
 
     # =========================================================================
-    # [階段二：整體推論階段] (支援子圖塊熱力圖持久化快取，--skip_train 時 3 秒秒速完成)
+    # [階段二：整體推論階段] (子圖塊推論後於 RAM 內即時縫合並銷毀碎片 Tile .npy)
     # =========================================================================
     amap_dump_dir = os.path.join(run_out_dir, "amap_npy")
     report_txt_path = os.path.join(run_out_dir, "escape_ranking_report.txt")
     report_csv_path = os.path.join(run_out_dir, "escape_ranking_report.csv")
-
     tiled_pool_dir = os.path.join(abs_datasets_dir, f"{args.data_name}_tiled_pool")
-    tile_cache_root = os.path.join(abs_datasets_dir, f"{args.data_name}_tile_amap_cache")
-    cached_manifest_path = os.path.join(tile_cache_root, "cached_tile_manifest.json")
-    tile_amap_cache_dir = os.path.join(
-        tile_cache_root, f"{args.diy_name}_step{actual_step}_{tile_config_key}"
-    )
+    cached_manifest_path = os.path.join(abs_datasets_dir, f"{args.data_name}_cached_tile_manifest.json")
+    tile_amap_tmp_dir = os.path.join(run_out_dir, "_tmp_tile_amap_npy")
+
+    # 若舊版殘留 _tile_amap_cache 資料夾，自動順手清理
+    legacy_tile_cache_root = os.path.join(abs_datasets_dir, f"{args.data_name}_tile_amap_cache")
+    if os.path.exists(legacy_tile_cache_root):
+        safe_rmtree(legacy_tile_cache_root)
 
     test_tile_sec = 0.0
     model_infer_sec = 0.0
-    used_amap_cache = False
     used_png_tile_cache = False
 
-    # 檢查是否可直接命中 Step 3.1 + Step 3.2 的子圖塊 .npy 推論結果快取
     manifest = None
-    if args.skip_train and not args.force_infer:
-        manifest = is_tile_amap_cache_valid(
-            tile_amap_cache_dir=tile_amap_cache_dir,
+    if not args.force_infer:
+        manifest = is_tiled_png_pool_valid(
+            tiled_pool_dir=tiled_pool_dir,
             cached_manifest_path=cached_manifest_path,
             pool_signature=pool_signature,
             tile_config_key=tile_config_key,
-            ckpt_signature=ckpt_signature,
-            actual_step=actual_step,
-            diy_name=args.diy_name,
         )
 
     if manifest is not None:
-        used_amap_cache = True
         used_png_tile_cache = True
         safe_copy(cached_manifest_path, os.path.join(run_out_dir, "tile_manifest.json"))
         num_test_images = manifest.get("num_images", 1)
         total_test_tiles = manifest.get("total_tiles", num_test_images)
         log_and_print(
-            f"\n[⚡ 子圖塊熱力圖快取命中] 偵測到完整推論快取 ({total_test_tiles} 塊 .npy, step={actual_step})！\n"
-            f"   -> 自動跳過 Step 3.1 測試池切塊與 Step 3.2 GPU 推論 (0.00 秒)，直接進入 Step 4 極速重調門檻！\n"
-            f"   -> 快取目錄: {os.path.abspath(tile_amap_cache_dir)}",
+            f"\n[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動，直接沿用既有 {total_test_tiles} 張子圖塊 PNG (0.00 秒)",
             log_files,
         )
     else:
-        if not args.force_infer:
-            manifest = is_tiled_png_pool_valid(
-                tiled_pool_dir=tiled_pool_dir,
-                cached_manifest_path=cached_manifest_path,
-                pool_signature=pool_signature,
-                tile_config_key=tile_config_key,
-            )
-
-        if manifest is not None:
-            used_png_tile_cache = True
-            safe_copy(cached_manifest_path, os.path.join(run_out_dir, "tile_manifest.json"))
-            num_test_images = manifest.get("num_images", 1)
-            total_test_tiles = manifest.get("total_tiles", num_test_images)
-            log_and_print(
-                f"\n[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動，直接沿用既有 {total_test_tiles} 張子圖塊 PNG (0.00 秒)",
-                log_files,
-            )
-        else:
-            t_test_tile_start = time.perf_counter()
-            manifest = prepare_tiled_test_pool(
-                pool_dir=args.pool_dir,
-                tiled_pool_dir=tiled_pool_dir,
-                manifest_save_dir=run_out_dir,
-                tile_size=args.tile_size,
-                tile_overlap=args.tile_overlap,
-                bg_std_thresh=args.bg_std_thresh,
-                disable_tiling=args.disable_tiling,
-                pool_signature=pool_signature,
-                tile_config_key=tile_config_key,
-                cached_manifest_path=cached_manifest_path,
-                log_files=log_files,
-            )
-            test_tile_sec = time.perf_counter() - t_test_tile_start
-            num_test_images = manifest.get("num_images", 1)
-            total_test_tiles = manifest.get("total_tiles", num_test_images)
-
-        safe_rmtree(tile_amap_cache_dir)
-        os.makedirs(tile_amap_cache_dir, exist_ok=True)
-
-        env = os.environ.copy()
-        env["PYTHONUNBUFFERED"] = "1"
-        env["FAB_AMAP_DUMP_DIR"] = os.path.abspath(tile_amap_cache_dir)
-        env["FAB_SKIP_TILE_HEATMAP_PNG"] = "1"
-        env["FAB_INFER_BATCH_SIZE"] = str(args.infer_batch_size)
-        env["FAB_BBOX_OUT_DIR"] = ""
-        env["FAB_SIGMA_K"] = str(args.sigma_k)
-        env["FAB_GOLDEN_NAMES"] = ""
-
-        t_infer_start = time.perf_counter()
-        demo_cmd = (
-            f"python foundad/main.py mode=demo data.dataset=mvtec "
-            f"data.data_name={args.data_name} diy_name={args.diy_name} "
-            f"data.test_root={os.path.abspath(tiled_pool_dir)} app={args.app_test} app.ckpt_step={actual_step}"
+        t_test_tile_start = time.perf_counter()
+        manifest = prepare_tiled_test_pool(
+            pool_dir=args.pool_dir,
+            tiled_pool_dir=tiled_pool_dir,
+            manifest_save_dir=run_out_dir,
+            tile_size=args.tile_size,
+            tile_overlap=args.tile_overlap,
+            bg_std_thresh=args.bg_std_thresh,
+            disable_tiling=args.disable_tiling,
+            pool_signature=pool_signature,
+            tile_config_key=tile_config_key,
+            cached_manifest_path=cached_manifest_path,
+            log_files=log_files,
         )
-        log_and_print(
-            f"\n[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 "
-            f"(BatchSize={args.infer_batch_size}, 關閉冗餘子圖塊 PNG 輸出 -> {os.path.abspath(tile_amap_cache_dir)}):",
-            log_files,
-        )
-        run_cmd_and_log(demo_cmd, log_files, env=env)
-        model_infer_sec = time.perf_counter() - t_infer_start
+        test_tile_sec = time.perf_counter() - t_test_tile_start
+        num_test_images = manifest.get("num_images", 1)
+        total_test_tiles = manifest.get("total_tiles", num_test_images)
 
-        for old_viz in glob.glob(f"./logs/{args.data_name}/**/no_gt_results", recursive=True):
-            safe_rmtree(old_viz)
-        for old_hm in glob.glob(f"./logs/{args.data_name}/**/demo/heatmaps", recursive=True):
-            safe_rmtree(old_hm)
+    safe_rmtree(tile_amap_tmp_dir)
+    os.makedirs(tile_amap_tmp_dir, exist_ok=True)
 
-        try:
-            with open(os.path.join(tile_amap_cache_dir, "cache_info.json"), "w", encoding="utf-8") as f:
-                json.dump(
-                    {
-                        "pool_signature": pool_signature,
-                        "tile_config_key": tile_config_key,
-                        "ckpt_signature": ckpt_signature,
-                        "actual_step": actual_step,
-                        "diy_name": args.diy_name,
-                        "created_at": timestamp,
-                    },
-                    f,
-                    indent=2,
-                    ensure_ascii=False,
-                )
-        except Exception:
-            pass
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    env["FAB_AMAP_DUMP_DIR"] = os.path.abspath(tile_amap_tmp_dir)
+    env["FAB_SKIP_TILE_HEATMAP_PNG"] = "1"
+    env["FAB_INFER_BATCH_SIZE"] = str(args.infer_batch_size)
+    env["FAB_BBOX_OUT_DIR"] = ""
+    env["FAB_SIGMA_K"] = str(args.sigma_k)
+    env["FAB_GOLDEN_NAMES"] = ""
+
+    t_infer_start = time.perf_counter()
+    demo_cmd = (
+        f"python foundad/main.py mode=demo data.dataset=mvtec "
+        f"data.data_name={args.data_name} diy_name={args.diy_name} "
+        f"data.test_root={os.path.abspath(tiled_pool_dir)} app={args.app_test} app.ckpt_step={actual_step}"
+    )
+    log_and_print(
+        f"\n[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 "
+        f"(BatchSize={args.infer_batch_size}, 碎片暫存於 {os.path.abspath(tile_amap_tmp_dir)} 並將於 Step 4 RAM 拼接後立即銷毀):",
+        log_files,
+    )
+    run_cmd_and_log(demo_cmd, log_files, env=env)
+    model_infer_sec = time.perf_counter() - t_infer_start
+
+    for old_viz in glob.glob(f"./logs/{args.data_name}/**/no_gt_results", recursive=True):
+        safe_rmtree(old_viz)
+    for old_hm in glob.glob(f"./logs/{args.data_name}/**/demo/heatmaps", recursive=True):
+        safe_rmtree(old_hm)
 
     t_stitch_start = time.perf_counter()
     anomaly_count, skipped_count, eff_thresh, anomaly_dir, anomaly_fullres_bbox_dir, dist_summary_lines = stitch_and_filter_anomalies(
         manifest=manifest,
-        tile_amap_dir=tile_amap_cache_dir,
+        tile_amap_dir=tile_amap_tmp_dir,
         final_amap_dir=amap_dump_dir,
         out_dir=run_out_dir,
         category=args.category,
@@ -1991,9 +1980,8 @@ def main():
         f"  [2] 整體推論階段總時間 (Total Inference Time) : {format_duration(total_infer_time)}\n"
         f"      ├─ Step 3.1 測試池高解析度切塊 ({total_test_tiles} 塊)   : {format_duration(test_tile_sec)}"
         f"{' (Cached)' if used_png_tile_cache else ''}\n"
-        f"      ├─ Step 3.2 FoundAD 模型推論               : {format_duration(model_infer_sec)}"
-        f"{' (Cached - 0秒極速載入)' if used_amap_cache else ''}\n"
-        f"      ├─ Step 4 全解析度串流縫合與{'未濾波' if args.raw_score_mode else '四合一濾波'}畫框 : {format_duration(stitch_vis_sec)}\n"
+        f"      ├─ Step 3.2 FoundAD 模型推論               : {format_duration(model_infer_sec)}\n"
+        f"      ├─ Step 4 RAM 縫合銷毀碎片與{'未濾波' if args.raw_score_mode else '四合一濾波'}畫框 : {format_duration(stitch_vis_sec)}\n"
         f"      └─ 平均每張原圖推論耗時 ({num_test_images} 張原圖)         : {avg_infer_per_img:.2f} 秒/張\n"
         f"{'-'*75}\n"
         f"  [3] 任務全程總執行時間 (Total Wall Time)      : {format_duration(total_wall_time)}\n"
@@ -2005,17 +1993,16 @@ def main():
         f"{'-'*75}\n"
         f"  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):\n"
         f"      📦 訓練權重檔資料夾           : {ckpt_dirs[0]}\n"
-        f"      ⚡ 子圖塊熱力圖快取資料夾     : {os.path.abspath(tile_amap_cache_dir)}\n"
+        f"      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)\n"
         f"      📂 本次時間戳記推論主資料夾   : {run_out_dir}\n"
         f"          ├── 異常紅框三合一對照圖  : {anomaly_dir}\n"
         f"          ├── 異常1:1全解析度紅框圖 : {anomaly_fullres_bbox_dir}\n"
-        f"          ├── 異常熱力圖矩陣(.npy)  : {amap_dump_dir}\n"
+        f"          ├── 整張Wafer熱力圖(.npy) : {amap_dump_dir}\n"
         f"          ├── 完整排名報表 (TXT)    : {report_txt_path}\n"
         f"          ├── 完整排名報表 (CSV)    : {report_csv_path}\n"
         f"          └── 本次執行日誌 (log.txt): {fixed_log_txt}\n"
         f"{'='*75}"
     )
-
     log_and_print(infer_done_summary, log_files)
 
     if os.path.exists(report_txt_path):
