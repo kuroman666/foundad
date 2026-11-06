@@ -13,7 +13,7 @@ from typing import List, Dict, Tuple, Optional
 
 import numpy as np
 
-from fab_tools.auto_golden import (
+from auto_golden import (
     format_duration,
     log_and_print,
     safe_copy,
