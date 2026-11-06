@@ -2,6 +2,8 @@
   "pool_signature": "fc91474fa443a792346382f21c70ff45",
   "category": "capsule",
   "shots": 4,
+  "tile_size": 1024,
+  "max_train_tiles": 48,
   "golden_filenames": [
     "clean_022.png",
     "clean_016.png",

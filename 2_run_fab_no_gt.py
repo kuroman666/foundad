@@ -20,7 +20,12 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from fab_tools.auto_golden import select_golden_images, scan_pool_images, IMG_EXTENSIONS
+from fab_tools.auto_golden import (
+    select_golden_images,
+    purify_golden_tiles_two_stage,
+    scan_pool_images,
+    IMG_EXTENSIONS,
+)
 
 
 def format_duration(seconds: float) -> str:
@@ -291,12 +296,15 @@ def prepare_tiled_golden_trainset(
     max_train_tiles: int,
     bg_std_thresh: float,
     log_files: List[str],
+    ckpt_path: str = "auto",
+    report_dir: Optional[str] = None,
 ) -> int:
     """
+    Stage 2 圖塊級二次純化 (Two-Stage Hybrid Filtering)：
     將 Step 1 挑出的 4 張高解析度 Golden Image 切分為原生解析度子圖塊：
-    - 對每個空間座標 (y, x) 計算跨片 L1 距離矩陣，優先選出最純淨的 Medoid 圖塊。
-    - 當需要補充跨片公差圖塊時，自動排除距離最遠的離群圖塊 (Outlier Rejection)，防止局部微瑕疵混入訓練集。
-    - 處理完畢立即釋放 Golden 原圖陣列，降低記憶體佔用。
+    1. 對每個空間座標 (y, x) 同時計算「微位移容忍 16x16 局部區塊殘差峰值」與「輕量 DINO 圖塊語意特徵距離」。
+    2. 自動選出每個座標最純淨的 Medoid 圖塊，並嚴格剔除含有局部微瑕疵的離群圖塊 (Outlier Rejection)。
+    3. 透過徑向分層純淨度篩選 (Radial Stratified Purity Binning)，在中心、中環、外環各區間挑出最乾淨的 48 張代表性圖塊。
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
     golden_files = sorted(
@@ -333,9 +341,9 @@ def prepare_tiled_golden_trainset(
     xs = get_axis_positions(w0, tile_size, stride)
     grid_coords = [(y, x) for y in ys for x in xs]
 
-    valid_candidates = []
+    coord_Execution_items: List[Tuple[int, int, float, List[Tuple[int, np.ndarray]]]] = []
     for (y, x) in grid_coords:
-        non_bg_items = []
+        non_bg_items: List[Tuple[int, np.ndarray]] = []
         for g_idx, g_img in enumerate(golden_imgs):
             gh, gw = g_img.shape[:2]
             py = min(y, max(0, gh - tile_size))
@@ -351,54 +359,22 @@ def prepare_tiled_golden_trainset(
         if not non_bg_items:
             continue
 
-        if len(non_bg_items) == 1:
-            best_g_idx = non_bg_items[0][0]
-            safe_extra_indices = []
-        else:
-            small = np.stack(
-                [
-                    cv2.resize(item[1], (64, 64), interpolation=cv2.INTER_AREA).astype(np.float32).reshape(-1)
-                    for item in non_bg_items
-                ],
-                axis=0,
-            )
-            dist_sum = np.abs(small[:, None, :] - small[None, :, :]).mean(axis=-1).sum(axis=1)
-            sorted_order = np.argsort(dist_sum)
-            best_g_idx = non_bg_items[int(sorted_order[0])][0]
-            if len(sorted_order) >= 3:
-                safe_extra_indices = [non_bg_items[int(i)][0] for i in sorted_order[1:-1]]
-            else:
-                safe_extra_indices = [non_bg_items[int(i)][0] for i in sorted_order[1:]]
-
         cy, cx = y + tile_size * 0.5, x + tile_size * 0.5
-        radius = np.hypot(cy - h0 * 0.5, cx - w0 * 0.5)
-        valid_candidates.append((radius, y, x, best_g_idx, safe_extra_indices))
+        radius = float(np.hypot(cy - h0 * 0.5, cx - w0 * 0.5))
+        coord_Execution_items.append((y, x, radius, non_bg_items))
 
-    if not valid_candidates:
+    if not coord_Execution_items:
         log_and_print("[Tiling] 警告：所有切塊皆低於背景門檻，退回保留全部切塊。", log_files)
         for (y, x) in grid_coords:
-            valid_candidates.append((0.0, y, x, 0, []))
+            g0 = golden_imgs[0]
+            crop0 = g0[y:y + tile_size, x:x + tile_size]
+            coord_Execution_items.append((y, x, 0.0, [(0, crop0)]))
 
-    valid_candidates.sort(key=lambda item: item[0])
-
-    if len(valid_candidates) > max_train_tiles:
-        indices = np.linspace(0, len(valid_candidates) - 1, max_train_tiles, dtype=int)
-        selected_specs = [
-            (valid_candidates[i][1], valid_candidates[i][2], valid_candidates[i][3])
-            for i in indices
-        ]
-    else:
-        selected_specs = [(y, x, best_g_idx) for (_, y, x, best_g_idx, _) in valid_candidates]
-        if len(selected_specs) < max_train_tiles:
-            extra_needed = max_train_tiles - len(selected_specs)
-            for (_, y, x, _, safe_extra_indices) in valid_candidates:
-                if extra_needed <= 0:
-                    break
-                for extra_g_idx in safe_extra_indices:
-                    if extra_needed <= 0:
-                        break
-                    selected_specs.append((y, x, extra_g_idx))
-                    extra_needed -= 1
+    selected_specs, purity_stats = purify_golden_tiles_two_stage(
+        coord_Execution_items=coord_Execution_items,
+        max_train_tiles=max_train_tiles,
+        ckpt_path=ckpt_path,
+    )
 
     for f in os.listdir(cat_train_dir):
         if f.lower().endswith(IMG_EXTENSIONS):
@@ -409,7 +385,17 @@ def prepare_tiled_golden_trainset(
                 pass
             os.remove(p)
 
-    for idx, (y, x, g_idx) in enumerate(selected_specs):
+    purity_report_lines = [
+        "=== Stage 2: Golden Tile-Level Hybrid Purification Report ===",
+        f"Total Evaluated Candidate Tiles : {purity_stats['total_evaluated_tiles']}",
+        f"Valid Non-Background Coords     : {purity_stats['valid_grid_coords']}",
+        f"Rejected Outlier Tiles (Stage2) : {purity_stats['rejected_outlier_tiles']}",
+        f"Radial Bin Purity Swaps         : {purity_stats['radial_purified_swaps']}",
+        f"DINO Feature Guidance Active    : {'YES' if purity_stats['used_dino_stage2'] else 'FALLBACK_PIXEL_PEAK'}",
+        "-" * 72,
+    ]
+
+    for idx, (y, x, g_idx, p_cost) in enumerate(selected_specs):
         g_img = golden_imgs[g_idx]
         gh, gw = g_img.shape[:2]
         py = min(y, max(0, gh - tile_size))
@@ -419,17 +405,30 @@ def prepare_tiled_golden_trainset(
         patch = g_img[py:py + ph, px:px + pw]
         if patch.shape[0] != tile_size or patch.shape[1] != tile_size:
             patch = cv2.resize(patch, (tile_size, tile_size), interpolation=cv2.INTER_AREA)
-        out_path = os.path.join(cat_train_dir, f"{idx:03d}_g{g_idx}_tile_y{y:04d}_x{x:04d}.png")
+        tile_fname = f"{idx:03d}_g{g_idx}_tile_y{y:04d}_x{x:04d}.png"
+        out_path = os.path.join(cat_train_dir, tile_fname)
         Image.fromarray(patch).save(out_path)
+        purity_report_lines.append(
+            f"Tile #{idx + 1:02d}: {tile_fname} | Source=Golden#{g_idx + 1} | Coord=(y={y:04d}, x={x:04d}) | Hybrid_Residual={p_cost:.4f}"
+        )
+
+    purity_txt_path = os.path.join(shot_dir, "golden_tile_purity_report.txt")
+    with open(purity_txt_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(purity_report_lines) + "\n")
+    if report_dir:
+        os.makedirs(report_dir, exist_ok=True)
+        safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
 
     num_saved = len(selected_specs)
-    del golden_imgs
+    del golden_imgs, coord_Execution_items
     gc.collect()
 
     log_and_print(
-        f"[Tiling-Train] 已將 {len(golden_files)} 張 ({w0}x{h0}) Golden 大圖無損切分為 "
-        f"{num_saved} 張 ({tile_size}x{tile_size}) 高解析度代表性訓練圖塊 (已啟用跨片離群瑕疵過濾) "
-        f"-> {os.path.abspath(cat_train_dir)}",
+        f"[Tiling-Train 二階段純化完成] 已從 {len(golden_files)} 張 ({w0}x{h0}) Golden 原圖評估 "
+        f"{purity_stats['total_evaluated_tiles']} 張候選子圖塊：\n"
+        f"  ├── 跨片局部峰值與 DINO 離群剔除 : 自動攔截剔除 {purity_stats['rejected_outlier_tiles']} 張可疑離群圖塊\n"
+        f"  ├── 徑向分層純淨度優化替換       : {purity_stats['radial_purified_swaps']} 個徑向區間已自動替換為更純淨座標\n"
+        f"  └── 最終輸出純淨代表性訓練圖塊   : {num_saved} 張 ({tile_size}x{tile_size}) -> {os.path.abspath(cat_train_dir)}",
         log_files,
     )
     return num_saved
@@ -1335,7 +1334,6 @@ def stitch_and_filter_anomalies(
             continue
 
         anomaly_count += 1
-        # 保留存在 output 內的拼好後的整張 Wafer .npy
         save_dtype = np.float16 if max(active_amap.shape) > 2048 else np.float32
         np.save(
             os.path.join(final_amap_dir, f"Rank{rank_idx:03d}_Score{max_score:.4f}_{stem}.npy"),
@@ -1428,7 +1426,6 @@ def stitch_and_filter_anomalies(
     del golden_spatial_ref
     gc.collect()
 
-    # 計算非 Golden 正常圖之「濾波後 vs 未濾波 Raw」分數分佈對照
     non_golden_recs = [r for r in ranking_records if not r["status"].startswith("GOLDEN")]
     non_golden_normal_recs = [
         r for r in non_golden_recs if not os.path.basename(r["filename"]).startswith("escape_")
@@ -1702,7 +1699,7 @@ def main():
     golden_meta_path = os.path.join(shot_dir, "golden_cache_meta.json")
 
     # =========================================================================
-    # [階段一：整體訓練階段] (包含 Golden 自動挑圖 + 高解析度切塊 + 模型訓練)
+    # [階段一：整體訓練階段] (包含 Stage 1 自動挑圖 + Stage 2 圖塊二次純化 + 模型訓練)
     # =========================================================================
     used_golden_cache = False
     golden_filenames: List[str] = []
@@ -1727,6 +1724,9 @@ def main():
                 rec_src = os.path.join(shot_dir, f"selected_{args.shots}_golden_images.txt")
                 if os.path.exists(rec_src):
                     safe_copy(rec_src, os.path.join(run_out_dir, f"selected_{args.shots}_golden_images.txt"))
+                purity_src = os.path.join(shot_dir, "golden_tile_purity_report.txt")
+                if os.path.exists(purity_src):
+                    safe_copy(purity_src, os.path.join(run_out_dir, "golden_tile_purity_report.txt"))
                 used_golden_cache = True
                 log_and_print(
                     f"[⚡ Golden 快取命中] 已設定 --skip_train，直接沿用已挑選之 {len(golden_filenames)} 張 Golden Image "
@@ -1752,7 +1752,7 @@ def main():
             os.path.relpath(p, args.pool_dir).replace("\\", "/") for p in golden_paths
         ]
         log_and_print(
-            f"[⏱️ 計時] Step 1 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
+            f"[⏱️ 計時] Step 1 (Stage 1) 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
             log_files,
         )
 
@@ -1766,6 +1766,8 @@ def main():
                 max_train_tiles=args.max_train_tiles,
                 bg_std_thresh=args.bg_std_thresh,
                 log_files=log_files,
+                ckpt_path=args.ckpt,
+                report_dir=run_out_dir,
             )
         else:
             num_train_samples = args.shots
@@ -1835,14 +1837,14 @@ def main():
         f"\n{'='*75}",
         f" [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]",
         f"{'-'*75}",
-        f"  ⏱️ Step 1 自動挑選 Golden 圖耗時 : {format_duration(golden_select_sec)}{' (Cached)' if used_golden_cache else ''}",
-        f"  ⏱️ Step 1.5 高解析度訓練切塊耗時 : {format_duration(train_tile_sec)}{' (Cached)' if used_golden_cache else ''}",
-        f"  ⏱️ Step 2 FoundAD 模型訓練耗時   : {format_duration(model_train_sec)}{' (Skipped)' if args.skip_train else ''}",
-        f"  ⏱️ 整體訓練階段總時間            : {format_duration(total_train_time)}",
+        f"  ⏱️ Step 1 (Stage 1) 自動挑 Golden 圖耗時 : {format_duration(golden_select_sec)}{' (Cached)' if used_golden_cache else ''}",
+        f"  ⏱️ Step 1.5 (Stage 2) 圖塊二次純化耗時  : {format_duration(train_tile_sec)}{' (Cached)' if used_golden_cache else ''}",
+        f"  ⏱️ Step 2 FoundAD 模型訓練耗時          : {format_duration(model_train_sec)}{' (Skipped)' if args.skip_train else ''}",
+        f"  ⏱️ 整體訓練階段總時間                   : {format_duration(total_train_time)}",
         f"{'-'*75}",
-        f"  📁 Golden 訓練圖塊資料夾         : {train_tiles_dir}",
-        f"  📁 Golden 原圖備份資料夾         : {golden_backup_dir}",
-        f"  📦 訓練權重檔儲存資料夾          : {ckpt_dirs[0]}",
+        f"  📁 Golden 訓練圖塊資料夾                : {train_tiles_dir}",
+        f"  📁 Golden 原圖備份資料夾                : {golden_backup_dir}",
+        f"  📦 訓練權重檔儲存資料夾                 : {ckpt_dirs[0]}",
     ]
     for cf in ckpt_files:
         train_done_lines.append(f"      └── {cf}")
@@ -1859,7 +1861,6 @@ def main():
     cached_manifest_path = os.path.join(abs_datasets_dir, f"{args.data_name}_cached_tile_manifest.json")
     tile_amap_tmp_dir = os.path.join(run_out_dir, "_tmp_tile_amap_npy")
 
-    # 若舊版殘留 _tile_amap_cache 資料夾，自動順手清理
     legacy_tile_cache_root = os.path.join(abs_datasets_dir, f"{args.data_name}_tile_amap_cache")
     if os.path.exists(legacy_tile_cache_root):
         safe_rmtree(legacy_tile_cache_root)
@@ -1970,9 +1971,9 @@ def main():
         f" [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]\n"
         f"{'-'*75}\n"
         f"  [1] 整體訓練階段總時間 (Total Training Time)  : {format_duration(total_train_time)}\n"
-        f"      ├─ Step 1 自動挑選 Golden Image            : {format_duration(golden_select_sec)}"
+        f"      ├─ Step 1 (Stage 1) 自動挑選 Golden Image : {format_duration(golden_select_sec)}"
         f"{' (Cached)' if used_golden_cache else ''}\n"
-        f"      ├─ Step 1.5 Golden 高解析度切塊            : {format_duration(train_tile_sec)}"
+        f"      ├─ Step 1.5 (Stage 2) 圖塊二次純化切塊    : {format_duration(train_tile_sec)}"
         f"{' (Cached)' if used_golden_cache else ''}\n"
         f"      └─ Step 2 FoundAD 模型訓練 (step={actual_step})     : {format_duration(model_train_sec)}"
         f"{' (Skipped)' if args.skip_train else ''}\n"
@@ -1998,6 +1999,7 @@ def main():
         f"          ├── 異常紅框三合一對照圖  : {anomaly_dir}\n"
         f"          ├── 異常1:1全解析度紅框圖 : {anomaly_fullres_bbox_dir}\n"
         f"          ├── 整張Wafer熱力圖(.npy) : {amap_dump_dir}\n"
+        f"          ├── Golden圖塊二次純化報表: {os.path.join(run_out_dir, 'golden_tile_purity_report.txt')}\n"
         f"          ├── 完整排名報表 (TXT)    : {report_txt_path}\n"
         f"          ├── 完整排名報表 (CSV)    : {report_csv_path}\n"
         f"          └── 本次執行日誌 (log.txt): {fixed_log_txt}\n"

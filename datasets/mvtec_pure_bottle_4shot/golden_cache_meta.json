@@ -2,6 +2,8 @@
   "pool_signature": "e6277661f0a70a99ec1f45bd75edf94a",
   "category": "bottle",
   "shots": 4,
+  "tile_size": 1024,
+  "max_train_tiles": 48,
   "golden_filenames": [
     "clean_007.png",
     "clean_004.png",
