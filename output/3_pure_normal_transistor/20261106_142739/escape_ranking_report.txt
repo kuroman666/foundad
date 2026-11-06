@@ -1,0 +1,127 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 0.2700 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 2 | Skipped Normal Images: 58
+Non-Golden Normal Score Dist: Max=0.3519 | P99=0.3164 | P95=0.2074 | Median=0.1391 | Mean=0.1501 | Std=0.0437
+Ablation Compare (Normal)   : Raw_Max=0.4044, Raw_Mean=0.1672 vs Filtered_Max=0.3519, Filtered_Mean=0.1501
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1939 | mean+2*std=0.2376 | mean+3*std=0.2813
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) (Golden_Mean=0.0218, NonGolden_Med=0.1391, Ratio=6.39x, Gap=+0.1173)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1     | clean_039.png              | ANOMALY             | 0.3519    | 0.4044    | 0.3519     | -0.0525  | 1      | Rank001_Score0.3519_Box01_clean_039.png
+2     | clean_053.png              | ANOMALY             | 0.2874    | 0.3235    | 0.2874     | -0.0361  | 1      | Rank002_Score0.2874_Box01_clean_053.png
+3     | clean_002.png              | PASS_SKIPPED        | 0.2265    | 0.2488    | 0.2265     | -0.0223  | 0      | (未超過動態門檻，不輸出圖片)
+4     | clean_003.png              | PASS_SKIPPED        | 0.2010    | 0.2170    | 0.2010     | -0.0160  | 0      | (未超過動態門檻，不輸出圖片)
+5     | clean_015.png              | PASS_SKIPPED        | 0.1920    | 0.2121    | 0.1920     | -0.0202  | 0      | (未超過動態門檻，不輸出圖片)
+6     | clean_057.png              | PASS_SKIPPED        | 0.1904    | 0.2025    | 0.1904     | -0.0121  | 0      | (未超過動態門檻，不輸出圖片)
+7     | clean_013.png              | PASS_SKIPPED        | 0.1902    | 0.2137    | 0.1902     | -0.0235  | 0      | (未超過動態門檻，不輸出圖片)
+8     | clean_046.png              | PASS_SKIPPED        | 0.1817    | 0.2010    | 0.1817     | -0.0193  | 0      | (未超過動態門檻，不輸出圖片)
+9     | clean_044.png              | PASS_SKIPPED        | 0.1815    | 0.2008    | 0.1815     | -0.0194  | 0      | (未超過動態門檻，不輸出圖片)
+10    | clean_004.png              | PASS_SKIPPED        | 0.1806    | 0.2020    | 0.1806     | -0.0214  | 0      | (未超過動態門檻，不輸出圖片)
+11    | clean_029.png              | PASS_SKIPPED        | 0.1748    | 0.1945    | 0.1748     | -0.0196  | 0      | (未超過動態門檻，不輸出圖片)
+12    | clean_011.png              | PASS_SKIPPED        | 0.1741    | 0.1885    | 0.1741     | -0.0144  | 0      | (未超過動態門檻，不輸出圖片)
+13    | clean_058.png              | PASS_SKIPPED        | 0.1738    | 0.1946    | 0.1738     | -0.0207  | 0      | (未超過動態門檻，不輸出圖片)
+14    | clean_056.png              | PASS_SKIPPED        | 0.1724    | 0.1826    | 0.1724     | -0.0102  | 0      | (未超過動態門檻，不輸出圖片)
+15    | clean_055.png              | PASS_SKIPPED        | 0.1654    | 0.1856    | 0.1654     | -0.0202  | 0      | (未超過動態門檻，不輸出圖片)
+16    | clean_032.png              | PASS_SKIPPED        | 0.1609    | 0.1809    | 0.1609     | -0.0200  | 0      | (未超過動態門檻，不輸出圖片)
+17    | clean_001.png              | PASS_SKIPPED        | 0.1602    | 0.1748    | 0.1602     | -0.0146  | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_047.png              | PASS_SKIPPED        | 0.1597    | 0.1734    | 0.1597     | -0.0137  | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_012.png              | PASS_SKIPPED        | 0.1586    | 0.1756    | 0.1586     | -0.0170  | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_027.png              | PASS_SKIPPED        | 0.1551    | 0.1749    | 0.1551     | -0.0198  | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_052.png              | PASS_SKIPPED        | 0.1549    | 0.1713    | 0.1549     | -0.0164  | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_028.png              | PASS_SKIPPED        | 0.1543    | 0.1864    | 0.1543     | -0.0321  | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_006.png              | PASS_SKIPPED        | 0.1527    | 0.1674    | 0.1527     | -0.0148  | 0      | (未超過動態門檻，不輸出圖片)
+24    | clean_008.png              | PASS_SKIPPED        | 0.1516    | 0.1722    | 0.1516     | -0.0206  | 0      | (未超過動態門檻，不輸出圖片)
+25    | clean_021.png              | PASS_SKIPPED        | 0.1498    | 0.1655    | 0.1498     | -0.0157  | 0      | (未超過動態門檻，不輸出圖片)
+26    | clean_018.png              | PASS_SKIPPED        | 0.1461    | 0.1624    | 0.1461     | -0.0164  | 0      | (未超過動態門檻，不輸出圖片)
+27    | clean_054.png              | PASS_SKIPPED        | 0.1445    | 0.1519    | 0.1445     | -0.0074  | 0      | (未超過動態門檻，不輸出圖片)
+28    | clean_022.png              | PASS_SKIPPED        | 0.1403    | 0.1881    | 0.1403     | -0.0478  | 0      | (未超過動態門檻，不輸出圖片)
+29    | clean_017.png              | PASS_SKIPPED        | 0.1379    | 0.1478    | 0.1379     | -0.0099  | 0      | (未超過動態門檻，不輸出圖片)
+30    | clean_030.png              | PASS_SKIPPED        | 0.1376    | 0.1528    | 0.1376     | -0.0152  | 0      | (未超過動態門檻，不輸出圖片)
+31    | clean_026.png              | PASS_SKIPPED        | 0.1358    | 0.1474    | 0.1358     | -0.0116  | 0      | (未超過動態門檻，不輸出圖片)
+32    | clean_048.png              | PASS_SKIPPED        | 0.1356    | 0.1493    | 0.1356     | -0.0137  | 0      | (未超過動態門檻，不輸出圖片)
+33    | clean_007.png              | PASS_SKIPPED        | 0.1347    | 0.1472    | 0.1347     | -0.0125  | 0      | (未超過動態門檻，不輸出圖片)
+34    | clean_043.png              | PASS_SKIPPED        | 0.1343    | 0.1538    | 0.1343     | -0.0195  | 0      | (未超過動態門檻，不輸出圖片)
+35    | clean_040.png              | PASS_SKIPPED        | 0.1329    | 0.1462    | 0.1329     | -0.0133  | 0      | (未超過動態門檻，不輸出圖片)
+36    | clean_014.png              | PASS_SKIPPED        | 0.1296    | 0.1465    | 0.1296     | -0.0169  | 0      | (未超過動態門檻，不輸出圖片)
+37    | clean_045.png              | PASS_SKIPPED        | 0.1261    | 0.1482    | 0.1261     | -0.0221  | 0      | (未超過動態門檻，不輸出圖片)
+38    | clean_038.png              | PASS_SKIPPED        | 0.1258    | 0.1375    | 0.1258     | -0.0117  | 0      | (未超過動態門檻，不輸出圖片)
+39    | clean_050.png              | PASS_SKIPPED        | 0.1229    | 0.1426    | 0.1229     | -0.0197  | 0      | (未超過動態門檻，不輸出圖片)
+40    | clean_036.png              | PASS_SKIPPED        | 0.1224    | 0.1369    | 0.1224     | -0.0144  | 0      | (未超過動態門檻，不輸出圖片)
+41    | clean_009.png              | PASS_SKIPPED        | 0.1205    | 0.1337    | 0.1205     | -0.0131  | 0      | (未超過動態門檻，不輸出圖片)
+42    | clean_024.png              | PASS_SKIPPED        | 0.1205    | 0.1345    | 0.1205     | -0.0140  | 0      | (未超過動態門檻，不輸出圖片)
+43    | clean_042.png              | PASS_SKIPPED        | 0.1193    | 0.1342    | 0.1193     | -0.0149  | 0      | (未超過動態門檻，不輸出圖片)
+44    | clean_059.png              | PASS_SKIPPED        | 0.1192    | 0.1328    | 0.1192     | -0.0136  | 0      | (未超過動態門檻，不輸出圖片)
+45    | clean_033.png              | PASS_SKIPPED        | 0.1182    | 0.1291    | 0.1182     | -0.0110  | 0      | (未超過動態門檻，不輸出圖片)
+46    | clean_037.png              | PASS_SKIPPED        | 0.1180    | 0.1245    | 0.1180     | -0.0064  | 0      | (未超過動態門檻，不輸出圖片)
+47    | clean_041.png              | PASS_SKIPPED        | 0.1139    | 0.1299    | 0.1139     | -0.0160  | 0      | (未超過動態門檻，不輸出圖片)
+48    | clean_051.png              | PASS_SKIPPED        | 0.1139    | 0.1221    | 0.1139     | -0.0082  | 0      | (未超過動態門檻，不輸出圖片)
+49    | clean_010.png              | PASS_SKIPPED        | 0.1135    | 0.1242    | 0.1135     | -0.0107  | 0      | (未超過動態門檻，不輸出圖片)
+50    | clean_005.png              | PASS_SKIPPED        | 0.1131    | 0.1264    | 0.1131     | -0.0133  | 0      | (未超過動態門檻，不輸出圖片)
+51    | clean_034.png              | PASS_SKIPPED        | 0.1108    | 0.1257    | 0.1108     | -0.0149  | 0      | (未超過動態門檻，不輸出圖片)
+52    | clean_020.png              | PASS_SKIPPED        | 0.1094    | 0.1231    | 0.1094     | -0.0137  | 0      | (未超過動態門檻，不輸出圖片)
+53    | clean_023.png              | PASS_SKIPPED        | 0.1079    | 0.1163    | 0.1079     | -0.0084  | 0      | (未超過動態門檻，不輸出圖片)
+54    | clean_019.png              | PASS_SKIPPED        | 0.1067    | 0.1173    | 0.1067     | -0.0105  | 0      | (未超過動態門檻，不輸出圖片)
+55    | clean_035.png              | PASS_SKIPPED        | 0.1056    | 0.1199    | 0.1056     | -0.0143  | 0      | (未超過動態門檻，不輸出圖片)
+56    | clean_025.png              | PASS_SKIPPED        | 0.0893    | 0.0957    | 0.0893     | -0.0063  | 0      | (未超過動態門檻，不輸出圖片)
+57    | clean_031.png              | GOLDEN_PASS         | 0.0234    | 0.0246    | 0.0234     | -0.0012  | 0      | (未超過動態門檻，不輸出圖片)
+58    | clean_016.png              | GOLDEN_PASS         | 0.0222    | 0.0235    | 0.0222     | -0.0014  | 0      | (未超過動態門檻，不輸出圖片)
+59    | clean_049.png              | GOLDEN_PASS         | 0.0214    | 0.0227    | 0.0214     | -0.0013  | 0      | (未超過動態門檻，不輸出圖片)
+60    | clean_000.png              | GOLDEN_PASS         | 0.0200    | 0.0210    | 0.0200     | -0.0010  | 0      | (未超過動態門檻，不輸出圖片)
+
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 (Stage 1) 自動挑 Golden 圖耗時 : 00:00:02.07 (2.07 秒)
+  ⏱️ Step 1.5 (Stage 2) 圖塊二次純化耗時  : 00:00:00.13 (0.13 秒)
+  ⏱️ Step 2 FoundAD 模型訓練耗時          : 00:24:22.48 (1462.48 秒)
+  ⏱️ 整體訓練階段總時間                   : 00:24:24.67 (1464.67 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_pure_transistor_4shot/train/transistor
+  📁 Golden 原圖備份資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_pure_transistor_4shot/golden_full_res_backup/transistor
+  📦 訓練權重檔儲存資料夾                 : /home/kenny/project/FoundAD/logs/mvtec_pure_transistor_4shot/dinov3pure_fpr
+      └── /home/kenny/project/FoundAD/logs/mvtec_pure_transistor_4shot/dinov3pure_fpr/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_pure_transistor_4shot/dinov3pure_fpr/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體訓練階段總時間 (Total Training Time)  : 00:24:24.67 (1464.67 秒)
+      ├─ Step 1 (Stage 1) 自動挑選 Golden Image : 00:00:02.07 (2.07 秒)
+      ├─ Step 1.5 (Stage 2) 圖塊二次純化切塊    : 00:00:00.13 (0.13 秒)
+      └─ Step 2 FoundAD 模型訓練 (step=2000)     : 00:24:22.48 (1462.48 秒)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:42.46 (42.46 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (60 塊)   : 00:00:28.28 (28.28 秒)
+      ├─ Step 3.2 FoundAD 模型推論               : 00:00:10.81 (10.81 秒)
+      ├─ Step 4 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:03.37 (3.37 秒)
+      └─ 平均每張原圖推論耗時 (60 張原圖)         : 0.71 秒/張
+---------------------------------------------------------------------------
+  [3] 任務全程總執行時間 (Total Wall Time)      : 00:25:07.16 (1507.16 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.2700):
+      🚨 超過門檻判定異常並畫框輸出 : 2 張
+      ✅ 未達門檻或微塵濾除直接略過 : 58 張 (不輸出圖片)
+      📊 非 Golden 正常圖分數分佈 (四合一濾波後) : Max=0.3519 | P99=0.3164 | P95=0.2074 | Median=0.1391 | Mean=0.1501 | Std=0.0437
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1939 | mean+2*std=0.2376 | mean+3*std=0.2813
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.4044, Mean=0.1672, Std=0.0498  vs  [四合一濾波] Max=0.3519, Mean=0.1501, Std=0.0437
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0218 vs 非Golden中位數=0.1391 | Overfit_Ratio=6.39x | Gap=+0.1173]
+  [⚠️ 過擬合自檢建議] 非 Golden 正常晶圓中位數 (0.1391) 顯著高於 Golden 訓練圖平均 (0.0218) [Overfit_Ratio=6.39x, Gap=+0.1173]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --skip_train --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 訓練權重檔資料夾           : /home/kenny/project/FoundAD/logs/mvtec_pure_transistor_4shot/dinov3pure_fpr
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/3_pure_normal_transistor/20261106_142739/log.txt
+===========================================================================
