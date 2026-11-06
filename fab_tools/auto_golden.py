@@ -1,7 +1,13 @@
 # 檔案位置: FoundAD/fab_tools/auto_golden.py (全選覆蓋此檔)
 import os
+import gc
+import stat
 import glob
+import json
+import time
 import shutil
+import hashlib
+import argparse
 from typing import List, Tuple, Dict, Optional
 
 import cv2
@@ -15,7 +21,53 @@ from torchvision import transforms
 IMG_EXTENSIONS = (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
 
 
-def scan_pool_images(pool_dir: str):
+def format_duration(seconds: float) -> str:
+    """將秒數格式化為 HH:MM:SS.xx 與總秒數。"""
+    m, s = divmod(seconds, 60)
+    h, m = divmod(int(m), 60)
+    return f"{h:02d}:{m:02d}:{s:05.2f} ({seconds:.2f} 秒)"
+
+
+def log_and_print(msg: str, log_files: Optional[List[str]] = None):
+    """同時在 Terminal 顯示並附加寫入 log.txt 檔案。"""
+    print(msg, flush=True)
+    if log_files:
+        for lf in log_files:
+            if lf:
+                with open(lf, "a", encoding="utf-8") as f:
+                    f.write(msg + "\n")
+
+
+def safe_rmtree(target_dir: str):
+    """安全刪除可能含有唯讀檔案的資料夾。"""
+    if not target_dir or not os.path.exists(target_dir):
+        return
+
+    def _onerror(func, path, exc_info):
+        try:
+            os.chmod(path, stat.S_IRWXU)
+            func(path)
+        except Exception:
+            pass
+
+    shutil.rmtree(target_dir, onerror=_onerror)
+
+
+def safe_copy(src: str, dst: str):
+    """複製檔案內容但不複製來源的唯讀鎖定屬性，並確保目標檔案可讀寫 (0644)。"""
+    if os.path.exists(dst):
+        try:
+            os.chmod(dst, stat.S_IRUSR | stat.S_IWUSR)
+        except OSError:
+            pass
+    shutil.copyfile(src, dst)
+    try:
+        os.chmod(dst, 0o644)
+    except OSError:
+        pass
+
+
+def scan_pool_images(pool_dir: str) -> List[str]:
     """遞迴搜尋資料夾與所有子資料夾內的圖片，回傳排序後的完整路徑清單。"""
     if not os.path.isdir(pool_dir):
         return []
@@ -28,23 +80,130 @@ def scan_pool_images(pool_dir: str):
     return sorted(img_paths)
 
 
+def compute_pool_signature(pool_dir: str) -> str:
+    """遞迴計算測試盲池所有有效影像之 (相對路徑, 檔案大小) MD5 指紋，用於判斷資料池是否變動。"""
+    if not os.path.isdir(pool_dir):
+        return ""
+    img_paths = scan_pool_images(pool_dir)
+    h = hashlib.md5()
+    h.update(os.path.abspath(pool_dir).encode("utf-8"))
+    for fpath in img_paths:
+        rel_path = os.path.relpath(fpath, pool_dir).replace("\\", "/")
+        try:
+            sz = os.path.getsize(fpath)
+        except OSError:
+            sz = 0
+        h.update(f"{rel_path}:{sz};".encode("utf-8"))
+    return h.hexdigest()
+
+
+def _robust_normalize_to_uint8(arr: np.ndarray) -> np.ndarray:
+    """使用 P0.1 ~ P99.9 穩健百分位數將 16-bit / float 陣列轉為 uint8，防止單點飽和亮點壓扁對比度。"""
+    arr_f = arr.astype(np.float32)
+    p_low, p_high = np.percentile(arr_f, [0.1, 99.9])
+    if p_high <= p_low:
+        p_low, p_high = float(np.min(arr_f)), float(np.max(arr_f))
+    if p_high > p_low:
+        arr_f = (arr_f - p_low) / (p_high - p_low) * 255.0
+    else:
+        arr_f = np.zeros_like(arr_f, dtype=np.float32)
+    return np.clip(arr_f, 0, 255).astype(np.uint8)
+
+
+def load_image_rgb_uint8(img_path: str) -> np.ndarray:
+    """
+    安全讀取影像並統一轉為 (H, W, 3) uint8 RGB 格式。
+    自動相容晶圓廠常見之 16-bit TIFF (.tif/.tiff)、單通道灰階或 8-bit 圖檔。
+    """
+    try:
+        with Image.open(img_path) as pil_img:
+            if pil_img.mode in ("I;16", "I;16B", "I;16L", "I", "F"):
+                arr_u8 = _robust_normalize_to_uint8(np.array(pil_img))
+                return np.stack([arr_u8, arr_u8, arr_u8], axis=-1)
+            return np.array(pil_img.convert("RGB"), dtype=np.uint8)
+    except Exception:
+        raw = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+        if raw is None:
+            raise ValueError(f"無法讀取影像檔案: {img_path}")
+        if raw.dtype != np.uint8:
+            raw = _robust_normalize_to_uint8(raw)
+        if raw.ndim == 2:
+            return cv2.cvtColor(raw, cv2.COLOR_GRAY2RGB)
+        if raw.shape[2] == 4:
+            return cv2.cvtColor(raw, cv2.COLOR_BGRA2RGB)
+        return cv2.cvtColor(raw, cv2.COLOR_BGR2RGB)
+
+
 def load_pil_rgb_uint8(img_path: str) -> Image.Image:
     """安全讀取 8-bit / 16-bit TIFF 或單通道灰階圖，統一正規化為 8-bit RGB PIL Image。"""
-    with Image.open(img_path) as pil_img:
-        if pil_img.mode in ("I;16", "I;16B", "I;16L", "I", "F"):
-            arr = np.array(pil_img, dtype=np.float32)
-            a_min, a_max = float(np.min(arr)), float(np.max(arr))
-            if a_max > a_min:
-                arr = (arr - a_min) / (a_max - a_min) * 255.0
-            arr_u8 = np.clip(arr, 0, 255).astype(np.uint8)
-            rgb_arr = np.stack([arr_u8, arr_u8, arr_u8], axis=-1)
-            return Image.fromarray(rgb_arr, mode="RGB")
-        return pil_img.convert("RGB")
+    return Image.fromarray(load_image_rgb_uint8(img_path), mode="RGB")
+
+
+def get_axis_positions(length: int, tile_size: int, stride: int) -> List[int]:
+    """計算滑動視窗座標，最後一格自動回推對齊邊界，確保所有切塊維持固定正方形不變形。"""
+    if length <= tile_size:
+        return [0]
+    positions = list(range(0, length - tile_size, stride))
+    if not positions or positions[-1] + tile_size < length:
+        positions.append(length - tile_size)
+    return positions
+
+
+def is_background_tile(tile_rgb: np.ndarray, bg_std_thresh: float) -> bool:
+    """判斷是否為純黑/純白無資訊背景塊。"""
+    if bg_std_thresh <= 0:
+        return False
+    return float(np.std(tile_rgb)) < bg_std_thresh
+
+
+def prepare_mock_unlabeled_pool_from_mvtec(
+    mvtec_cat_dir: str,
+    mock_pool_dir: str,
+    log_files: Optional[List[str]] = None,
+    defect_limit: int = 8,
+):
+    """
+    從 MVTec 建立模擬無 GT 盲池：
+    保留原始圖片名稱 (例如 000.png)，並在前方補上說明前綴：
+      - 正常樣本: clean_<原始檔名> (例如 clean_000.png)
+      - 瑕疵樣本: escape_<瑕疵類別>_<原始檔名> (例如 escape_crack_025.png)
+    """
+    safe_rmtree(mock_pool_dir)
+    os.makedirs(mock_pool_dir, exist_ok=True)
+    test_dir = os.path.join(mvtec_cat_dir, "test")
+    total_count = 0
+
+    good_dir = os.path.join(test_dir, "good")
+    for f in sorted(os.listdir(good_dir)):
+        if f.lower().endswith(IMG_EXTENSIONS):
+            new_name = f"clean_{f}"
+            safe_copy(os.path.join(good_dir, f), os.path.join(mock_pool_dir, new_name))
+            total_count += 1
+
+    defect_count = 0
+    for sub in sorted(os.listdir(test_dir)):
+        if sub == "good":
+            continue
+        sub_dir = os.path.join(test_dir, sub)
+        if not os.path.isdir(sub_dir):
+            continue
+        for f in sorted(os.listdir(sub_dir)):
+            if f.lower().endswith(IMG_EXTENSIONS) and defect_count < defect_limit:
+                new_name = f"escape_{sub}_{f}"
+                safe_copy(os.path.join(sub_dir, f), os.path.join(mock_pool_dir, new_name))
+                defect_count += 1
+                total_count += 1
+
+    log_and_print(
+        f"[模擬無GT盲池建立完成] 共 {total_count} 張圖 (含 {defect_count} 張隱藏 Escape 瑕疵，保留原圖檔名並加上前綴) "
+        f"-> {os.path.abspath(mock_pool_dir)}",
+        log_files,
+    )
 
 
 def resolve_dino_ckpt_path(ckpt_path: str) -> str:
-    """若指定的 ckpt_path 不存在，依序優先搜尋 dinov3 -> dinov2 -> dino 權重檔"""
-    if ckpt_path and os.path.exists(ckpt_path):
+    """若指定的 ckpt_path 不存在，依序優先搜尋 dinov3 -> dinov2 -> dino 權重檔。"""
+    if ckpt_path and ckpt_path.lower() != "auto" and os.path.exists(ckpt_path):
         return ckpt_path
 
     search_dirs = [
@@ -74,7 +233,7 @@ def resolve_dino_ckpt_path(ckpt_path: str) -> str:
     raise FileNotFoundError(f"找不到權重檔: {ckpt_path}，請確認 ~/.cache/torch/hub/checkpoints/ 是否有 .pth 檔！")
 
 
-def inspect_and_extract_patch_proj(ckpt_path, device):
+def inspect_and_extract_patch_proj(ckpt_path: str, device: torch.device):
     real_ckpt_path = resolve_dino_ckpt_path(ckpt_path)
     print(f"[Auto-Golden] 正在讀取本地權重檔: {real_ckpt_path}")
     ckpt = torch.load(real_ckpt_path, map_location="cpu", weights_only=False)
@@ -116,8 +275,19 @@ def inspect_and_extract_patch_proj(ckpt_path, device):
     return proj_conv, qkv_weights, patch_h
 
 
+# =====================================================================
+# Stage 1: 全域 DINO 特徵中心度 + 局部 Token 尖峰防禦挑選 Golden 原圖
+# =====================================================================
 @torch.no_grad()
-def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4, report_dir=None):
+def select_golden_images(
+    pool_dir: str,
+    ckpt_path: str,
+    out_dir: str,
+    category: str = "wafer",
+    shots: int = 4,
+    report_dir: Optional[str] = None,
+    log_files: Optional[List[str]] = None,
+) -> List[str]:
     """
     Stage 1: 全域 DINO 特徵中心度 (Medoid Centrality) + 局部 Patch Token 尖峰懲罰挑選 Golden 原圖。
     """
@@ -135,7 +305,10 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
     ])
 
     features, token_spike_scores, valid_paths = [], [], []
-    print(f"[Auto-Golden Stage 1] 遞迴掃描共找到 {len(all_imgs)} 張圖片，正在提取全域特徵與局部 Token 尖峰指標...")
+    log_and_print(
+        f"[Auto-Golden Stage 1] 遞迴掃描共找到 {len(all_imgs)} 張圖片，正在提取全域特徵與局部 Token 尖峰指標...",
+        log_files,
+    )
     for path in all_imgs:
         try:
             img = load_pil_rgb_uint8(path)
@@ -143,9 +316,8 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
             tokens = proj_conv(x).flatten(2).transpose(1, 2)
             tokens = F.layer_norm(tokens, (tokens.shape[-1],))
 
-            # 計算單圖內部 Patch Token 離群尖峰度 (防止局部明顯瑕疵混入 Stage 1)
             token_mean = tokens.mean(dim=1, keepdim=True)
-            token_dev = torch.norm(tokens - token_mean, dim=-1).squeeze(0)  # (N_patches,)
+            token_dev = torch.norm(tokens - token_mean, dim=-1).squeeze(0)
             top_k_tok = max(1, int(token_dev.numel() * 0.02))
             top_vals, _ = torch.topk(token_dev, top_k_tok)
             med_val = torch.median(token_dev).clamp(min=1e-6)
@@ -161,7 +333,11 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
             features.append(feat.cpu())
             valid_paths.append(path)
         except Exception as e:
-            print(f"  [略過損毀圖片] {path}: {e}")
+            log_and_print(f"  [略過損毀圖片] {path}: {e}", log_files)
+
+    del proj_conv, qkv_weights
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
     if len(valid_paths) < shots:
         raise ValueError(f"有效可讀取圖片數量 ({len(valid_paths)}) 少於所需的 shots ({shots})！")
@@ -171,7 +347,6 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
     np.fill_diagonal(sim_matrix, 0.0)
     raw_centrality = sim_matrix.sum(axis=1) / max(1, len(valid_paths) - 1)
 
-    # 對局部 Token 尖峰異常高的圖片施加微幅純淨度懲罰
     spike_arr = np.array(token_spike_scores, dtype=np.float32)
     spike_med = float(np.median(spike_arr))
     spike_mad = float(1.4826 * np.median(np.abs(spike_arr - spike_med))) + 1e-5
@@ -184,8 +359,7 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
     selected_paths = [valid_paths[idx] for idx in selected_indices]
 
     dest_dir = os.path.join(out_dir, "train", category)
-    if os.path.exists(dest_dir):
-        shutil.rmtree(dest_dir)
+    safe_rmtree(dest_dir)
     os.makedirs(dest_dir, exist_ok=True)
 
     record_txt = os.path.join(out_dir, f"selected_{shots}_golden_images.txt")
@@ -198,20 +372,20 @@ def select_golden_images(pool_dir, ckpt_path, out_dir, category="wafer", shots=4
             s_ratio = spike_arr[idx]
             ext = os.path.splitext(src_path)[1].lower()
             dst_path = os.path.join(dest_dir, f"{i:03d}{ext}")
-            shutil.copy2(src_path, dst_path)
+            safe_copy(src_path, dst_path)
             rel_name = os.path.relpath(src_path, pool_dir).replace("\\", "/")
             log_line = (
                 f"Golden #{i+1} (-> {i:03d}{ext}): {rel_name} | "
                 f"Hybrid_Score: {h_score:.6f} (Raw_Centrality: {r_score:.6f}, Token_Spike: {s_ratio:.3f})"
             )
-            print("  " + log_line)
+            log_and_print("  " + log_line, log_files)
             f.write(log_line + "\n")
 
     if report_dir:
         os.makedirs(report_dir, exist_ok=True)
-        shutil.copy2(record_txt, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
+        safe_copy(record_txt, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
 
-    print(f"[Auto-Golden Stage 1] 已建立 FoundAD 初始 Golden 目錄: {dest_dir}")
+    log_and_print(f"[Auto-Golden Stage 1] 已建立 FoundAD 初始 Golden 目錄: {dest_dir}", log_files)
     return selected_paths
 
 
@@ -252,7 +426,6 @@ def _extract_lightweight_dino_tile_embeddings(
             tokens = proj_conv(x).flatten(2).transpose(1, 2)
             tokens = F.layer_norm(tokens, (tokens.shape[-1],))
 
-            # 同時納入 mean, std 與局部最大值 (amax)，使微米級瑕疵在特徵空間突顯
             feat_list = [tokens.mean(dim=1), tokens.std(dim=1), tokens.amax(dim=1) * 0.25]
             for w in qkv_weights[:3]:
                 qkv = F.linear(tokens, w)
@@ -270,13 +443,13 @@ def _extract_lightweight_dino_tile_embeddings(
         return None
 
 
-def _compute_local_patch_peak_residuals(crops: List[np.ndarray], eval_res: int = 256, patch_grid: int = 16) -> np.ndarray:
+def _compute_local_patch_peak_residuals(
+    crops: List[np.ndarray],
+    eval_res: int = 256,
+    patch_grid: int = 16,
+) -> np.ndarray:
     """
-    計算同座標 (y, x) 跨 Golden 圖塊之「微位移容忍局部區塊殘差峰值 (Shift-Tolerant Local Patch-Peak Residual)」：
-    1. 將每個 512x512 圖塊轉為 256x256 並以 3x3 高斯平滑吸收 1~2px 晶圓對位微偏移。
-    2. 計算跨 Golden 的像素中位數基準圖 (Median Reference Tile)。
-    3. 將每張圖塊與中位數基準圖相減後，切分為 16x16 局部小區塊，取 Top-2 局部區塊殘差均值作為峰值指標。
-       任何在 Stage 1 被稀釋的微小刮傷或微塵，在該 16x16 局部區塊內都會產生顯著殘差尖峰！
+    計算同座標 (y, x) 跨 Golden 圖塊之「微位移容忍局部區塊殘差峰值 (Shift-Tolerant Local Patch-Peak Residual)」。
     """
     n = len(crops)
     if n <= 1:
@@ -288,16 +461,14 @@ def _compute_local_patch_peak_residuals(crops: List[np.ndarray], eval_res: int =
         blur = cv2.GaussianBlur(small, (3, 3), 0)
         blurred_stack.append(blur)
 
-    arr = np.stack(blurred_stack, axis=0)  # (N, H, W, 3)
-    med_tile = np.median(arr, axis=0, keepdims=True)  # (1, H, W, 3)
-    abs_diff = np.mean(np.abs(arr - med_tile), axis=-1)  # (N, H, W)
+    arr = np.stack(blurred_stack, axis=0)
+    med_tile = np.median(arr, axis=0, keepdims=True)
+    abs_diff = np.mean(np.abs(arr - med_tile), axis=-1)
 
-    # 將 (N, H, W) 劃分為 (N, patch_grid, H//patch_grid, patch_grid, W//patch_grid) 計算局部區塊平均殘差
     cell_h = eval_res // patch_grid
     cell_w = eval_res // patch_grid
     patched = abs_diff.reshape(n, patch_grid, cell_h, patch_grid, cell_w).mean(axis=(2, 4)).reshape(n, -1)
 
-    # 取每個圖塊內部最異常的前 2 個局部區塊殘差 + 整體平均殘差
     top2_patch_peak = np.sort(patched, axis=1)[:, -2:].mean(axis=1)
     global_l1 = abs_diff.mean(axis=(1, 2))
     return (0.70 * top2_patch_peak + 0.30 * global_l1).astype(np.float32)
@@ -310,14 +481,7 @@ def purify_golden_tiles_two_stage(
 ) -> Tuple[List[Tuple[int, int, int, float]], Dict[str, int]]:
     """
     Stage 2 圖塊級二次純化器 (Two-Stage Hybrid Filtering)：
-    輸入:
-      coord_Execution_items: List of (y, x, radius, non_bg_items)
-        其中 non_bg_items 為 [(g_idx, crop_rgb_uint8), ...]
-      max_train_tiles: 欲選出的代表性高解析度訓練圖塊上限 (如 48)
-      ckpt_path: DINO 權重路徑 (用於提取圖塊級深層語意特徵)
-    輸出:
-      selected_specs: List of (y, x, g_idx, purity_cost)
-      stats: 診斷統計字典 (總評估圖塊數、跨片剔除離群圖塊數、徑向分層純化替換數等)
+    結合局部 16x16 區塊殘差尖峰、DINO 圖塊語意距離與徑向分層純淨度篩選 (Radial Stratified Purity Binning)。
     """
     flat_tiles: List[np.ndarray] = []
     coord_slices: List[Tuple[int, int]] = []
@@ -330,7 +494,6 @@ def purify_golden_tiles_two_stage(
     total_evaluated_tiles = len(flat_tiles)
     dino_feats = _extract_lightweight_dino_tile_embeddings(flat_tiles, ckpt_path=ckpt_path, batch_size=32)
 
-    # Step 2.1: 同座標 (y, x) 跨 Golden 圖塊之「DINO 語意距離 + 局部 16x16 區塊殘差尖峰」混合評分與離群剔除
     purified_candidates = []
     rejected_outlier_tiles = 0
 
@@ -352,11 +515,11 @@ def purify_golden_tiles_two_stage(
             continue
 
         crops = [item[1] for item in non_bg_items]
-        peak_res = _compute_local_patch_peak_residuals(crops)  # (n_items,)
+        peak_res = _compute_local_patch_peak_residuals(crops)
         norm_peak = peak_res / (float(np.median(peak_res)) + 1e-4)
 
         if dino_feats is not None:
-            sub_f = dino_feats[s_idx:e_idx]  # (n_items, D)
+            sub_f = dino_feats[s_idx:e_idx]
             sim_mat = np.matmul(sub_f, sub_f.T)
             dist_mat = np.maximum(0.0, 1.0 - sim_mat)
             dino_dist = dist_mat.sum(axis=1) / max(1, n_items - 1)
@@ -372,7 +535,6 @@ def purify_golden_tiles_two_stage(
         best_g_idx = int(non_bg_items[best_local_i][0])
         best_abs_cost = float(raw_abs_cost[best_local_i])
 
-        # 自適應離群門檻：剔除排名最後一名，且若其他圖塊的局部殘差峰值超過最優圖塊的 1.65 倍亦強制剔除
         med_cost = float(np.median(hybrid_cost))
         mad_cost = float(1.4826 * np.median(np.abs(hybrid_cost - med_cost))) + 1e-4
         adaptive_gate = min(float(hybrid_cost[best_local_i]) * 1.65 + 0.15, med_cost + 2.0 * mad_cost)
@@ -380,7 +542,7 @@ def purify_golden_tiles_two_stage(
         safe_extras: List[Tuple[int, float]] = []
         if n_items >= 3:
             candidate_extra_order = sorted_order[1:-1]
-            rejected_outlier_tiles += 1  # 最差的一張必然剔除
+            rejected_outlier_tiles += 1
         else:
             candidate_extra_order = sorted_order[1:]
 
@@ -402,8 +564,6 @@ def purify_golden_tiles_two_stage(
             }
         )
 
-    # Step 2.2: 跨座標徑向分層純淨度篩選 (Radial Stratified Purity Binning)
-    # 依半徑由圓心到外環排序後，切分為 max_train_tiles 個同心徑向區間，在每個徑向區間內挑出最純淨的座標！
     purified_candidates.sort(key=lambda item: item["radius"])
     all_best_costs = np.array([c["best_cost"] for c in purified_candidates], dtype=np.float32)
     global_cost_p90 = float(np.percentile(all_best_costs, 90.0)) if all_best_costs.size > 0 else 999.0
@@ -417,7 +577,6 @@ def purify_golden_tiles_two_stage(
             if len(b_indices) == 0:
                 continue
             mid_idx = int(b_indices[len(b_indices) // 2])
-            # 在該徑向區間內尋找跨片殘差最低 (最純淨) 的座標
             best_bin_idx = min(b_indices, key=lambda idx: purified_candidates[int(idx)]["best_cost"])
             best_bin_idx = int(best_bin_idx)
             if best_bin_idx != mid_idx:
@@ -430,7 +589,6 @@ def purify_golden_tiles_two_stage(
 
         if len(selected_specs) < max_train_tiles:
             extra_needed = max_train_tiles - len(selected_specs)
-            # 將所有通過離群檢驗的跨片公差候補圖塊，按純淨度由高至低排序後補齊
             extra_pool = []
             for c in purified_candidates:
                 for (ex_g_idx, ex_cost) in c["safe_extras"]:
@@ -448,3 +606,366 @@ def purify_golden_tiles_two_stage(
         "used_dino_stage2": int(dino_feats is not None),
     }
     return selected_specs, stats
+
+
+def prepare_tiled_golden_trainset(
+    shot_dir: str,
+    category: str,
+    tile_size: int,
+    tile_overlap: int,
+    max_train_tiles: int,
+    bg_std_thresh: float,
+    log_files: Optional[List[str]] = None,
+    ckpt_path: str = "auto",
+    report_dir: Optional[str] = None,
+) -> int:
+    """
+    Stage 2 圖塊級二次純化流程：
+    將 Stage 1 挑出的 Golden Image 備份至 golden_full_res_backup，切分為高解析度子圖塊，
+    執行跨片局部殘差與 DINO 特徵離群剔除，並輸出最純淨的代表性訓練圖塊至 train/<category>。
+    """
+    cat_train_dir = os.path.join(shot_dir, "train", category)
+    golden_files = sorted(
+        [
+            os.path.join(cat_train_dir, f)
+            for f in os.listdir(cat_train_dir)
+            if f.lower().endswith(IMG_EXTENSIONS)
+        ]
+    )
+    if not golden_files:
+        raise FileNotFoundError(f"在 {cat_train_dir} 中找不到 Golden 圖片！")
+
+    full_backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
+    os.makedirs(full_backup_dir, exist_ok=True)
+    golden_imgs = []
+    for p in golden_files:
+        safe_copy(p, os.path.join(full_backup_dir, os.path.basename(p)))
+        img = load_image_rgb_uint8(p)
+        golden_imgs.append(img)
+
+    h0, w0 = golden_imgs[0].shape[:2]
+    if h0 <= tile_size and w0 <= tile_size:
+        log_and_print(
+            f"[Tiling] 原始圖片尺寸 ({w0}x{h0}) <= tile_size ({tile_size})，保持原圖訓練。",
+            log_files,
+        )
+        del golden_imgs
+        gc.collect()
+        return len(golden_files)
+
+    stride = max(1, tile_size - tile_overlap)
+    ys = get_axis_positions(h0, tile_size, stride)
+    xs = get_axis_positions(w0, tile_size, stride)
+    grid_coords = [(y, x) for y in ys for x in xs]
+
+    coord_Execution_items: List[Tuple[int, int, float, List[Tuple[int, np.ndarray]]]] = []
+    for (y, x) in grid_coords:
+        non_bg_items: List[Tuple[int, np.ndarray]] = []
+        for g_idx, g_img in enumerate(golden_imgs):
+            gh, gw = g_img.shape[:2]
+            py = min(y, max(0, gh - tile_size))
+            px = min(x, max(0, gw - tile_size))
+            ph = min(tile_size, gh - py)
+            pw = min(tile_size, gw - px)
+            crop = g_img[py:py + ph, px:px + pw]
+            if crop.shape[0] != tile_size or crop.shape[1] != tile_size:
+                crop = cv2.resize(crop, (tile_size, tile_size), interpolation=cv2.INTER_AREA)
+            if not is_background_tile(crop, bg_std_thresh):
+                non_bg_items.append((g_idx, crop))
+
+        if not non_bg_items:
+            continue
+
+        cy, cx = y + tile_size * 0.5, x + tile_size * 0.5
+        radius = float(np.hypot(cy - h0 * 0.5, cx - w0 * 0.5))
+        coord_Execution_items.append((y, x, radius, non_bg_items))
+
+    if not coord_Execution_items:
+        log_and_print("[Tiling] 警告：所有切塊皆低於背景門檻，退回保留全部切塊。", log_files)
+        for (y, x) in grid_coords:
+            g0 = golden_imgs[0]
+            crop0 = g0[y:y + tile_size, x:x + tile_size]
+            coord_Execution_items.append((y, x, 0.0, [(0, crop0)]))
+
+    selected_specs, purity_stats = purify_golden_tiles_two_stage(
+        coord_Execution_items=coord_Execution_items,
+        max_train_tiles=max_train_tiles,
+        ckpt_path=ckpt_path,
+    )
+
+    for f in os.listdir(cat_train_dir):
+        if f.lower().endswith(IMG_EXTENSIONS):
+            p = os.path.join(cat_train_dir, f)
+            try:
+                os.chmod(p, stat.S_IRUSR | stat.S_IWUSR)
+            except OSError:
+                pass
+            os.remove(p)
+
+    purity_report_lines = [
+        "=== Stage 2: Golden Tile-Level Hybrid Purification Report ===",
+        f"Total Evaluated Candidate Tiles : {purity_stats['total_evaluated_tiles']}",
+        f"Valid Non-Background Coords     : {purity_stats['valid_grid_coords']}",
+        f"Rejected Outlier Tiles (Stage2) : {purity_stats['rejected_outlier_tiles']}",
+        f"Radial Bin Purity Swaps         : {purity_stats['radial_purified_swaps']}",
+        f"DINO Feature Guidance Active    : {'YES' if purity_stats['used_dino_stage2'] else 'FALLBACK_PIXEL_PEAK'}",
+        "-" * 72,
+    ]
+
+    for idx, (y, x, g_idx, p_cost) in enumerate(selected_specs):
+        g_img = golden_imgs[g_idx]
+        gh, gw = g_img.shape[:2]
+        py = min(y, max(0, gh - tile_size))
+        px = min(x, max(0, gw - tile_size))
+        ph = min(tile_size, gh - py)
+        pw = min(tile_size, gw - px)
+        patch = g_img[py:py + ph, px:px + pw]
+        if patch.shape[0] != tile_size or patch.shape[1] != tile_size:
+            patch = cv2.resize(patch, (tile_size, tile_size), interpolation=cv2.INTER_AREA)
+        tile_fname = f"{idx:03d}_g{g_idx}_tile_y{y:04d}_x{x:04d}.png"
+        out_path = os.path.join(cat_train_dir, tile_fname)
+        Image.fromarray(patch).save(out_path)
+        purity_report_lines.append(
+            f"Tile #{idx + 1:02d}: {tile_fname} | Source=Golden#{g_idx + 1} | "
+            f"Coord=(y={y:04d}, x={x:04d}) | Hybrid_Residual={p_cost:.4f}"
+        )
+
+    purity_txt_path = os.path.join(shot_dir, "golden_tile_purity_report.txt")
+    with open(purity_txt_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(purity_report_lines) + "\n")
+    if report_dir:
+        os.makedirs(report_dir, exist_ok=True)
+        safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
+
+    num_saved = len(selected_specs)
+    del golden_imgs, coord_Execution_items
+    gc.collect()
+
+    log_and_print(
+        f"[Tiling-Train 二階段純化完成] 已從 {len(golden_files)} 張 ({w0}x{h0}) Golden 原圖評估 "
+        f"{purity_stats['total_evaluated_tiles']} 張候選子圖塊：\n"
+        f"  ├── 跨片局部峰值與 DINO 離群剔除 : 自動攔截剔除 {purity_stats['rejected_outlier_tiles']} 張可疑離群圖塊\n"
+        f"  ├── 徑向分層純淨度優化替換       : {purity_stats['radial_purified_swaps']} 個徑向區間已自動替換為更純淨座標\n"
+        f"  └── 最終輸出純淨代表性訓練圖塊   : {num_saved} 張 ({tile_size}x{tile_size}) -> {os.path.abspath(cat_train_dir)}",
+        log_files,
+    )
+    return num_saved
+
+
+# =====================================================================
+# 整合型 Golden 資料集建置與快取載入介面
+# =====================================================================
+def run_auto_golden_pipeline(
+    pool_dir: str,
+    shot_dir: str,
+    category: str,
+    ckpt_path: str = "auto",
+    shots: int = 4,
+    tile_size: int = 512,
+    tile_overlap: int = 64,
+    max_train_tiles: int = 48,
+    bg_std_thresh: float = 1.5,
+    disable_tiling: bool = False,
+    report_dir: Optional[str] = None,
+    log_files: Optional[List[str]] = None,
+) -> Dict:
+    """
+    執行完整 Stage 1 (Golden 原圖挑選) + Stage 2 (Golden 圖塊級二次純化)，
+    並於 shot_dir 寫入 golden_cache_meta.json。
+    """
+    safe_rmtree(shot_dir)
+    os.makedirs(shot_dir, exist_ok=True)
+    pool_signature = compute_pool_signature(pool_dir)
+
+    t_s1 = time.perf_counter()
+    golden_paths = select_golden_images(
+        pool_dir=pool_dir,
+        ckpt_path=ckpt_path,
+        out_dir=shot_dir,
+        category=category,
+        shots=shots,
+        report_dir=report_dir,
+        log_files=log_files,
+    )
+    golden_select_sec = time.perf_counter() - t_s1
+    golden_filenames = [
+        os.path.relpath(p, pool_dir).replace("\\", "/") for p in golden_paths
+    ]
+    log_and_print(
+        f"[⏱️ 計時] Stage 1 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
+        log_files,
+    )
+
+    t_s2 = time.perf_counter()
+    if not disable_tiling:
+        num_train_samples = prepare_tiled_golden_trainset(
+            shot_dir=shot_dir,
+            category=category,
+            tile_size=tile_size,
+            tile_overlap=tile_overlap,
+            max_train_tiles=max_train_tiles,
+            bg_std_thresh=bg_std_thresh,
+            log_files=log_files,
+            ckpt_path=ckpt_path,
+            report_dir=report_dir,
+        )
+    else:
+        num_train_samples = len(golden_filenames)
+    train_tile_sec = time.perf_counter() - t_s2
+
+    meta = {
+        "pool_signature": pool_signature,
+        "category": category,
+        "shots": int(shots),
+        "tile_size": int(tile_size),
+        "tile_overlap": int(tile_overlap),
+        "max_train_tiles": int(max_train_tiles),
+        "disable_tiling": bool(disable_tiling),
+        "golden_filenames": golden_filenames,
+        "num_train_samples": int(num_train_samples),
+        "golden_select_sec": float(golden_select_sec),
+        "train_tile_sec": float(train_tile_sec),
+    }
+    golden_meta_path = os.path.join(shot_dir, "golden_cache_meta.json")
+    with open(golden_meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, indent=2, ensure_ascii=False)
+
+    return meta
+
+
+def load_or_prepare_golden_dataset(
+    pool_dir: str,
+    shot_dir: str,
+    category: str,
+    ckpt_path: str = "auto",
+    shots: int = 4,
+    tile_size: int = 512,
+    tile_overlap: int = 64,
+    max_train_tiles: int = 48,
+    bg_std_thresh: float = 1.5,
+    disable_tiling: bool = False,
+    rebuild_golden: bool = False,
+    report_dir: Optional[str] = None,
+    log_files: Optional[List[str]] = None,
+) -> Tuple[List[str], int, bool, float, float]:
+    """
+    供 2_run_fab_no_gt.py 呼叫：
+    優先直接載入已由 auto_golden.py 建立好的 Golden 訓練集與 metadata；
+    若尚未建立 Golden 訓練集或指定 rebuild_golden=True，則自動呼叫 run_auto_golden_pipeline 建立。
+    回傳: (golden_filenames, num_train_samples, used_existing_golden, golden_select_sec, train_tile_sec)
+    """
+    cat_train_dir = os.path.join(shot_dir, "train", category)
+    golden_meta_path = os.path.join(shot_dir, "golden_cache_meta.json")
+    pool_signature = compute_pool_signature(pool_dir)
+
+    if not rebuild_golden and os.path.isdir(cat_train_dir):
+        train_files = [
+            f for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)
+        ]
+        if train_files and os.path.isfile(golden_meta_path):
+            try:
+                with open(golden_meta_path, "r", encoding="utf-8") as f:
+                    g_meta = json.load(f)
+                if (
+                    g_meta.get("pool_signature") == pool_signature
+                    and g_meta.get("category") == category
+                    and int(g_meta.get("shots", -1)) == int(shots)
+                    and int(g_meta.get("tile_size", -1)) == int(tile_size)
+                    and int(g_meta.get("max_train_tiles", -1)) == int(max_train_tiles)
+                    and g_meta.get("golden_filenames")
+                ):
+                    golden_filenames = list(g_meta["golden_filenames"])
+                    num_train_samples = len(train_files)
+                    if report_dir:
+                        os.makedirs(report_dir, exist_ok=True)
+                        rec_src = os.path.join(shot_dir, f"selected_{shots}_golden_images.txt")
+                        if os.path.exists(rec_src):
+                            safe_copy(rec_src, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
+                        purity_src = os.path.join(shot_dir, "golden_tile_purity_report.txt")
+                        if os.path.exists(purity_src):
+                            safe_copy(purity_src, os.path.join(report_dir, "golden_tile_purity_report.txt"))
+                    log_and_print(
+                        f"[⚡ 已載入既有 Golden 訓練集] 直接沿用 {shot_dir} 內之 {len(golden_filenames)} 張 Golden 原圖 "
+                        f"({', '.join(golden_filenames)}) 與 {num_train_samples} 張純化訓練圖塊",
+                        log_files,
+                    )
+                    return golden_filenames, num_train_samples, True, 0.0, 0.0
+            except Exception:
+                pass
+
+    meta = run_auto_golden_pipeline(
+        pool_dir=pool_dir,
+        shot_dir=shot_dir,
+        category=category,
+        ckpt_path=ckpt_path,
+        shots=shots,
+        tile_size=tile_size,
+        tile_overlap=tile_overlap,
+        max_train_tiles=max_train_tiles,
+        bg_std_thresh=bg_std_thresh,
+        disable_tiling=disable_tiling,
+        report_dir=report_dir,
+        log_files=log_files,
+    )
+    return (
+        meta["golden_filenames"],
+        meta["num_train_samples"],
+        False,
+        meta["golden_select_sec"],
+        meta["train_tile_sec"],
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="FoundAD Stage 1 + Stage 2 自動挑選與純化 Golden 訓練集工具")
+    parser.add_argument("--pool_dir", type=str, required=True, help="無標籤測試盲池圖片資料夾路徑")
+    parser.add_argument("--ckpt", type=str, default="auto", help="DINO 預訓練權重路徑")
+    parser.add_argument("--datasets_dir", type=str, default="./datasets", help="資料集根目錄")
+    parser.add_argument("--data_name", type=str, default="mvtec_sim_4shot", help="資料集名稱")
+    parser.add_argument("--category", type=str, default="auto", help="產品/晶圓類別名稱")
+    parser.add_argument("--shots", type=int, default=4, help="Stage 1 挑選的 Golden 原圖張數")
+    parser.add_argument("--tile_size", type=int, default=512, help="Stage 2 子圖塊像素大小")
+    parser.add_argument("--tile_overlap", type=int, default=64, help="相鄰子圖塊重疊像素寬度")
+    parser.add_argument("--max_train_tiles", type=int, default=48, help="Stage 2 最終保留的代表性訓練圖塊上限")
+    parser.add_argument("--bg_std_thresh", type=float, default=1.5, help="過濾純背景角落塊的標準差門檻")
+    parser.add_argument("--disable_tiling", action="store_true", help="關閉切塊，直接使用整張 Golden 原圖")
+    parser.add_argument("--mock_from_mvtec", type=str, default="", help="從 MVTec 類別目錄建立模擬無 GT 盲池")
+    parser.add_argument("--report_dir", type=str, default="", help="額外複製挑選與純化報表的輸出目錄")
+    args = parser.parse_args()
+
+    if not args.category or args.category.lower() == "auto":
+        if args.mock_from_mvtec:
+            args.category = os.path.basename(os.path.normpath(args.mock_from_mvtec))
+        else:
+            args.category = os.path.basename(os.path.normpath(args.pool_dir))
+
+    if args.mock_from_mvtec:
+        prepare_mock_unlabeled_pool_from_mvtec(args.mock_from_mvtec, args.pool_dir, defect_limit=8)
+
+    abs_datasets_dir = os.path.abspath(args.datasets_dir)
+    shot_dir = os.path.join(abs_datasets_dir, args.data_name)
+    report_dir = os.path.abspath(args.report_dir) if args.report_dir else None
+
+    meta = run_auto_golden_pipeline(
+        pool_dir=args.pool_dir,
+        shot_dir=shot_dir,
+        category=args.category,
+        ckpt_path=args.ckpt,
+        shots=args.shots,
+        tile_size=args.tile_size,
+        tile_overlap=args.tile_overlap,
+        max_train_tiles=args.max_train_tiles,
+        bg_std_thresh=args.bg_std_thresh,
+        disable_tiling=args.disable_tiling,
+        report_dir=report_dir,
+    )
+    print(
+        f"\n[✅ Auto-Golden 執行完成]\n"
+        f"  ├── 挑選之 Golden 原圖 : {', '.join(meta['golden_filenames'])}\n"
+        f"  ├── 最終訓練圖塊數量   : {meta['num_train_samples']} 張\n"
+        f"  └── 輸出資料集目錄     : {shot_dir}"
+    )
+
+
+if __name__ == "__main__":
+    main()

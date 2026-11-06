@@ -5,10 +5,10 @@
   "tile_size": 1024,
   "max_train_tiles": 48,
   "golden_filenames": [
-    "clean_015.png",
-    "clean_048.png",
     "clean_031.png",
-    "clean_023.png"
+    "clean_049.png",
+    "clean_000.png",
+    "clean_016.png"
   ],
   "num_train_samples": 4
 }
