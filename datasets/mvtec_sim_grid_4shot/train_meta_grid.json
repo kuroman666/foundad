@@ -1,0 +1,27 @@
+{
+  "data_name": "mvtec_sim_grid_4shot",
+  "category": "grid",
+  "diy_name": "sim_escape_grid",
+  "actual_step": 2000,
+  "golden_filenames": [
+    "clean_009.png",
+    "clean_001.png",
+    "clean_015.png",
+    "clean_002.png"
+  ],
+  "num_train_samples": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "golden_select_sec": 0.0,
+  "train_tile_sec": 0.0,
+  "model_train_sec": 867.2511834839825,
+  "total_train_time": 867.2511834839825,
+  "ckpt_dirs": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot/dinov3sim_escape_grid"
+  ],
+  "ckpt_files": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot/dinov3sim_escape_grid/train-step2000.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot/dinov3sim_escape_grid/pretrained.pth.tar"
+  ],
+  "timestamp": "20261107_122124"
+}

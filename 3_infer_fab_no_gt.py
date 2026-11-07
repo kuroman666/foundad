@@ -10,7 +10,7 @@ import json
 import socket
 import subprocess
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Tuple, Optional
 
 import cv2
@@ -18,6 +18,9 @@ import numpy as np
 from PIL import Image
 
 import importlib
+
+TZ_TAIPEI = timezone(timedelta(hours=8))
+
 _ag = importlib.import_module("1_auto_golden")
 format_duration = _ag.format_duration
 log_and_print = _ag.log_and_print
@@ -117,7 +120,7 @@ def prepare_ckpt_for_demo(
             log_and_print(f"[Auto-Ckpt] 已將訓練權重 {abs_target} 對接至 {abs_alias}", log_files)
     if not ckpt_dirs:
         raise FileNotFoundError(
-            f"在 ./logs/{data_name}/ 下找不到任何 train-step*.pth.tar 權重檔！請先執行 2a_train_fab_no_gt.py 完成訓練。"
+            f"在 ./logs/{data_name}/ 下找不到任何 train-step*.pth.tar 權重檔！請先執行 2_train_fab_no_gt.py 完成訓練。"
         )
     return chosen_step, ckpt_dirs, ckpt_files
 
@@ -138,7 +141,7 @@ def load_golden_filenames_for_infer(
     log_files: List[str],
 ) -> Tuple[List[str], Optional[int], float]:
     """
-    優先從 2a_train_fab_no_gt.py 產生的 train_meta_{category}.json 讀取 golden_filenames 與訓練資訊；
+    優先從 2_train_fab_no_gt.py 產生的 train_meta_{category}.json 讀取 golden_filenames 與訓練資訊；
     若找不到則自動從 auto_golden 快取或備份資料夾載入。
     """
     train_meta_path = os.path.join(shot_dir, f"train_meta_{category}.json")
@@ -1446,7 +1449,8 @@ def main():
         else:
             args.category = os.path.basename(os.path.normpath(args.pool_dir))
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    now_tpe = datetime.now(TZ_TAIPEI)
+    timestamp = now_tpe.strftime("%Y%m%d_%H%M%S")
     base_out_dir = os.path.abspath(args.out_dir)
     run_out_dir = os.path.join(base_out_dir, timestamp)
     os.makedirs(run_out_dir, exist_ok=True)
@@ -1459,7 +1463,7 @@ def main():
     log_files = [fixed_log_txt, parent_latest_log]
 
     pipeline_start_t = time.perf_counter()
-    start_dt_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    start_dt_str = now_tpe.strftime("%Y-%m-%d %H:%M:%S (UTC+8)")
     log_and_print(
         f"\n{'='*75}\n"
         f"[Task 2 無GT推論階段啟動時間] {start_dt_str}\n"

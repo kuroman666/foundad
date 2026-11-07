@@ -9,10 +9,12 @@ import socket
 import subprocess
 import argparse
 import importlib
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Tuple, Optional
 
 import numpy as np
+
+TZ_TAIPEI = timezone(timedelta(hours=8))
 
 _ag = importlib.import_module("1_auto_golden")
 format_duration = _ag.format_duration
@@ -197,7 +199,8 @@ def main():
         else:
             args.category = os.path.basename(os.path.normpath(args.pool_dir))
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    now_tpe = datetime.now(TZ_TAIPEI)
+    timestamp = now_tpe.strftime("%Y%m%d_%H%M%S")
     base_out_dir = os.path.abspath(args.out_dir)
     run_out_dir = os.path.join(base_out_dir, f"train_{timestamp}")
     os.makedirs(run_out_dir, exist_ok=True)
@@ -219,7 +222,7 @@ def main():
     parent_latest_log = os.path.join(base_out_dir, "latest_train_log.txt")
     log_files = [fixed_log_txt, parent_latest_log]
 
-    start_dt_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    start_dt_str = now_tpe.strftime("%Y-%m-%d %H:%M:%S (UTC+8)")
     log_and_print(
         f"\n{'='*75}\n"
         f"[Task 2 無GT訓練階段啟動時間] {start_dt_str}\n"
@@ -370,6 +373,7 @@ def main():
         "ckpt_dirs": ckpt_dirs,
         "ckpt_files": ckpt_files,
         "timestamp": timestamp,
+        "timezone": "Asia/Taipei (UTC+8)",
     }
     os.makedirs(shot_dir, exist_ok=True)
     with open(train_meta_path, "w", encoding="utf-8") as f:
