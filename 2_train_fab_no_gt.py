@@ -166,6 +166,8 @@ def main():
     parser.add_argument("--diy_name", type=str, default="sim_escape")
     parser.add_argument("--ckpt_step", type=int, default=2000)
     parser.add_argument("--shots", type=int, default=4)
+    parser.add_argument("--candidate_pool_size", type=int, default=16, help="Stage 1 初篩進入 RAM 切塊投票的候選晶圓張數 (預設 16 張)")
+    parser.add_argument("--max_coarse_scan", type=int, default=250, help="面對上千張大資料集時，Stage 1 抽樣評估的最大圖片上限 (預設 250 張)")
 
     # 訓練與 Golden 圖塊控制參數
     parser.add_argument("--skip_train", action="store_true", help="明確跳過模型訓練，直接對接既有訓練權重")
@@ -225,7 +227,7 @@ def main():
             rebuild=args.rebuild_golden,
         )
 
-    # 1. 載入或建立 Golden 訓練資料集
+    # 1. 載入或建立 Golden 訓練資料集 (支援大資料集抽樣 + 16 張候選池切塊投票)
     golden_filenames, num_train_samples, used_existing_golden, golden_select_sec, train_tile_sec = (
         load_or_prepare_golden_dataset(
             pool_dir=args.pool_dir,
@@ -242,6 +244,8 @@ def main():
             report_dir=run_out_dir,
             log_files=log_files,
             min_tile_trigger=args.min_tile_trigger,
+            candidate_pool_size=args.candidate_pool_size,
+            max_coarse_scan=args.max_coarse_scan,
         )
     )
 
@@ -254,7 +258,7 @@ def main():
     )
     total_grad_updates = effective_epochs * iters_per_epoch
 
-    # 2. 自動防呆檢查：確認是否已有訓練好的權重，且訓練樣本數未發生「碎片還原為整張圖」的結構變更
+    # 2. 自動防呆檢查：確認是否已有訓練好的權重，且訓練樣本數未發生結構變更
     train_meta_path = os.path.join(shot_dir, f"train_meta_{args.category}.json")
     prev_trained_samples = None
     if os.path.isfile(train_meta_path):
@@ -269,7 +273,7 @@ def main():
     structure_changed = (prev_trained_samples is not None and int(prev_trained_samples) != int(num_train_samples))
     if structure_changed and not args.skip_train:
         log_and_print(
-            f"[🔄 訓練集結構升級] 訓練集由舊版 {prev_trained_samples} 張碎片升級為 {num_train_samples} 張完整對齊影像，"
+            f"[🔄 訓練集結構升級] 訓練集由舊版 {prev_trained_samples} 張變更為 {num_train_samples} 張影像，"
             f"將自動重新訓練一次以確保空間對齊精度！",
             log_files,
         )
@@ -334,6 +338,8 @@ def main():
         "actual_step": actual_step,
         "golden_filenames": golden_filenames,
         "num_train_samples": num_train_samples,
+        "candidate_pool_size": args.candidate_pool_size,
+        "max_coarse_scan": args.max_coarse_scan,
         "golden_select_sec": golden_select_sec,
         "train_tile_sec": train_tile_sec,
         "model_train_sec": model_train_sec,
@@ -350,10 +356,11 @@ def main():
         f"\n{'='*75}",
         f" [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]",
         f"{'-'*75}",
-        f"  ⏱️ Auto-Golden 資料集準備耗時            : {format_duration(golden_select_sec + train_tile_sec)}{' (Loaded Existing Golden)' if used_existing_golden else ''}",
+        f"  ⏱️ Auto-Golden 候選池切塊投票耗時        : {format_duration(golden_select_sec + train_tile_sec)}{' (Loaded Existing Golden)' if used_existing_golden else ''}",
         f"  ⏱️ Step 1 FoundAD 模型訓練耗時           : {format_duration(model_train_sec)}{' (Skipped Existing Ckpt)' if args.skip_train else ''}",
         f"  ⏱️ 整體訓練階段總時間                   : {format_duration(total_train_time)}",
         f"{'-'*75}",
+        f"  🏆 最終勝出 Golden 原圖名單              : {', '.join(golden_filenames)}",
         f"  📁 Golden 訓練樣本資料夾                : {train_tiles_dir}",
         f"  📁 Golden 原圖備份資料夾                : {golden_backup_dir}",
         f"  📄 訓練階段 Meta 紀錄檔                 : {os.path.abspath(train_meta_path)}",

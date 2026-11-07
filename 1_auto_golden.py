@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/1_auto_golden.py (全選覆蓋此檔)
+# 檔案位置: FoundAD/1_auto_golden.py (全選覆蓋此檔；亦可直接複製覆蓋至 fab_tools/auto_golden.py)
 import os
 import re
 import gc
@@ -277,6 +277,9 @@ def inspect_and_extract_patch_proj(ckpt_path: str, device: torch.device):
     return proj_conv, qkv_weights, patch_h
 
 
+# =====================================================================
+# Stage 1: 支援上千張大資料集子抽樣 + 挑出 Top-M (預設 16 張) 候選池
+# =====================================================================
 @torch.no_grad()
 def select_golden_images(
     pool_dir: str,
@@ -286,12 +289,41 @@ def select_golden_images(
     shots: int = 4,
     report_dir: Optional[str] = None,
     log_files: Optional[List[str]] = None,
+    candidate_pool_size: int = 16,
+    max_coarse_scan: int = 250,
+    sample_seed: int = 42,
 ) -> List[str]:
-    """Stage 1: 全域 DINO 特徵中心度 (Medoid Centrality) + 局部 Patch Token 尖峰懲罰挑選 Golden 原圖。"""
+    """
+    Stage 1 候選池初篩 (支援上千張大資料集快速抽樣)：
+    1. 若盲池圖片數 > max_coarse_scan (例如 1,000~2,000 張)，自動以固定 Seed 隨機均勻抽樣 max_coarse_scan 張進行全域評估。
+    2. 結合全域 DINO Medoid Centrality 與局部 Patch Token 尖峰懲罰，先選出 Top-M (預設 M=16) 張候選池圖片存入 `candidate_pool/`，
+       供後續 Stage 2 在 RAM 內切塊並進行跨片同座標投票，選出最終 4 張 Golden！
+    3. 同時將前 `shots` (4) 張預先存入 `train/<category>`，確保若原圖無需切塊時可直接訓練。
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     all_imgs = scan_pool_images(pool_dir)
-    if len(all_imgs) < shots:
-        raise ValueError(f"資料夾 (含子資料夾) 內圖片數量 ({len(all_imgs)}) 少於所需的 shots ({shots})！")
+    total_pool_count = len(all_imgs)
+    if total_pool_count < shots:
+        raise ValueError(f"資料夾 (含子資料夾) 內圖片數量 ({total_pool_count}) 少於所需的 shots ({shots})！")
+
+    eff_cand_size = min(total_pool_count, max(shots, int(candidate_pool_size)))
+
+    # 若母體為上千張大資料集，自動啟動固定亂數種子抽樣，避免全池 I/O 與矩陣計算瓶頸
+    if max_coarse_scan > 0 and total_pool_count > max(max_coarse_scan, eff_cand_size):
+        rng = np.random.RandomState(sample_seed)
+        sampled_indices = np.sort(rng.choice(total_pool_count, size=max_coarse_scan, replace=False))
+        scan_imgs = [all_imgs[int(i)] for i in sampled_indices]
+        log_and_print(
+            f"[Auto-Golden Stage 1 大資料集抽樣啟動] 盲池共 {total_pool_count} 張圖片 (> 上限 {max_coarse_scan} 張)，"
+            f"已固定 Seed={sample_seed} 均勻抽樣 {len(scan_imgs)} 張進行快速全域篩選 (目標鎖定 Top-{eff_cand_size} 候選池)...",
+            log_files,
+        )
+    else:
+        scan_imgs = all_imgs
+        log_and_print(
+            f"[Auto-Golden Stage 1] 遞迴掃描共找到 {total_pool_count} 張圖片，正在提取全域特徵以鎖定 Top-{eff_cand_size} 候選池...",
+            log_files,
+        )
 
     proj_conv, qkv_weights, patch_size = inspect_and_extract_patch_proj(ckpt_path, device)
     img_size = 518 if patch_size == 14 else 512
@@ -302,11 +334,7 @@ def select_golden_images(
     ])
 
     features, token_spike_scores, valid_paths = [], [], []
-    log_and_print(
-        f"[Auto-Golden Stage 1] 遞迴掃描共找到 {len(all_imgs)} 張圖片，正在提取全域特徵與局部 Token 尖峰指標...",
-        log_files,
-    )
-    for path in all_imgs:
+    for path in scan_imgs:
         try:
             img = load_pil_rgb_uint8(path)
             x = transform(img).unsqueeze(0).to(device)
@@ -339,6 +367,7 @@ def select_golden_images(
     if len(valid_paths) < shots:
         raise ValueError(f"有效可讀取圖片數量 ({len(valid_paths)}) 少於所需的 shots ({shots})！")
 
+    eff_cand_size = min(len(valid_paths), max(shots, int(candidate_pool_size)))
     feats_tensor = torch.cat(features, dim=0)
     sim_matrix = torch.mm(feats_tensor, feats_tensor.t()).numpy()
     np.fill_diagonal(sim_matrix, 0.0)
@@ -352,8 +381,42 @@ def select_golden_images(
     hybrid_centrality = raw_centrality - purity_penalty
 
     sorted_indices = np.argsort(hybrid_centrality)[::-1]
+    cand_indices = sorted_indices[:eff_cand_size]
     selected_indices = sorted_indices[:shots]
     selected_paths = [valid_paths[idx] for idx in selected_indices]
+
+    # 儲存 Top-M (例如 16 張) 候選池資訊供 Stage 2 切塊後投票選 Golden 使用
+    cand_records = []
+    for rank_i, idx in enumerate(cand_indices):
+        src_p = valid_paths[idx]
+        rel_n = os.path.relpath(src_p, pool_dir).replace("\\", "/")
+        cand_records.append(
+            {
+                "cand_rank": int(rank_i + 1),
+                "abs_path": os.path.abspath(src_p),
+                "rel_path": rel_n,
+                "hybrid_score": float(hybrid_centrality[idx]),
+                "raw_centrality": float(raw_centrality[idx]),
+                "token_spike": float(spike_arr[idx]),
+            }
+        )
+
+    os.makedirs(out_dir, exist_ok=True)
+    cand_json_path = os.path.join(out_dir, f"stage1_candidates_{category}.json")
+    with open(cand_json_path, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "pool_dir": os.path.abspath(pool_dir),
+                "total_pool_images": int(total_pool_count),
+                "scanned_images": int(len(valid_paths)),
+                "candidate_pool_size": int(eff_cand_size),
+                "shots": int(shots),
+                "candidates": cand_records,
+            },
+            f,
+            indent=2,
+            ensure_ascii=False,
+        )
 
     dest_dir = os.path.join(out_dir, "train", category)
     safe_rmtree(dest_dir)
@@ -361,7 +424,10 @@ def select_golden_images(
 
     record_txt = os.path.join(out_dir, f"selected_{shots}_golden_images.txt")
     with open(record_txt, "w", encoding="utf-8") as f:
-        f.write("=== Auto-Selected Golden Images (Stage 1: Medoid Centrality + Token Spike Guard) ===\n")
+        f.write(
+            f"=== Stage 1 Coarse Top-{shots} Golden Images "
+            f"(Scanned {len(valid_paths)}/{total_pool_count} imgs, Candidate Pool={eff_cand_size}) ===\n"
+        )
         for i, idx in enumerate(selected_indices):
             src_path = valid_paths[idx]
             h_score = hybrid_centrality[idx]
@@ -382,10 +448,16 @@ def select_golden_images(
         os.makedirs(report_dir, exist_ok=True)
         safe_copy(record_txt, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
 
-    log_and_print(f"[Auto-Golden Stage 1] 已建立 FoundAD 初始 Golden 目錄: {dest_dir}", log_files)
+    log_and_print(
+        f"[Auto-Golden Stage 1] 已鎖定 {eff_cand_size} 張候選圖片池，並建立初始目錄: {dest_dir}",
+        log_files,
+    )
     return selected_paths
 
 
+# =====================================================================
+# Stage 2: 對 16 張候選池於 RAM 內切塊 -> 同座標跨片對決投票選出最終 4 張 Golden 原圖與 48 張純淨訓練圖塊
+# =====================================================================
 @torch.no_grad()
 def _extract_lightweight_dino_tile_embeddings(
     tiles_rgb: List[np.ndarray],
@@ -465,7 +537,17 @@ def purify_golden_tiles_two_stage(
     coord_Execution_items: List[Tuple[int, int, float, List[Tuple[int, np.ndarray]]]],
     max_train_tiles: int,
     ckpt_path: str = "auto",
-) -> Tuple[List[Tuple[int, int, int, float]], Dict[str, int]]:
+    num_candidates: int = 4,
+    shots: int = 4,
+) -> Tuple[List[Tuple[int, int, int, float]], Dict]:
+    """
+    Stage 2 先切塊後投票選 Golden 演算法：
+    1. 在每個網格座標 (y, x) 對來自 num_candidates (例如 16 張) 候選圖的子圖塊計算：
+       「16x16 局部區塊殘差峰值」+「輕量 DINO 圖塊特徵距離」。
+    2. 統計每張候選原圖在所有非背景座標中獲得「最純淨前 2 名」的勝出票數 (Win Votes) 與累積殘差，
+       投票選出整體切塊最乾淨的 Top-`shots` (4) 張作為最終 Golden 原圖 (`winning_cand_indices`)！
+    3. 同時透過徑向分層純淨度篩選 (Radial Stratified Purity Binning)，從整個候選池挑出 48 張最純淨的訓練圖塊。
+    """
     flat_tiles: List[np.ndarray] = []
     coord_slices: List[Tuple[int, int]] = []
     for (_, _, _, non_bg_items) in coord_Execution_items:
@@ -480,17 +562,24 @@ def purify_golden_tiles_two_stage(
     purified_candidates = []
     rejected_outlier_tiles = 0
 
+    cand_win_votes = np.zeros(max(1, num_candidates), dtype=np.int32)
+    cand_cost_sums = np.zeros(max(1, num_candidates), dtype=np.float64)
+    cand_eval_counts = np.zeros(max(1, num_candidates), dtype=np.int32)
+
     for idx, (y, x, radius, non_bg_items) in enumerate(coord_Execution_items):
         s_idx, e_idx = coord_slices[idx]
         n_items = len(non_bg_items)
         if n_items == 1:
-            g_idx_0 = non_bg_items[0][0]
+            g_idx_0 = int(non_bg_items[0][0])
+            if g_idx_0 < len(cand_win_votes):
+                cand_win_votes[g_idx_0] += 2
+                cand_eval_counts[g_idx_0] += 1
             purified_candidates.append(
                 {
                     "radius": float(radius),
                     "y": int(y),
                     "x": int(x),
-                    "best_g_idx": int(g_idx_0),
+                    "best_g_idx": g_idx_0,
                     "best_cost": 0.0,
                     "safe_extras": [],
                 }
@@ -518,14 +607,26 @@ def purify_golden_tiles_two_stage(
         best_g_idx = int(non_bg_items[best_local_i][0])
         best_abs_cost = float(raw_abs_cost[best_local_i])
 
+        # 記錄各候選圖在該座標 (y, x) 的表現與投票積分 (第 1 名得 2 票，第 2 名得 1 票)
+        for rank_pos, loc_i in enumerate(sorted_order):
+            c_idx = int(non_bg_items[int(loc_i)][0])
+            if c_idx < len(cand_win_votes):
+                cand_cost_sums[c_idx] += float(hybrid_cost[int(loc_i)])
+                cand_eval_counts[c_idx] += 1
+                if rank_pos == 0:
+                    cand_win_votes[c_idx] += 2
+                elif rank_pos == 1 and n_items >= 4:
+                    cand_win_votes[c_idx] += 1
+
         med_cost = float(np.median(hybrid_cost))
         mad_cost = float(1.4826 * np.median(np.abs(hybrid_cost - med_cost))) + 1e-4
         adaptive_gate = min(float(hybrid_cost[best_local_i]) * 1.65 + 0.15, med_cost + 2.0 * mad_cost)
 
         safe_extras: List[Tuple[int, float]] = []
         if n_items >= 3:
-            candidate_extra_order = sorted_order[1:-1]
-            rejected_outlier_tiles += 1
+            drop_worst_k = max(1, n_items // 4)
+            candidate_extra_order = sorted_order[1:-drop_worst_k]
+            rejected_outlier_tiles += drop_worst_k
         else:
             candidate_extra_order = sorted_order[1:]
 
@@ -546,6 +647,14 @@ def purify_golden_tiles_two_stage(
                 "safe_extras": safe_extras,
             }
         )
+
+    # 統計各候選晶圓原圖的切塊投票結果，選出最終 Top-shots (4) 張 Golden 原圖
+    cand_mean_costs = cand_cost_sums / np.maximum(1, cand_eval_counts)
+    valid_cands = [i for i in range(len(cand_win_votes)) if cand_eval_counts[i] > 0]
+    if not valid_cands:
+        valid_cands = list(range(min(shots, num_candidates)))
+    valid_cands.sort(key=lambda i: (-int(cand_win_votes[i]), float(cand_mean_costs[i]), i))
+    winning_cand_indices = valid_cands[:min(shots, len(valid_cands))]
 
     purified_candidates.sort(key=lambda item: item["radius"])
     all_best_costs = np.array([c["best_cost"] for c in purified_candidates], dtype=np.float32)
@@ -587,6 +696,9 @@ def purify_golden_tiles_two_stage(
         "rejected_outlier_tiles": int(rejected_outlier_tiles),
         "radial_purified_swaps": int(radial_purified_swaps),
         "used_dino_stage2": int(dino_feats is not None),
+        "winning_cand_indices": [int(i) for i in winning_cand_indices],
+        "cand_win_votes": [int(v) for v in cand_win_votes],
+        "cand_mean_costs": [float(c) for c in cand_mean_costs],
     }
     return selected_specs, stats
 
@@ -602,73 +714,120 @@ def prepare_tiled_golden_trainset(
     ckpt_path: str = "auto",
     report_dir: Optional[str] = None,
     min_tile_trigger: int = 1280,
+    shots: int = 4,
 ) -> int:
     """
-    Stage 2 圖塊級二次純化流程：
-    當原圖尺寸 <= max(tile_size, min_tile_trigger) 時（如 MVTec 1000x1000），自動保持整張原圖訓練，
-    避免將完整工件切碎破壞空間對齊；當晶圓廠大圖 > 1280px 時，自動啟動切塊與跨片二次純化。
+    Stage 2 先切塊再投票選 Golden 流程：
+    1. 當原圖尺寸 <= max(tile_size, min_tile_trigger) 時（如 MVTec 1000x1000），自動保持整張原圖訓練。
+    2. 當晶圓廠大圖 > 1280px 時，自動讀取 Stage 1 鎖定的 16 張候選圖 (`stage1_candidates_<category>.json`)，
+       於 RAM 內切塊進行跨片同座標 PK 投票，選出最終 Top-4 張最純淨的 Golden 原圖更新至 `golden_full_res_backup` 與報表，
+       並輸出 48 張跨片最純淨的代表性訓練圖塊至 `train/<category>`！
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
-    golden_files = sorted(
+    initial_files = sorted(
         [
             os.path.join(cat_train_dir, f)
             for f in os.listdir(cat_train_dir)
             if f.lower().endswith(IMG_EXTENSIONS)
         ]
     )
-    if not golden_files:
-        raise FileNotFoundError(f"在 {cat_train_dir} 中找不到 Golden 圖片！")
+    if not initial_files:
+        raise FileNotFoundError(f"在 {cat_train_dir} 中找不到初始 Golden 圖片！")
+
+    # 檢查是否有 Stage 1 產生的 16 張候選池清單
+    cand_json_path = os.path.join(shot_dir, f"stage1_candidates_{category}.json")
+    cand_records = []
+    if os.path.isfile(cand_json_path):
+        try:
+            with open(cand_json_path, "r", encoding="utf-8") as f:
+                c_data = json.load(f)
+            for item in c_data.get("candidates", []):
+                if os.path.isfile(item.get("abs_path", "")):
+                    cand_records.append(item)
+        except Exception:
+            cand_records = []
+
+    sample_check_path = cand_records[0]["abs_path"] if cand_records else initial_files[0]
+    sample_img = load_image_rgb_uint8(sample_check_path)
+    h0, w0 = sample_img.shape[:2]
+    del sample_img
 
     full_backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
+    safe_rmtree(full_backup_dir)
     os.makedirs(full_backup_dir, exist_ok=True)
-    golden_imgs = []
-    for p in golden_files:
-        safe_copy(p, os.path.join(full_backup_dir, os.path.basename(p)))
-        img = load_image_rgb_uint8(p)
-        golden_imgs.append(img)
 
-    h0, w0 = golden_imgs[0].shape[:2]
     eff_trigger = max(tile_size, min_tile_trigger)
     if max(h0, w0) <= eff_trigger:
+        for p in initial_files[:shots]:
+            safe_copy(p, os.path.join(full_backup_dir, os.path.basename(p)))
         log_and_print(
             f"[Full-Image Alignment Mode] 原始圖片尺寸 ({w0}x{h0}) <= 切塊啟動門檻 ({eff_trigger}px)，"
-            f"自動保持整張原圖訓練以保留完整空間結構對齊 (共 {len(golden_files)} 張 Golden 原圖)。",
+            f"自動保持整張原圖訓練以保留完整空間結構對齊 (共 {len(initial_files)} 張 Golden 原圖)。",
             log_files,
         )
         purity_txt_path = os.path.join(shot_dir, "golden_tile_purity_report.txt")
         lines = [
             "=== Stage 2: Full-Image Spatial Alignment Mode (No Sub-Tile Fragmentation) ===",
             f"Original Image Resolution : {w0}x{h0} (<= {eff_trigger}px trigger)",
-            f"Retained Full Golden Imgs : {len(golden_files)}",
+            f"Retained Full Golden Imgs : {len(initial_files)}",
         ]
         with open(purity_txt_path, "w", encoding="utf-8") as f:
             f.write("\n".join(lines) + "\n")
         if report_dir:
             os.makedirs(report_dir, exist_ok=True)
             safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
-        del golden_imgs
-        gc.collect()
-        return len(golden_files)
+        return len(initial_files)
 
+    # 載入 16 張候選晶圓大圖至 RAM 進行切塊同座標 PK
+    if not cand_records:
+        cand_records = [
+            {
+                "cand_rank": i + 1,
+                "abs_path": os.path.abspath(p),
+                "rel_path": os.path.basename(p),
+                "hybrid_score": 1.0,
+                "raw_centrality": 1.0,
+                "token_spike": 1.0,
+            }
+            for i, p in enumerate(initial_files)
+        ]
+
+    candidate_imgs = []
+    valid_cand_records = []
+    for rec in cand_records:
+        try:
+            img = load_image_rgb_uint8(rec["abs_path"])
+            candidate_imgs.append(img)
+            valid_cand_records.append(rec)
+        except Exception:
+            pass
+
+    num_cands = len(candidate_imgs)
     stride = max(1, tile_size - tile_overlap)
     ys = get_axis_positions(h0, tile_size, stride)
     xs = get_axis_positions(w0, tile_size, stride)
     grid_coords = [(y, x) for y in ys for x in xs]
 
+    log_and_print(
+        f"[Stage 2 候選池切塊投票] 正在將 {num_cands} 張 ({w0}x{h0}) 候選晶圓於 RAM 內切塊 "
+        f"(共 {len(grid_coords)} 個網格座標)，進行跨片同座標純淨度對決...",
+        log_files,
+    )
+
     coord_Execution_items: List[Tuple[int, int, float, List[Tuple[int, np.ndarray]]]] = []
     for (y, x) in grid_coords:
         non_bg_items: List[Tuple[int, np.ndarray]] = []
-        for g_idx, g_img in enumerate(golden_imgs):
-            gh, gw = g_img.shape[:2]
+        for c_idx, c_img in enumerate(candidate_imgs):
+            gh, gw = c_img.shape[:2]
             py = min(y, max(0, gh - tile_size))
             px = min(x, max(0, gw - tile_size))
             ph = min(tile_size, gh - py)
             pw = min(tile_size, gw - px)
-            crop = g_img[py:py + ph, px:px + pw]
+            crop = c_img[py:py + ph, px:px + pw]
             if crop.shape[0] != tile_size or crop.shape[1] != tile_size:
                 crop = cv2.resize(crop, (tile_size, tile_size), interpolation=cv2.INTER_AREA)
             if not is_background_tile(crop, bg_std_thresh):
-                non_bg_items.append((g_idx, crop))
+                non_bg_items.append((c_idx, crop))
 
         if not non_bg_items:
             continue
@@ -680,16 +839,49 @@ def prepare_tiled_golden_trainset(
     if not coord_Execution_items:
         log_and_print("[Tiling] 警告：所有切塊皆低於背景門檻，退回保留全部切塊。", log_files)
         for (y, x) in grid_coords:
-            g0 = golden_imgs[0]
-            crop0 = g0[y:y + tile_size, x:x + tile_size]
+            c0 = candidate_imgs[0]
+            crop0 = c0[y:y + tile_size, x:x + tile_size]
             coord_Execution_items.append((y, x, 0.0, [(0, crop0)]))
 
     selected_specs, purity_stats = purify_golden_tiles_two_stage(
         coord_Execution_items=coord_Execution_items,
         max_train_tiles=max_train_tiles,
         ckpt_path=ckpt_path,
+        num_candidates=num_cands,
+        shots=shots,
     )
 
+    # 根據切塊投票結果，正式選出 Top-shots (4) 張全圖 Golden 存入 golden_full_res_backup 與更新名單
+    winning_cand_indices = purity_stats["winning_cand_indices"]
+    cand_win_votes = purity_stats["cand_win_votes"]
+    cand_mean_costs = purity_stats["cand_mean_costs"]
+
+    cand_to_final_g_map: Dict[int, int] = {}
+    record_txt = os.path.join(shot_dir, f"selected_{shots}_golden_images.txt")
+    with open(record_txt, "w", encoding="utf-8") as f:
+        f.write(
+            f"=== Auto-Selected Golden Images (Stage 2 Tile-First Voting from {num_cands} Candidates) ===\n"
+        )
+        for final_g_i, c_idx in enumerate(winning_cand_indices):
+            cand_to_final_g_map[c_idx] = final_g_i
+            rec = valid_cand_records[c_idx]
+            src_path = rec["abs_path"]
+            ext = os.path.splitext(src_path)[1].lower()
+            backup_dst = os.path.join(full_backup_dir, f"{final_g_i:03d}{ext}")
+            safe_copy(src_path, backup_dst)
+            log_line = (
+                f"Golden #{final_g_i + 1} (-> {final_g_i:03d}{ext}): {rec['rel_path']} | "
+                f"Tile_Win_Votes: {cand_win_votes[c_idx]} | Mean_Tile_Cost: {cand_mean_costs[c_idx]:.4f} | "
+                f"Stage1_Score: {rec['hybrid_score']:.6f}"
+            )
+            log_and_print("  [切塊投票勝出] " + log_line, log_files)
+            f.write(log_line + "\n")
+
+    if report_dir:
+        os.makedirs(report_dir, exist_ok=True)
+        safe_copy(record_txt, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
+
+    # 清空 train/<category> 內的暫存原圖，寫入 48 張跨候選池最純淨的高解析度訓練圖塊
     for f in os.listdir(cat_train_dir):
         if f.lower().endswith(IMG_EXTENSIONS):
             p = os.path.join(cat_train_dir, f)
@@ -700,30 +892,44 @@ def prepare_tiled_golden_trainset(
             os.remove(p)
 
     purity_report_lines = [
-        "=== Stage 2: Golden Tile-Level Hybrid Purification Report ===",
+        "=== Stage 2: Tile-First Candidate Pool Voting & Purification Report ===",
+        f"Candidate Pool Size (Stage 1->2): {num_cands} full-res images",
         f"Total Evaluated Candidate Tiles : {purity_stats['total_evaluated_tiles']}",
         f"Valid Non-Background Coords     : {purity_stats['valid_grid_coords']}",
         f"Rejected Outlier Tiles (Stage2) : {purity_stats['rejected_outlier_tiles']}",
         f"Radial Bin Purity Swaps         : {purity_stats['radial_purified_swaps']}",
         f"DINO Feature Guidance Active    : {'YES' if purity_stats['used_dino_stage2'] else 'FALLBACK_PIXEL_PEAK'}",
-        "-" * 72,
+        "-" * 78,
+        "--- Candidate Pool Tile-Level Voting Leaderboard ---",
     ]
+    for rank_i, c_idx in enumerate(
+        sorted(range(num_cands), key=lambda i: (-cand_win_votes[i], cand_mean_costs[i]))
+    ):
+        rec = valid_cand_records[c_idx]
+        badge = f"🏆 SELECTED GOLDEN #{cand_to_final_g_map[c_idx] + 1}" if c_idx in cand_to_final_g_map else "   Candidate"
+        purity_report_lines.append(
+            f"Rank #{rank_i + 1:02d} [{badge}]: {rec['rel_path']} | "
+            f"Win_Votes={cand_win_votes[c_idx]:03d} | Mean_Tile_Cost={cand_mean_costs[c_idx]:.4f}"
+        )
+    purity_report_lines.append("-" * 78)
 
-    for idx, (y, x, g_idx, p_cost) in enumerate(selected_specs):
-        g_img = golden_imgs[g_idx]
-        gh, gw = g_img.shape[:2]
+    for idx, (y, x, c_idx, p_cost) in enumerate(selected_specs):
+        c_img = candidate_imgs[c_idx]
+        gh, gw = c_img.shape[:2]
         py = min(y, max(0, gh - tile_size))
         px = min(x, max(0, gw - tile_size))
         ph = min(tile_size, gh - py)
         pw = min(tile_size, gw - px)
-        patch = g_img[py:py + ph, px:px + pw]
+        patch = c_img[py:py + ph, px:px + pw]
         if patch.shape[0] != tile_size or patch.shape[1] != tile_size:
             patch = cv2.resize(patch, (tile_size, tile_size), interpolation=cv2.INTER_AREA)
-        tile_fname = f"{idx:03d}_g{g_idx}_tile_y{y:04d}_x{x:04d}.png"
+
+        g_tag = f"g{cand_to_final_g_map[c_idx]}" if c_idx in cand_to_final_g_map else f"c{c_idx:02d}"
+        tile_fname = f"{idx:03d}_{g_tag}_tile_y{y:04d}_x{x:04d}.png"
         out_path = os.path.join(cat_train_dir, tile_fname)
         Image.fromarray(patch).save(out_path)
         purity_report_lines.append(
-            f"Tile #{idx + 1:02d}: {tile_fname} | Source=Golden#{g_idx + 1} | "
+            f"Tile #{idx + 1:02d}: {tile_fname} | Source={valid_cand_records[c_idx]['rel_path']} | "
             f"Coord=(y={y:04d}, x={x:04d}) | Hybrid_Residual={p_cost:.4f}"
         )
 
@@ -735,12 +941,13 @@ def prepare_tiled_golden_trainset(
         safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
 
     num_saved = len(selected_specs)
-    del golden_imgs, coord_Execution_items
+    del candidate_imgs, coord_Execution_items
     gc.collect()
 
     log_and_print(
-        f"[Tiling-Train 二階段純化完成] 已從 {len(golden_files)} 張 ({w0}x{h0}) Golden 原圖評估 "
-        f"{purity_stats['total_evaluated_tiles']} 張候選子圖塊：\n"
+        f"[Tiling-Train 切塊投票與二次純化完成] 已從 {num_cands} 張 ({w0}x{h0}) 候選晶圓評估 "
+        f"{purity_stats['total_evaluated_tiles']} 張子圖塊：\n"
+        f"  ├── 切塊投票選出最終 Golden 原圖 : 已從 {num_cands} 張候選池正式選出 {len(winning_cand_indices)} 張最純淨 Golden 原圖\n"
         f"  ├── 跨片局部峰值與 DINO 離群剔除 : 自動攔截剔除 {purity_stats['rejected_outlier_tiles']} 張可疑離群圖塊\n"
         f"  ├── 徑向分層純淨度優化替換       : {purity_stats['radial_purified_swaps']} 個徑向區間已自動替換為更純淨座標\n"
         f"  └── 最終輸出純淨代表性訓練圖塊   : {num_saved} 張 ({tile_size}x{tile_size}) -> {os.path.abspath(cat_train_dir)}",
@@ -796,8 +1003,10 @@ def run_auto_golden_pipeline(
     report_dir: Optional[str] = None,
     log_files: Optional[List[str]] = None,
     min_tile_trigger: int = 1280,
+    candidate_pool_size: int = 16,
+    max_coarse_scan: int = 250,
 ) -> Dict:
-    """執行完整 Stage 1 (Golden 原圖挑選) + Stage 2 (Golden 圖塊級二次純化)，並寫入 golden_cache_meta.json。"""
+    """執行完整 Stage 1 (大資料集抽樣 + 16 張候選池鎖定) + Stage 2 (RAM 切塊投票選出最終 4 張 Golden 與 48 張訓練圖塊)。"""
     safe_rmtree(shot_dir)
     os.makedirs(shot_dir, exist_ok=True)
     pool_signature = compute_pool_signature(pool_dir)
@@ -811,13 +1020,15 @@ def run_auto_golden_pipeline(
         shots=shots,
         report_dir=report_dir,
         log_files=log_files,
+        candidate_pool_size=candidate_pool_size,
+        max_coarse_scan=max_coarse_scan,
     )
     golden_select_sec = time.perf_counter() - t_s1
     golden_filenames = [
         os.path.relpath(p, pool_dir).replace("\\", "/") for p in golden_paths
     ]
     log_and_print(
-        f"[⏱️ 計時] Stage 1 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
+        f"[⏱️ 計時] Stage 1 候選池鎖定耗時: {format_duration(golden_select_sec)}",
         log_files,
     )
 
@@ -834,7 +1045,12 @@ def run_auto_golden_pipeline(
             ckpt_path=ckpt_path,
             report_dir=report_dir,
             min_tile_trigger=min_tile_trigger,
+            shots=shots,
         )
+        # 若 Stage 2 透過切塊投票更新了最終 4 張 Golden 名單，從報表同步回傳最新名單
+        voted_names = _recover_golden_filenames_from_disk(shot_dir, shots, category)
+        if voted_names:
+            golden_filenames = voted_names
     else:
         num_train_samples = len(golden_filenames)
     train_tile_sec = time.perf_counter() - t_s2
@@ -843,6 +1059,8 @@ def run_auto_golden_pipeline(
         "pool_signature": pool_signature,
         "category": category,
         "shots": int(shots),
+        "candidate_pool_size": int(candidate_pool_size),
+        "max_coarse_scan": int(max_coarse_scan),
         "tile_size": int(tile_size),
         "tile_overlap": int(tile_overlap),
         "max_train_tiles": int(max_train_tiles),
@@ -875,10 +1093,12 @@ def load_or_prepare_golden_dataset(
     report_dir: Optional[str] = None,
     log_files: Optional[List[str]] = None,
     min_tile_trigger: int = 1280,
+    candidate_pool_size: int = 16,
+    max_coarse_scan: int = 250,
 ) -> Tuple[List[str], int, bool, float, float]:
     """
     防呆機制：
-    1. 只要未指定 rebuild_golden=True，且已存在挑好的 Golden Image，絕不重新執行 Stage 1 挑選！
+    1. 只要未指定 rebuild_golden=True，且已存在挑好的 Golden Image，絕不重新執行挑選！
     2. 若發現舊版將 <= 1280px 的中小型圖片（如 1000x1000 MVTec）切成了 *_tile_* 碎片，
        自動從 golden_full_res_backup 直接還原已挑選的 4 張完整 Golden 原圖（不重挑 Golden！）。
     """
@@ -891,7 +1111,6 @@ def load_or_prepare_golden_dataset(
             f for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)
         ])
         if train_files:
-            # 檢查是否為舊版把 <=1280px 圖片切碎的殘留圖塊；若是，直接從 backup 還原整張原圖（不重挑 Golden）
             has_fragmented_tiles = any("_tile_y" in f for f in train_files)
             if has_fragmented_tiles and os.path.isdir(backup_dir):
                 backup_files = sorted([
@@ -942,6 +1161,8 @@ def load_or_prepare_golden_dataset(
                         "pool_signature": compute_pool_signature(pool_dir),
                         "category": category,
                         "shots": int(shots),
+                        "candidate_pool_size": int(candidate_pool_size),
+                        "max_coarse_scan": int(max_coarse_scan),
                         "tile_size": int(tile_size),
                         "tile_overlap": int(tile_overlap),
                         "max_train_tiles": int(max_train_tiles),
@@ -989,6 +1210,8 @@ def load_or_prepare_golden_dataset(
         report_dir=report_dir,
         log_files=log_files,
         min_tile_trigger=min_tile_trigger,
+        candidate_pool_size=candidate_pool_size,
+        max_coarse_scan=max_coarse_scan,
     )
     return (
         meta["golden_filenames"],
@@ -1000,13 +1223,15 @@ def load_or_prepare_golden_dataset(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FoundAD Stage 1 + Stage 2 自動挑選與純化 Golden 訓練集工具")
+    parser = argparse.ArgumentParser(description="FoundAD Stage 1 (大資料集抽樣候選池) + Stage 2 (先切塊再投票選 Golden) 工具")
     parser.add_argument("--pool_dir", type=str, required=True, help="無標籤測試盲池圖片資料夾路徑")
     parser.add_argument("--ckpt", type=str, default="auto", help="DINO 預訓練權重路徑")
     parser.add_argument("--datasets_dir", type=str, default="./datasets", help="資料集根目錄")
     parser.add_argument("--data_name", type=str, default="mvtec_sim_4shot", help="資料集名稱")
     parser.add_argument("--category", type=str, default="auto", help="產品/晶圓類別名稱")
-    parser.add_argument("--shots", type=int, default=4, help="Stage 1 挑選的 Golden 原圖張數")
+    parser.add_argument("--shots", type=int, default=4, help="最終選出的 Golden 原圖張數")
+    parser.add_argument("--candidate_pool_size", type=int, default=16, help="Stage 1 初篩進入切塊投票的候選晶圓張數 (預設 16 張)")
+    parser.add_argument("--max_coarse_scan", type=int, default=250, help="面對上千張大資料集時，Stage 1 抽樣評估的最大圖片上限 (預設 250 張)")
     parser.add_argument("--tile_size", type=int, default=512, help="Stage 2 子圖塊像素大小")
     parser.add_argument("--tile_overlap", type=int, default=64, help="相鄰子圖塊重疊像素寬度")
     parser.add_argument("--max_train_tiles", type=int, default=48, help="Stage 2 最終保留的代表性訓練圖塊上限")
@@ -1056,13 +1281,15 @@ def main():
         rebuild_golden=args.rebuild_golden,
         report_dir=report_dir,
         min_tile_trigger=args.min_tile_trigger,
+        candidate_pool_size=args.candidate_pool_size,
+        max_coarse_scan=args.max_coarse_scan,
     )
-    status_str = "⚡ 直接沿用既有 Golden (未重挑)" if used_existing else "✅ 新建完成"
+    status_str = "⚡ 直接沿用既有 Golden (未重挑)" if used_existing else "✅ 新建完成 (16張候選池切塊投票)"
     print(
         f"\n[{status_str}]\n"
-        f"  ├── 挑選之 Golden 原圖 : {', '.join(golden_filenames)}\n"
-        f"  ├── 最終訓練樣本數量   : {num_train_samples} 張\n"
-        f"  └── 輸出資料集目錄     : {shot_dir}"
+        f"  ├── 最終勝出 Golden 原圖 : {', '.join(golden_filenames)}\n"
+        f"  ├── 最終訓練樣本數量     : {num_train_samples} 張\n"
+        f"  └── 輸出資料集目錄       : {shot_dir}"
     )
 
 
