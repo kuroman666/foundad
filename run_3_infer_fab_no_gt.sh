@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
-# 檔案位置: FoundAD/run_2b_infer_fab_no_gt.sh
-# 用途: 單獨執行 2b_infer_fab_no_gt.py (測試池切塊推論 + RAM 無縫縫合 + 四合一防誤報畫紅框)
+# 檔案位置: FoundAD/run_2b_infer_fab_no_gt.sh (或 FoundAD/run_3_infer_fab_no_gt.sh)
+# 用途: 單獨執行 3_infer_fab_no_gt.py (支援直接指定舊資料集挑過的 Golden Image 與訓練權重檔推論新資料集)
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================
 DATASET_ID="${1:-W639}"
 LAYER_ID="${2:-TMQB28}"
 WAFER_POOL_DIR="${3:-/workspace/dataset/DA_Wafer_use/${DATASET_ID}/${LAYER_ID}/other_status}"
+
+# [新增] 跨資料集推論設定：可由命令列第 4、第 5 個參數傳入，或直接在下方雙引號內填寫固定路徑
+# 範例 1 (指定舊 Golden 備份資料夾或舊 shot_dir): CUSTOM_GOLDEN_SRC="./datasets/wafer_TMQB28_4shot/golden_full_res_backup/wafer"
+# 範例 2 (指定舊訓練權重檔 .pth.tar 或資料夾)  : CUSTOM_TRAINED_CKPT="./logs/wafer_TMQB28_4shot/dinov3fab_TMQB28/train-step2000.pth.tar"
+CUSTOM_GOLDEN_SRC="${4:-}"
+CUSTOM_TRAINED_CKPT="${5:-}"
 
 DATASETS_DIR="./datasets"
 FAB_RESULT_DIR="./wafer_escape_results/${DATASET_ID}/${LAYER_ID}"
@@ -65,9 +71,20 @@ if [ ! -f "foundad/configs/app/${APP_TEST}.yaml" ]; then
     exit 1
 fi
 
+CUSTOM_ARGS=()
+if [ -n "${CUSTOM_GOLDEN_SRC}" ]; then
+    CUSTOM_ARGS+=(--golden_src "${CUSTOM_GOLDEN_SRC}")
+fi
+if [ -n "${CUSTOM_TRAINED_CKPT}" ]; then
+    CUSTOM_ARGS+=(--trained_ckpt "${CUSTOM_TRAINED_CKPT}")
+fi
+
 echo "============================================================"
 echo " [Step 2b: FoundAD 無GT高解析度推論啟動] DATASET=${DATASET_ID} | LAYER=${LAYER_ID}"
-echo " [防誤報設定] THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}, P${AUTO_PERCENTILE}, Min=${MIN_THRESHOLD}) | WAFER_EDGE=${WAFER_EDGE_MODE} (${WAFER_EDGE_MARGIN}) | RAW_MODE=${RAW_SCORE_MODE:-OFF}"
+echo " [新測試集路徑] ${WAFER_POOL_DIR}"
+echo " [指定 Golden ] ${CUSTOM_GOLDEN_SRC:-(預設沿用 ${DATASETS_DIR}/${DATA_NAME})}"
+echo " [指定訓練權重] ${CUSTOM_TRAINED_CKPT:-(預設搜尋 ./logs/${DATA_NAME})}"
+echo " [防誤報設定  ] THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}, P${AUTO_PERCENTILE}, Min=${MIN_THRESHOLD}) | WAFER_EDGE=${WAFER_EDGE_MODE} (${WAFER_EDGE_MARGIN})"
 echo "============================================================"
 
 python 3_infer_fab_no_gt.py \
@@ -98,6 +115,7 @@ python 3_infer_fab_no_gt.py \
     --max_train_tiles "${MAX_TRAIN_TILES}" \
     --infer_batch_size "${INFER_BATCH_SIZE}" \
     --bg_std_thresh "${BG_STD_THRESH}" \
+    "${CUSTOM_ARGS[@]}" \
     ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
 
 # 終端機列印最新報表統計總結
@@ -162,7 +180,7 @@ print("\n" + "=" * 80)
 print(f" 🎯 [公司內部無 GT 晶圓池 — 非 Golden 正常圖分數分佈與 Threshold 參考總結 ({score_mode_str})]")
 print("-" * 80)
 print(f"  📂 報表位置                   : {latest_csv}")
-print(f"  🖼️ 測試池圖片總數              : {total} 張 (含 {total - len(non_golden)} 張 Golden 圖, 抓出 {len(anom_all)} 張異常)")
+print(f"  🖼️ 測試池圖片總數              : {total} 張 (抓出 {len(anom_all)} 張異常)")
 print(f"  🎚️ 本次動態對齊後有效門檻      : {eff_thresh:.4f}")
 if overfit_line:
     print(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")

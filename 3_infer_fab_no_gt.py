@@ -1,4 +1,5 @@
-# 檔案位置: FoundAD/3_infer_fab_no_gt.py (全選覆蓋此檔：新增 --micro_defect_mode 微瑕疵高靈敏模式)
+# 檔案位置: FoundAD/3_infer_fab_no_gt.py
+# (全選覆蓋此檔：支援 --golden_src 與 --trained_ckpt 直接指定舊資料集 Golden Image 與訓練權重推論新資料集)
 import shlex
 import os
 import re
@@ -8,6 +9,7 @@ import time
 import glob
 import json
 import socket
+import hashlib
 import subprocess
 import argparse
 from datetime import datetime, timezone, timedelta
@@ -22,6 +24,7 @@ import importlib
 TZ_TAIPEI = timezone(timedelta(hours=8))
 
 _ag = importlib.import_module("1_auto_golden")
+IMG_EXTENSIONS = _ag.IMG_EXTENSIONS
 format_duration = _ag.format_duration
 log_and_print = _ag.log_and_print
 safe_rmtree = _ag.safe_rmtree
@@ -31,6 +34,7 @@ compute_pool_signature = _ag.compute_pool_signature
 load_image_rgb_uint8 = _ag.load_image_rgb_uint8
 get_axis_positions = _ag.get_axis_positions
 is_background_tile = _ag.is_background_tile
+prepare_tiled_golden_trainset = _ag.prepare_tiled_golden_trainset
 load_or_prepare_golden_dataset = _ag.load_or_prepare_golden_dataset
 
 
@@ -88,13 +92,113 @@ def load_image_bgr_uint8(img_path: str) -> np.ndarray:
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 
+# =====================================================================
+# [新增] 跨資料集推論：解析與對接指定的訓練權重檔 (--trained_ckpt)
+# =====================================================================
+def _resolve_custom_trained_ckpt_file(trained_ckpt: str, req_step: int) -> Tuple[str, int, str]:
+    """
+    解析使用者指定的 --trained_ckpt (可為 .pth.tar 檔案或權重目錄)，
+    回傳 (權重檔絕對路徑, 對應步數 chosen_step, 模型前綴 model_prefix)。
+    """
+    ckpt_path = os.path.abspath(os.path.expanduser(trained_ckpt.strip()))
+    if not os.path.exists(ckpt_path):
+        raise FileNotFoundError(f"找不到指定的訓練權重路徑 (--trained_ckpt): {ckpt_path}")
+
+    chosen_step = req_step
+    target_file = ""
+
+    if os.path.isfile(ckpt_path):
+        target_file = ckpt_path
+        m = re.search(r"train-step(\d+)\.pth", os.path.basename(target_file))
+        if m:
+            chosen_step = int(m.group(1))
+        else:
+            parent_dir = os.path.dirname(target_file)
+            step_files = glob.glob(os.path.join(parent_dir, "train-step*.pth.tar"))
+            if step_files:
+                steps = [int(re.search(r"train-step(\d+)", f).group(1)) for f in step_files]
+                if req_step in steps:
+                    chosen_step = req_step
+                else:
+                    chosen_step = max(steps)
+    else:
+        exact_candidates = glob.glob(
+            os.path.join(ckpt_path, "**", f"train-step{req_step}.pth.tar"), recursive=True
+        )
+        if exact_candidates:
+            target_file = sorted(exact_candidates)[-1]
+            chosen_step = req_step
+        else:
+            step_files = glob.glob(os.path.join(ckpt_path, "**", "train-step*.pth.tar"), recursive=True)
+            if step_files:
+                step_files.sort(key=lambda p: int(re.search(r"train-step(\d+)", p).group(1)))
+                target_file = step_files[-1]
+                chosen_step = int(re.search(r"train-step(\d+)", target_file).group(1))
+            else:
+                alias_files = glob.glob(os.path.join(ckpt_path, "**", "pretrained.pth.tar"), recursive=True)
+                if not alias_files:
+                    alias_files = glob.glob(os.path.join(ckpt_path, "**", "*.pth*"), recursive=True)
+                if alias_files:
+                    target_file = sorted(alias_files)[-1]
+
+    if not target_file or not os.path.isfile(target_file):
+        raise FileNotFoundError(f"在指定的 --trained_ckpt ({ckpt_path}) 中找不到任何有效的 .pth.tar 權重檔！")
+
+    parent_name = os.path.basename(os.path.dirname(target_file))
+    model_prefix = "dinov3"
+    for prefix_cand in ("dinov3", "dinov2", "dino", "vit"):
+        if parent_name.lower().startswith(prefix_cand):
+            model_prefix = prefix_cand
+            break
+
+    return os.path.abspath(target_file), chosen_step, model_prefix
+
+
 def prepare_ckpt_for_demo(
     data_name: str,
     diy_name: str,
     req_step: int,
     log_files: List[str],
+    trained_ckpt: str = "",
 ) -> Tuple[int, List[str], List[str]]:
-    """確認權重已生成並複製為 pretrained.pth.tar，回傳 (步數, 權重資料夾清單, 權重檔案清單)。"""
+    """
+    確認權重已生成並複製為 pretrained.pth.tar 與 train-step{chosen_step}.pth.tar。
+    若指定了 trained_ckpt，則自動將該權重檔對接至當前 data_name / diy_name 的推論目錄。
+    """
+    if trained_ckpt and trained_ckpt.strip():
+        src_ckpt_file, chosen_step, model_prefix = _resolve_custom_trained_ckpt_file(trained_ckpt, req_step)
+        existing_dirs = [
+            d for d in (glob.glob(f"./logs/{data_name}/*{diy_name}*") or glob.glob(f"./logs/{data_name}/*"))
+            if os.path.isdir(d)
+        ]
+        default_target_dir = os.path.join("./logs", data_name, f"{model_prefix}{diy_name}")
+        if default_target_dir not in existing_dirs:
+            existing_dirs.insert(0, default_target_dir)
+        dinov3_target_dir = os.path.join("./logs", data_name, f"dinov3{diy_name}")
+        if dinov3_target_dir not in existing_dirs:
+            existing_dirs.append(dinov3_target_dir)
+
+        ckpt_dirs = []
+        ckpt_files = []
+        for d in existing_dirs:
+            os.makedirs(d, exist_ok=True)
+            dst_step_ckpt = os.path.join(d, f"train-step{chosen_step}.pth.tar")
+            dst_alias_ckpt = os.path.join(d, "pretrained.pth.tar")
+            if os.path.abspath(src_ckpt_file) != os.path.abspath(dst_step_ckpt):
+                safe_copy(src_ckpt_file, dst_step_ckpt)
+            if os.path.abspath(src_ckpt_file) != os.path.abspath(dst_alias_ckpt):
+                safe_copy(src_ckpt_file, dst_alias_ckpt)
+            abs_d = os.path.abspath(d)
+            ckpt_dirs.append(abs_d)
+            ckpt_files.extend([os.path.abspath(dst_step_ckpt), os.path.abspath(dst_alias_ckpt)])
+
+        log_and_print(
+            f"[Custom-Ckpt] 已載入指定訓練權重: {src_ckpt_file} (step={chosen_step})\n"
+            f"              並自動對接至推論目錄: {ckpt_dirs[0]}",
+            log_files,
+        )
+        return chosen_step, ckpt_dirs, ckpt_files
+
     log_dirs = glob.glob(f"./logs/{data_name}/*{diy_name}*") or glob.glob(f"./logs/{data_name}/*")
     chosen_step = req_step
     ckpt_dirs = []
@@ -109,9 +213,12 @@ def prepare_ckpt_for_demo(
                 steps = [int(re.search(r"train-step(\d+)", f).group(1)) for f in step_files]
                 chosen_step = max(steps)
                 target_ckpt = os.path.join(d, f"train-step{chosen_step}.pth.tar")
+            elif os.path.exists(os.path.join(d, "pretrained.pth.tar")):
+                target_ckpt = os.path.join(d, "pretrained.pth.tar")
         if os.path.exists(target_ckpt):
             pretrained_alias = os.path.join(d, "pretrained.pth.tar")
-            safe_copy(target_ckpt, pretrained_alias)
+            if os.path.abspath(target_ckpt) != os.path.abspath(pretrained_alias):
+                safe_copy(target_ckpt, pretrained_alias)
             abs_d = os.path.abspath(d)
             abs_target = os.path.abspath(target_ckpt)
             abs_alias = os.path.abspath(pretrained_alias)
@@ -120,9 +227,239 @@ def prepare_ckpt_for_demo(
             log_and_print(f"[Auto-Ckpt] 已將訓練權重 {abs_target} 對接至 {abs_alias}", log_files)
     if not ckpt_dirs:
         raise FileNotFoundError(
-            f"在 ./logs/{data_name}/ 下找不到任何 train-step*.pth.tar 權重檔！請先執行 2_train_fab_no_gt.py 完成訓練。"
+            f"在 ./logs/{data_name}/ 下找不到任何 train-step*.pth.tar 權重檔！"
+            f"請先執行 2_train_fab_no_gt.py 完成訓練，或透過 --trained_ckpt 指定舊資料集訓練好的權重檔。"
         )
     return chosen_step, ckpt_dirs, ckpt_files
+
+
+# =====================================================================
+# [新增] 跨資料集推論：解析與載入指定的 Golden Image (--golden_src)
+# =====================================================================
+def resolve_custom_golden_source(
+    golden_src: str,
+    category: str,
+    fallback_pool_dir: str = "",
+) -> Tuple[List[str], Optional[str]]:
+    """
+    解析使用者指定的 --golden_src，回傳 (Golden 全解析度原圖絕對路徑清單, 既有訓練圖塊目錄或 None)。
+    支援 4 種輸入格式：
+    1. 舊資料集的 shot_dir 根目錄 (如 ./datasets/wafer_TMQB28_4shot)
+    2. 含有 Golden 圖片的任意資料夾路徑 (如 .../golden_full_res_backup/wafer 或自訂資料夾)
+    3. selected_4_golden_images.txt 紀錄檔或純文字路徑清單 (.txt)
+    4. 以逗號 (,) 分隔的多張圖片路徑字串
+    """
+    raw_spec = golden_src.strip()
+    if not raw_spec:
+        raise ValueError("--golden_src 不可為空字串！")
+
+    # 格式 4：以逗號分隔的多張圖片路徑，或單一圖片檔案
+    if "," in raw_spec or (os.path.isfile(raw_spec) and raw_spec.lower().endswith(IMG_EXTENSIONS)):
+        parts = [p.strip() for p in raw_spec.split(",") if p.strip()]
+        resolved = []
+        for p in parts:
+            cand = os.path.abspath(os.path.expanduser(p))
+            if not os.path.isfile(cand) and fallback_pool_dir:
+                cand2 = os.path.abspath(os.path.join(fallback_pool_dir, p))
+                if os.path.isfile(cand2):
+                    cand = cand2
+            if not os.path.isfile(cand):
+                raise FileNotFoundError(f"找不到指定的 Golden 圖片檔案: {p}")
+            resolved.append(cand)
+        return resolved, None
+
+    src_path = os.path.abspath(os.path.expanduser(raw_spec))
+    if not os.path.exists(src_path):
+        raise FileNotFoundError(f"找不到指定的 Golden 來源路徑 (--golden_src): {src_path}")
+
+    # 格式 3：.txt 紀錄檔 (例如 selected_4_golden_images.txt 或每行一個路徑的清單)
+    if os.path.isfile(src_path) and src_path.lower().endswith(".txt"):
+        txt_dir = os.path.dirname(src_path)
+        parsed_rel_names = []
+        direct_paths = []
+        with open(src_path, "r", encoding="utf-8") as f:
+            for line in f:
+                s = line.strip()
+                if not s or s.startswith("==="):
+                    continue
+                m = re.search(r":\s*([^|]+?)\s*(?:\||$)", s)
+                if m and "Golden #" in s:
+                    parsed_rel_names.append(m.group(1).strip())
+                elif s.lower().endswith(IMG_EXTENSIONS):
+                    direct_paths.append(s)
+
+        resolved = []
+        for p in direct_paths + parsed_rel_names:
+            for base_d in ("", txt_dir, fallback_pool_dir):
+                cand = os.path.abspath(os.path.join(base_d, p)) if base_d else os.path.abspath(p)
+                if os.path.isfile(cand):
+                    resolved.append(cand)
+                    break
+        if resolved:
+            return resolved, None
+
+        # 若 .txt 內記載的是舊盲池相對路徑，退回檢查同目錄下的 golden_full_res_backup
+        src_path = txt_dir
+
+    # 格式 1 & 2：資料夾路徑 (可為舊 shot_dir 或任意圖片資料夾)
+    if os.path.isdir(src_path):
+        existing_train_tiles_dir = None
+        train_cat_dir = os.path.join(src_path, "train", category)
+        if not os.path.isdir(train_cat_dir) and os.path.isdir(os.path.join(src_path, "train")):
+            sub_trains = [
+                os.path.join(src_path, "train", d)
+                for d in sorted(os.listdir(os.path.join(src_path, "train")))
+                if os.path.isdir(os.path.join(src_path, "train", d))
+            ]
+            if sub_trains:
+                train_cat_dir = sub_trains[0]
+        if os.path.isdir(train_cat_dir) and scan_pool_images(train_cat_dir):
+            existing_train_tiles_dir = train_cat_dir
+
+        # 優先尋找 golden_full_res_backup/<category> 內的完整解析度 Golden 原圖
+        backup_cat_dir = os.path.join(src_path, "golden_full_res_backup", category)
+        if not os.path.isdir(backup_cat_dir) and os.path.isdir(os.path.join(src_path, "golden_full_res_backup")):
+            sub_backups = [
+                os.path.join(src_path, "golden_full_res_backup", d)
+                for d in sorted(os.listdir(os.path.join(src_path, "golden_full_res_backup")))
+                if os.path.isdir(os.path.join(src_path, "golden_full_res_backup", d))
+            ]
+            if sub_backups:
+                backup_cat_dir = sub_backups[0]
+        if os.path.isdir(backup_cat_dir):
+            backup_imgs = scan_pool_images(backup_cat_dir)
+            if backup_imgs:
+                return backup_imgs, existing_train_tiles_dir
+
+        # 若使用者直接傳入 train/<category> 目錄，嘗試往上找其對應的 golden_full_res_backup
+        parent_dir = os.path.dirname(src_path)
+        grandparent_dir = os.path.dirname(parent_dir)
+        if os.path.basename(parent_dir) == "train":
+            alt_backup = os.path.join(grandparent_dir, "golden_full_res_backup", os.path.basename(src_path))
+            if os.path.isdir(alt_backup):
+                backup_imgs = scan_pool_images(alt_backup)
+                if backup_imgs:
+                    return backup_imgs, src_path
+
+        # 直接掃描指定資料夾內的圖片 (優先取非碎片 _tile_y 的原圖)
+        all_found = scan_pool_images(src_path)
+        if all_found:
+            non_tile_imgs = [p for p in all_found if "_tile_y" not in os.path.basename(p)]
+            chosen_imgs = non_tile_imgs if non_tile_imgs else all_found
+            return chosen_imgs, existing_train_tiles_dir
+
+    raise FileNotFoundError(f"在指定的 --golden_src ({golden_src}) 中找不到任何有效的 Golden 圖片！")
+
+
+def setup_custom_golden_for_infer(
+    golden_src: str,
+    pool_dir: str,
+    shot_dir: str,
+    category: str,
+    ckpt_path: str,
+    shots: int,
+    tile_size: int,
+    tile_overlap: int,
+    max_train_tiles: int,
+    bg_std_thresh: float,
+    disable_tiling: bool,
+    min_tile_trigger: int,
+    run_out_dir: str,
+    log_files: List[str],
+) -> Tuple[List[str], List[str]]:
+    """
+    將使用者指定的 Golden Image 同步配置到當前 shot_dir，並檢查這些 Golden Image 是否屬於外部舊資料集：
+    - 回傳 (golden_filenames, external_golden_paths)
+    - 若 Golden Image 來自外部舊資料集 (不在本次 --pool_dir 內)，將透過 external_golden_paths
+      注入推論圖塊池以計算 Golden 空間容差遮罩與動態門檻基準，但不混入新資料集的測試排名報表中。
+    """
+    custom_golden_paths, existing_train_tiles_dir = resolve_custom_golden_source(
+        golden_src=golden_src,
+        category=category,
+        fallback_pool_dir=pool_dir,
+    )
+
+    cat_train_dir = os.path.join(shot_dir, "train", category)
+    full_backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
+    os.makedirs(cat_train_dir, exist_ok=True)
+    os.makedirs(full_backup_dir, exist_ok=True)
+
+    # 1. 將指定的 Golden 全解析度原圖同步至 golden_full_res_backup/<category>
+    if os.path.abspath(os.path.dirname(custom_golden_paths[0])) != os.path.abspath(full_backup_dir):
+        safe_rmtree(full_backup_dir)
+        os.makedirs(full_backup_dir, exist_ok=True)
+        for i, src_p in enumerate(custom_golden_paths):
+            ext = os.path.splitext(src_p)[1].lower()
+            dst_p = os.path.join(full_backup_dir, f"{i:03d}_{os.path.basename(src_p)}" if not re.match(r"^\d{3}", os.path.basename(src_p)) else os.path.basename(src_p))
+            safe_copy(src_p, dst_p)
+
+    # 2. 確保 shot_dir/train/<category> 具備對應的訓練圖塊或原圖
+    if existing_train_tiles_dir and os.path.abspath(existing_train_tiles_dir) != os.path.abspath(cat_train_dir):
+        safe_rmtree(cat_train_dir)
+        os.makedirs(cat_train_dir, exist_ok=True)
+        for f in sorted(os.listdir(existing_train_tiles_dir)):
+            if f.lower().endswith(IMG_EXTENSIONS):
+                safe_copy(os.path.join(existing_train_tiles_dir, f), os.path.join(cat_train_dir, f))
+    elif not existing_train_tiles_dir:
+        safe_rmtree(cat_train_dir)
+        os.makedirs(cat_train_dir, exist_ok=True)
+        for i, src_p in enumerate(custom_golden_paths):
+            ext = os.path.splitext(src_p)[1].lower()
+            safe_copy(src_p, os.path.join(cat_train_dir, f"{i:03d}{ext}"))
+        if not disable_tiling:
+            try:
+                sample_img = load_image_rgb_uint8(custom_golden_paths[0])
+                sh, sw = sample_img.shape[:2]
+                del sample_img
+                if max(sh, sw) > max(tile_size, min_tile_trigger):
+                    prepare_tiled_golden_trainset(
+                        shot_dir=shot_dir,
+                        category=category,
+                        tile_size=tile_size,
+                        tile_overlap=tile_overlap,
+                        max_train_tiles=max_train_tiles,
+                        bg_std_thresh=bg_std_thresh,
+                        log_files=log_files,
+                        ckpt_path=ckpt_path,
+                        report_dir=run_out_dir,
+                        min_tile_trigger=min_tile_trigger,
+                        shots=len(custom_golden_paths),
+                    )
+            except Exception as e:
+                log_and_print(f"[Custom-Golden] 備註：略過訓練圖塊重建，直接沿用原圖 ({e})", log_files)
+
+    # 3. 判斷指定的 Golden Image 是否已在新的 --pool_dir 內，或屬於跨資料集外部 Golden
+    pool_imgs = scan_pool_images(pool_dir)
+    pool_abs_map = {os.path.abspath(p): os.path.relpath(p, pool_dir).replace("\\", "/") for p in pool_imgs}
+    pool_base_map = {os.path.basename(p): os.path.relpath(p, pool_dir).replace("\\", "/") for p in pool_imgs}
+
+    golden_filenames = []
+    external_golden_paths = []
+    for idx, g_path in enumerate(custom_golden_paths):
+        abs_g = os.path.abspath(g_path)
+        base_g = os.path.basename(g_path)
+        if abs_g in pool_abs_map:
+            golden_filenames.append(pool_abs_map[abs_g])
+        elif base_g in pool_base_map and not re.match(r"^\d{3}\.[a-zA-Z0-9]+$", base_g):
+            golden_filenames.append(pool_base_map[base_g])
+        else:
+            ext_key = f"[GOLDEN_REF]/{idx:02d}_{base_g}"
+            golden_filenames.append(ext_key)
+            external_golden_paths.append(abs_g)
+
+    record_txt = os.path.join(run_out_dir, "selected_custom_golden_images.txt")
+    with open(record_txt, "w", encoding="utf-8") as f:
+        f.write(f"=== Custom Specified Golden Images (--golden_src: {golden_src}) ===\n")
+        for i, (g_p, g_key) in enumerate(zip(custom_golden_paths, golden_filenames), 1):
+            f.write(f"Golden #{i:02d}: {g_p} -> Manifest_Key: {g_key}\n")
+
+    log_and_print(
+        f"[Custom-Golden] 已載入指定的 {len(custom_golden_paths)} 張 Golden Image 來源: {golden_src}\n"
+        f"                ├── 清單: {', '.join([os.path.basename(p) for p in custom_golden_paths])}\n"
+        f"                └── 跨資料集外部基準圖數量: {len(external_golden_paths)} 張 (將自動注入推論池以校準動態門檻與結構容差)",
+        log_files,
+    )
+    return golden_filenames, external_golden_paths
 
 
 def load_golden_filenames_for_infer(
@@ -139,11 +476,32 @@ def load_golden_filenames_for_infer(
     min_tile_trigger: int,
     run_out_dir: str,
     log_files: List[str],
-) -> Tuple[List[str], Optional[int], float]:
+    golden_src: str = "",
+) -> Tuple[List[str], List[str], Optional[int], float]:
     """
-    優先從 2_train_fab_no_gt.py 產生的 train_meta_{category}.json 讀取 golden_filenames 與訓練資訊；
-    若找不到則自動從 auto_golden 快取或備份資料夾載入。
+    1. 若有指定 --golden_src，直接載入指定的 Golden Image (絕不對新資料集重跑 Auto-Golden)。
+    2. 否則優先從 2_train_fab_no_gt.py 產生的 train_meta_{category}.json 讀取 golden_filenames；
+       若連舊紀錄也無，才從 auto_golden 快取或備份資料夾載入。
     """
+    if golden_src and golden_src.strip():
+        golden_filenames, external_golden_paths = setup_custom_golden_for_infer(
+            golden_src=golden_src,
+            pool_dir=pool_dir,
+            shot_dir=shot_dir,
+            category=category,
+            ckpt_path=ckpt_path,
+            shots=shots,
+            tile_size=tile_size,
+            tile_overlap=tile_overlap,
+            max_train_tiles=max_train_tiles,
+            bg_std_thresh=bg_std_thresh,
+            disable_tiling=disable_tiling,
+            min_tile_trigger=min_tile_trigger,
+            run_out_dir=run_out_dir,
+            log_files=log_files,
+        )
+        return golden_filenames, external_golden_paths, None, 0.0
+
     train_meta_path = os.path.join(shot_dir, f"train_meta_{category}.json")
     if os.path.isfile(train_meta_path):
         try:
@@ -156,53 +514,142 @@ def load_golden_filenames_for_infer(
                 purity_src = os.path.join(shot_dir, "golden_tile_purity_report.txt")
                 if os.path.isfile(purity_src):
                     safe_copy(purity_src, os.path.join(run_out_dir, "golden_tile_purity_report.txt"))
+
+                # 若使用者未傳 --golden_src，但把舊的 shot_dir 直接拿來推論新 pool_dir，
+                # 自動檢查 backup 內的 Golden 原圖是否不在新 pool_dir 中並自動補入外部基準
+                external_golden_paths = []
+                pool_rel_set = {
+                    os.path.relpath(p, pool_dir).replace("\\", "/") for p in scan_pool_images(pool_dir)
+                }
+                pool_base_set = {os.path.basename(p) for p in pool_rel_set}
+                if not any((gf in pool_rel_set or os.path.basename(gf) in pool_base_set) for gf in golden_filenames):
+                    backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
+                    if os.path.isdir(backup_dir):
+                        b_imgs = scan_pool_images(backup_dir)
+                        if b_imgs:
+                            external_golden_paths = [os.path.abspath(p) for p in b_imgs]
+                            golden_filenames = [
+                                f"[GOLDEN_REF]/{idx:02d}_{os.path.basename(p)}"
+                                for idx, p in enumerate(external_golden_paths)
+                            ]
+                            log_and_print(
+                                f"[Golden-AutoRef] 偵測到新測試集不含原訓練 Golden 圖片，"
+                                f"已自動從備份載入 {len(external_golden_paths)} 張舊 Golden 原圖作為跨資料集基準！",
+                                log_files,
+                            )
+
                 log_and_print(
                     f"[Golden-Meta] 已從 {os.path.abspath(train_meta_path)} 載入 {len(golden_filenames)} 張 Golden 清單",
                     log_files,
                 )
-                return golden_filenames, saved_step, total_train_time
+                return golden_filenames, external_golden_paths, saved_step, total_train_time
         except Exception:
             pass
 
-    try:
-        golden_filenames, _, _, golden_select_sec, train_tile_sec = load_or_prepare_golden_dataset(
-            pool_dir=pool_dir,
-            shot_dir=shot_dir,
-            category=category,
-            ckpt_path=ckpt_path,
-            shots=shots,
-            tile_size=tile_size,
-            tile_overlap=tile_overlap,
-            max_train_tiles=max_train_tiles,
-            bg_std_thresh=bg_std_thresh,
-            disable_tiling=disable_tiling,
-            min_tile_trigger=min_tile_trigger,
-            rebuild_golden=False,
-            report_dir=run_out_dir,
-            log_files=log_files,
-        )
-    except TypeError:
-        golden_filenames, _, _, golden_select_sec, train_tile_sec = load_or_prepare_golden_dataset(
-            pool_dir=pool_dir,
-            shot_dir=shot_dir,
-            category=category,
-            ckpt_path=ckpt_path,
-            shots=shots,
-            tile_size=tile_size,
-            tile_overlap=tile_overlap,
-            max_train_tiles=max_train_tiles,
-            bg_std_thresh=bg_std_thresh,
-            disable_tiling=disable_tiling,
-            rebuild_golden=False,
-            report_dir=run_out_dir,
-            log_files=log_files,
-        )
-    return golden_filenames, None, (golden_select_sec + train_tile_sec)
+    golden_filenames, _, _, golden_select_sec, train_tile_sec = load_or_prepare_golden_dataset(
+        pool_dir=pool_dir,
+        shot_dir=shot_dir,
+        category=category,
+        ckpt_path=ckpt_path,
+        shots=shots,
+        tile_size=tile_size,
+        tile_overlap=tile_overlap,
+        max_train_tiles=max_train_tiles,
+        bg_std_thresh=bg_std_thresh,
+        disable_tiling=disable_tiling,
+        min_tile_trigger=min_tile_trigger,
+        rebuild_golden=False,
+        report_dir=run_out_dir,
+        log_files=log_files,
+    )
+    return golden_filenames, [], None, (golden_select_sec + train_tile_sec)
 
 
 # =====================================================================
 # 測試池高解析度切塊 (Tiling) 與無縫縫合 (Feathering Stitching) 模組
 # =====================================================================
+def _tile_single_image_to_pool(
+    fpath: str,
+    rel_fname: str,
+    stem: str,
+    tiled_pool_dir: str,
+    tile_size: int,
+    stride: int,
+    min_tile_trigger: int,
+    bg_std_thresh: float,
+    disable_tiling: bool,
+    is_external_golden: bool = False,
+) -> Tuple[Dict, int, int, bool]:
+    """將單張原圖切分為推論圖塊並存入 tiled_pool_dir。"""
+    img = load_image_rgb_uint8(fpath)
+    h, w = img.shape[:2]
+
+    if disable_tiling or (max(h, w) <= min_tile_trigger) or (h <= tile_size and w <= tile_size):
+        ys, xs = [0], [0]
+        eff_tile_h, eff_tile_w = h, w
+        is_1to1 = True
+    else:
+        ys = get_axis_positions(h, tile_size, stride)
+        xs = get_axis_positions(w, tile_size, stride)
+        eff_tile_h, eff_tile_w = tile_size, tile_size
+        is_1to1 = False
+
+    tiles_info = []
+    skipped_bg = 0
+    for y in ys:
+        for x in xs:
+            ch = min(eff_tile_h, h - y)
+            cw = min(eff_tile_w, w - x)
+            crop = img[y:y + ch, x:x + cw]
+
+            if is_background_tile(crop, bg_std_thresh) and (len(ys) * len(xs) > 1):
+                skipped_bg += 1
+                continue
+
+            tile_stem = f"{stem}__tile_y{y:04d}_x{x:04d}_h{ch:04d}_w{cw:04d}"
+            tile_fname = f"{tile_stem}.png"
+            Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
+            tiles_info.append(
+                {
+                    "tile_stem": tile_stem,
+                    "tile_fname": tile_fname,
+                    "y": int(y),
+                    "x": int(x),
+                    "h": int(ch),
+                    "w": int(cw),
+                }
+            )
+
+    if not tiles_info:
+        cy, cx = max(0, (h - eff_tile_h) // 2), max(0, (w - eff_tile_w) // 2)
+        ch, cw = min(eff_tile_h, h - cy), min(eff_tile_w, w - cx)
+        crop = img[cy:cy + ch, cx:cx + cw]
+        tile_stem = f"{stem}__tile_y{cy:04d}_x{cx:04d}_h{ch:04d}_w{cw:04d}"
+        tile_fname = f"{tile_stem}.png"
+        Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
+        tiles_info.append(
+            {
+                "tile_stem": tile_stem,
+                "tile_fname": tile_fname,
+                "y": int(cy),
+                "x": int(cx),
+                "h": int(ch),
+                "w": int(cw),
+            }
+        )
+
+    del img
+    entry = {
+        "stem": stem,
+        "path": os.path.abspath(fpath),
+        "height": int(h),
+        "width": int(w),
+        "is_external_golden": bool(is_external_golden),
+        "tiles": tiles_info,
+    }
+    return entry, len(tiles_info), skipped_bg, is_1to1
+
+
 def prepare_tiled_test_pool(
     pool_dir: str,
     tiled_pool_dir: str,
@@ -216,11 +663,11 @@ def prepare_tiled_test_pool(
     tile_config_key: str,
     cached_manifest_path: str,
     log_files: List[str],
+    external_golden_paths: Optional[List[str]] = None,
 ) -> Dict:
     """
-    遞迴搜尋測試盲池 (含所有子資料夾) 中的所有圖片：
-    - 若影像尺寸 <= min_tile_trigger (預設 1280px) 或 disable_tiling=True，直接 1:1 整張推論。
-    - 若影像尺寸 > min_tile_trigger，自動切分為重疊子圖塊並在推論後無縫縫合。
+    遞迴搜尋測試盲池 (含所有子資料夾) 中的所有圖片，並切塊供模型推論。
+    若存在跨資料集指定的外部 Golden 原圖 (external_golden_paths)，自動一併切塊注入推論池以供基準校準。
     """
     safe_rmtree(tiled_pool_dir)
     os.makedirs(tiled_pool_dir, exist_ok=True)
@@ -246,76 +693,55 @@ def prepare_tiled_test_pool(
         rel_fname = os.path.relpath(fpath, pool_dir).replace("\\", "/")
         rel_no_ext = os.path.splitext(rel_fname)[0]
         stem = re.sub(r"[\\/]+", "__", rel_no_ext)
-        img = load_image_rgb_uint8(fpath)
-        h, w = img.shape[:2]
-
-        if disable_tiling or (max(h, w) <= min_tile_trigger) or (h <= tile_size and w <= tile_size):
-            ys, xs = [0], [0]
-            eff_tile_h, eff_tile_w = h, w
+        entry, n_t, n_skip, is_1to1 = _tile_single_image_to_pool(
+            fpath=fpath,
+            rel_fname=rel_fname,
+            stem=stem,
+            tiled_pool_dir=tiled_pool_dir,
+            tile_size=tile_size,
+            stride=stride,
+            min_tile_trigger=min_tile_trigger,
+            bg_std_thresh=bg_std_thresh,
+            disable_tiling=disable_tiling,
+            is_external_golden=False,
+        )
+        manifest["images"][rel_fname] = entry
+        total_tiles += n_t
+        skipped_bg_tiles += n_skip
+        if is_1to1:
             full_1to1_imgs += 1
         else:
-            ys = get_axis_positions(h, tile_size, stride)
-            xs = get_axis_positions(w, tile_size, stride)
-            eff_tile_h, eff_tile_w = tile_size, tile_size
             tiled_highres_imgs += 1
+        gc.collect()
 
-        tiles_info = []
-        for y in ys:
-            for x in xs:
-                ch = min(eff_tile_h, h - y)
-                cw = min(eff_tile_w, w - x)
-                crop = img[y:y + ch, x:x + cw]
-
-                if is_background_tile(crop, bg_std_thresh) and (len(ys) * len(xs) > 1):
-                    skipped_bg_tiles += 1
-                    continue
-
-                tile_stem = f"{stem}__tile_y{y:04d}_x{x:04d}_h{ch:04d}_w{cw:04d}"
-                tile_fname = f"{tile_stem}.png"
-                Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
-                tiles_info.append(
-                    {
-                        "tile_stem": tile_stem,
-                        "tile_fname": tile_fname,
-                        "y": int(y),
-                        "x": int(x),
-                        "h": int(ch),
-                        "w": int(cw),
-                    }
-                )
-                total_tiles += 1
-
-        if not tiles_info:
-            cy, cx = max(0, (h - eff_tile_h) // 2), max(0, (w - eff_tile_w) // 2)
-            ch, cw = min(eff_tile_h, h - cy), min(eff_tile_w, w - cx)
-            crop = img[cy:cy + ch, cx:cx + cw]
-            tile_stem = f"{stem}__tile_y{cy:04d}_x{cx:04d}_h{ch:04d}_w{cw:04d}"
-            tile_fname = f"{tile_stem}.png"
-            Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
-            tiles_info.append(
-                {
-                    "tile_stem": tile_stem,
-                    "tile_fname": tile_fname,
-                    "y": int(cy),
-                    "x": int(cx),
-                    "h": int(ch),
-                    "w": int(cw),
-                }
+    ext_golden_tiles = 0
+    if external_golden_paths:
+        for g_idx, g_path in enumerate(external_golden_paths):
+            base_g = os.path.basename(g_path)
+            rel_fname = f"[GOLDEN_REF]/{g_idx:02d}_{base_g}"
+            base_no_ext = re.sub(r"[^a-zA-Z0-9_\-]", "_", os.path.splitext(base_g)[0])
+            stem = f"GOLDEN_REF_{g_idx:02d}__{base_no_ext}"
+            entry, n_t, n_skip, _ = _tile_single_image_to_pool(
+                fpath=g_path,
+                rel_fname=rel_fname,
+                stem=stem,
+                tiled_pool_dir=tiled_pool_dir,
+                tile_size=tile_size,
+                stride=stride,
+                min_tile_trigger=min_tile_trigger,
+                bg_std_thresh=bg_std_thresh,
+                disable_tiling=disable_tiling,
+                is_external_golden=True,
             )
-            total_tiles += 1
-
-        manifest["images"][rel_fname] = {
-            "stem": stem,
-            "path": os.path.abspath(fpath),
-            "height": int(h),
-            "width": int(w),
-            "tiles": tiles_info,
-        }
-        del img
+            manifest["images"][rel_fname] = entry
+            total_tiles += n_t
+            ext_golden_tiles += n_t
+            skipped_bg_tiles += n_skip
         gc.collect()
 
     manifest["total_tiles"] = total_tiles
     manifest["num_images"] = len(img_paths)
+    manifest["num_external_golden"] = len(external_golden_paths) if external_golden_paths else 0
     manifest_path = os.path.join(manifest_save_dir, "tile_manifest.json")
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
@@ -323,10 +749,15 @@ def prepare_tiled_test_pool(
         os.makedirs(os.path.dirname(cached_manifest_path), exist_ok=True)
         safe_copy(manifest_path, cached_manifest_path)
 
+    ext_note = (
+        f", 另含 {len(external_golden_paths)} 張跨資料集 Golden 基準圖 [{ext_golden_tiles} 塊]"
+        if external_golden_paths
+        else ""
+    )
     log_and_print(
-        f"[Tiling-Test] 已遞迴將 {len(img_paths)} 張原圖準備為 {total_tiles} 張推論圖塊 "
-        f"(1:1整張推論={full_1to1_imgs}張 [<= {min_tile_trigger}px], 大圖切塊={tiled_highres_imgs}張, "
-        f"自動跳過 {skipped_bg_tiles} 張純背景角落塊) -> {os.path.abspath(tiled_pool_dir)}",
+        f"[Tiling-Test] 已遞迴將 {len(img_paths)} 張新測試圖準備為 {total_tiles} 張推論圖塊 "
+        f"(1:1整張推論={full_1to1_imgs}張 [<= {min_tile_trigger}px], 大圖切塊={tiled_highres_imgs}張"
+        f"{ext_note}, 自動跳過 {skipped_bg_tiles} 張純背景角落塊) -> {os.path.abspath(tiled_pool_dir)}",
         log_files,
     )
     return manifest
@@ -465,8 +896,6 @@ def detect_circular_wafer_geometry(
 ) -> Tuple[bool, float, float, float]:
     """
     偵測影像是否為圓形晶圓/圓形工件，並回傳 (是否啟用圓周抑制, 圓心 cy, 圓心 cx, 半徑 R)。
-    加入長寬比 aspect_ratio >= 0.85 與圓形度 circularity >= 0.82 門檻，
-    防止將長條形膠囊 (capsule) 誤判為圓形晶圓而切掉頭尾瑕疵。
     """
     mode = wafer_edge_mode.lower().strip()
     if mode == "off":
@@ -557,13 +986,7 @@ def refine_amap_for_wafer_and_noise(
     micro_boost_weight: float = 0.35,
 ) -> np.ndarray:
     """
-    四合一防誤報熱力圖純化器 (支援 --micro_defect_mode 微瑕疵白頂帽局部峰值增強)：
-    1. 矩形外圍 Padding 偽影抑制 (border_ratio)。
-    2. 晶圓圓周邊緣 / 倒角區 (Wafer Bevel / Edge Ring) 自動餘弦衰減抑制。
-    3. 一般模式：3x3 輕量微塵抑制；
-       微瑕疵模式 (micro_defect_mode=True)：啟動形態學白頂帽變換 (White Top-Hat Local Contrast Booster)，
-       將小於局部結構核 (15x15~31x31) 的微米級凸起尖峰放大，同時壓制大範圍光照緩變背景。
-    4. 跨 Golden 結構複雜區容差補償 (微瑕疵模式下自動調降扣除權重至 0.08，避免微瑕疵被結構容差吃掉)。
+    四合一防誤報熱力圖純化器 (支援 --micro_defect_mode 微瑕疵白頂帽局部峰值增強)。
     """
     h, w = full_amap.shape[:2]
     work_map = full_amap.astype(np.float32).copy()
@@ -580,9 +1003,7 @@ def refine_amap_for_wafer_and_noise(
         work_map = img_median + np.maximum(0.0, (work_map - img_median) - eff_tol_weight * structural_excess)
 
     if micro_defect_mode:
-        # [微瑕疵模式] 1. 先以 3x3 高斯微平滑壓制單一像素熱噪點，但不削平 3x3~25x25 的微瑕疵
         smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
-        # [微瑕疵模式] 2. 形態學白頂帽 (White Top-Hat) 提取局部高頻異常尖峰
         k_bg = max(15, min(35, int(round(max(h, w) * 0.006)) | 1))
         bg_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_bg, k_bg))
         local_bg = cv2.morphologyEx(smooth_3x3, cv2.MORPH_OPEN, bg_kernel)
@@ -678,14 +1099,7 @@ def extract_tight_bboxes_for_anomaly_image(
     raw_score_mode: bool = False,
     micro_defect_mode: bool = False,
 ) -> Tuple[List[Tuple[int, int, int, int, float, int]], float]:
-    """
-    峰值自適應核心收斂 (Peak-Adaptive Core Thresholding) 演算法：
-    - 一般模式：先做 k_size 開運算再做閉運算，過濾面積 < min_area_ratio (5000x5000 上為 3000px) 的區域。
-    - 微瑕疵模式 (micro_defect_mode=True)：
-      1. 取消會抹除 <11px 微瑕疵的大核 MORPH_OPEN，改為先執行 5x5 MORPH_CLOSE 連接斷裂微刮痕。
-      2. 將最小有效面積門檻自動下修至 0.000004 (5000x5000 上僅需 10x10px、1000x1000 上僅需 4px 即可成框)。
-      3. 連通域分數取 Top-10% 核心尖峰像素，避免微瑕疵被連通域邊緣像素稀釋而低於 img_threshold。
-    """
+    """峰值自適應核心收斂 (Peak-Adaptive Core Thresholding) 演算法。"""
     h, w = refined_amap.shape[:2]
     work_map = refined_amap.copy()
     img_median = float(np.median(work_map))
@@ -701,7 +1115,6 @@ def extract_tight_bboxes_for_anomaly_image(
     binary_mask = (work_map >= pixel_box_thresh).astype(np.uint8) * 255
     if not raw_score_mode:
         if micro_defect_mode:
-            # 微瑕疵模式：先做 5x5 閉運算連接微細刮傷/裂紋，不做大核開運算以免吃掉微粒與針孔
             close_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
             binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, close_k)
         else:
@@ -757,10 +1170,7 @@ def estimate_blind_normal_core_stats(
     non_golden_scores: List[float],
     golden_scores: List[float],
 ) -> Tuple[float, float, float, np.ndarray]:
-    """
-    真無 GT 盲池左半部正常核心估計器 (Left-Half Normal Core Estimator, sigma_left)：
-    完全不偷看檔名 (如 escape_)，直接從盲池分佈的下半部 (<= 中位數/Golden 錨點) 估計正常樣本中心與左半標準差。
-    """
+    """真無 GT 盲池左半部正常核心估計器 (Left-Half Normal Core Estimator, sigma_left)。"""
     pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
     if pool_arr.size == 0:
@@ -819,10 +1229,7 @@ def compute_dynamic_effective_threshold(
     sigma_k: float,
     top_k: int,
 ) -> Tuple[float, str]:
-    """
-    計算真無 GT 盲池最終異常判定門檻：
-    完全不依賴檔名標籤 (如 escape_)，採用左半部正常核心估計器 (sigma_left) 與 Golden 基準雙重校準。
-    """
+    """計算真無 GT 盲池最終異常判定門檻。"""
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
@@ -901,7 +1308,7 @@ def evaluate_overfitting_diagnostics(
     golden_scores: List[float],
     non_golden_normal_scores: List[float],
 ) -> Tuple[float, float, float, str, str]:
-    """無監督過擬合自檢指標 (Unsupervised Overfitting Self-Diagnostic)。"""
+    """無監督過擬合 / 跨資料集偏移自檢指標 (Unsupervised Overfitting & Domain-Shift Self-Diagnostic)。"""
     if not golden_scores or not non_golden_normal_scores:
         return 0.0, 1.0, 0.0, "🟢 正常 (無對照組)", ""
 
@@ -911,18 +1318,18 @@ def evaluate_overfitting_diagnostics(
     golden_gap = ng_med - g_mean
 
     if overfit_ratio >= 1.45 and golden_gap >= 0.040:
-        status_badge = "🔴 警告: 偵測到明顯過擬合 (Overfit Warning)"
+        status_badge = "🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning)"
         advice_msg = (
-            f"  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 ({ng_med:.4f}) 顯著高於 Golden 訓練圖平均 ({g_mean:.4f}) "
+            f"  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 ({ng_med:.4f}) 顯著高於 Golden 基準圖平均 ({g_mean:.4f}) "
             f"[Overfit_Ratio={overfit_ratio:.2f}x, Gap=+{golden_gap:.4f}]！\n"
-            f"                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，\n"
-            f"                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。"
+            f"                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，\n"
+            f"                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。"
         )
     elif overfit_ratio >= 1.25 and golden_gap >= 0.025:
-        status_badge = "🟡 注意: 輕微過擬合傾向 (Mild Overfit — 已由動態門檻自動補償)"
+        status_badge = "🟡 注意: 輕微過擬合/批次偏移傾向 (Mild Shift — 已由左半核心動態門檻自動補償)"
         advice_msg = ""
     else:
-        status_badge = "🟢 良好: 無過擬合現象 (Healthy Generalization — Golden與盲池正常分佈一致)"
+        status_badge = "🟢 良好: 無過擬合現象 (Healthy Generalization — 舊Golden基準與新資料集正常分佈一致)"
         advice_msg = ""
 
     return g_mean, overfit_ratio, golden_gap, status_badge, advice_msg
@@ -953,7 +1360,7 @@ def stitch_and_filter_anomalies(
     micro_peak_pixels: int,
     log_files: List[str],
 ) -> Tuple[int, int, float, str, str, str]:
-    """三階段 RAM 串流縫合、碎片即時銷毀與異常紅框篩選輸出 (支援 --micro_defect_mode)。"""
+    """三階段 RAM 串流縫合、碎片即時銷毀與異常紅框篩選輸出 (支援跨資料集外部 Golden 基準校準)。"""
     os.makedirs(final_amap_dir, exist_ok=True)
     anomaly_dir = os.path.join(out_dir, "anomaly_images")
     anomaly_fullres_bbox_dir = os.path.join(anomaly_dir, "full_res_bbox_only")
@@ -965,7 +1372,8 @@ def stitch_and_filter_anomalies(
 
     tile_overlap = manifest["tile_overlap"]
     golden_set = set(golden_filenames)
-    total_imgs = len(manifest["images"])
+    num_test_imgs = manifest.get("num_images", len(manifest["images"]))
+    num_ext_golden = manifest.get("num_external_golden", 0)
 
     if raw_score_mode:
         score_mode_label = "RAW_UNFILTERED (未經四合一濾波 + 單點最大值 np.max)"
@@ -980,8 +1388,9 @@ def stitch_and_filter_anomalies(
         score_mode_label = "FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)"
         score_mode_code = "FILTERED_ROBUST"
 
+    ext_msg = f" + {num_ext_golden} 張跨資料集 Golden 基準圖" if num_ext_golden > 0 else ""
     log_and_print(
-        f"\n[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 {total_imgs} 張原圖) | 計分模式: {score_mode_label}",
+        f"\n[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 {num_test_imgs} 張測試原圖{ext_msg}) | 計分模式: {score_mode_label}",
         log_files,
     )
 
@@ -989,7 +1398,7 @@ def stitch_and_filter_anomalies(
     golden_maps: List[np.ndarray] = []
     if not raw_score_mode:
         for fname, meta in manifest["images"].items():
-            if fname in golden_set or os.path.basename(fname) in golden_set:
+            if meta.get("is_external_golden", False) or fname in golden_set or os.path.basename(fname) in golden_set:
                 g_amap = stitch_single_image_amap(
                     meta,
                     tile_amap_dir,
@@ -1018,9 +1427,11 @@ def stitch_and_filter_anomalies(
     stitched_info = []
     golden_max_scores = []
     non_golden_all_scores = []
+    ext_golden_score_logs = []
 
     for idx, (fname, meta) in enumerate(manifest["images"].items(), 1):
-        is_golden_img = (fname in golden_set) or (os.path.basename(fname) in golden_set)
+        is_ext_golden = bool(meta.get("is_external_golden", False))
+        is_golden_img = is_ext_golden or (fname in golden_set) or (os.path.basename(fname) in golden_set)
         if fname in golden_raw_cache:
             raw_amap = golden_raw_cache.pop(fname)
         else:
@@ -1034,7 +1445,6 @@ def stitch_and_filter_anomalies(
         raw_flat = raw_amap.reshape(-1)
         raw_single_max = float(np.max(raw_flat))
 
-        # 決定計分峰值像素數 peak_k：微瑕疵模式下固定取 Top-N (預設 24) 核心像素，防止 5000x5000 大圖被 3750 個背景像素稀釋
         if micro_defect_mode:
             peak_k = max(6, min(int(micro_peak_pixels), int(round(raw_flat.size * 0.00002))))
         else:
@@ -1075,6 +1485,12 @@ def stitch_and_filter_anomalies(
         else:
             non_golden_all_scores.append(active_max_score)
 
+        # 若為跨資料集外部指定的 Golden Image，僅做空間容差與門檻基準校準，不混入新測試集的排名與紅框輸出
+        if is_ext_golden:
+            ext_golden_score_logs.append(f"{os.path.basename(meta['path'])}={active_max_score:.4f}")
+            del raw_amap, refined_amap, active_amap
+            continue
+
         cache_npy_path = os.path.join(refined_cache_dir, f"{idx:05d}_{meta['stem']}.npy")
         try:
             np.save(cache_npy_path, active_amap.astype(np.float16))
@@ -1105,6 +1521,12 @@ def stitch_and_filter_anomalies(
         f"[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> {os.path.abspath(tile_amap_dir)}",
         log_files,
     )
+    if ext_golden_score_logs:
+        log_and_print(
+            f"[📏 跨資料集 Golden 基準分數] {', '.join(ext_golden_score_logs)} "
+            f"(Mean={float(np.mean(golden_max_scores)):.4f}, Max={float(np.max(golden_max_scores)):.4f})",
+            log_files,
+        )
 
     effective_threshold, thresh_mode_str = compute_dynamic_effective_threshold(
         non_golden_scores=non_golden_all_scores,
@@ -1376,6 +1798,8 @@ def stitch_and_filter_anomalies(
             f"Overfit Diagnostic          : {overfit_badge} "
             f"(Golden_Mean={g_mean_score:.4f}, BlindNormal_Med={median_s:.4f}, Ratio={overfit_ratio:.2f}x, Gap={golden_gap:+.4f})\n"
         )
+        if ext_golden_score_logs:
+            f.write(f"External Golden Ref Scores  : {', '.join(ext_golden_score_logs)}\n")
         f.write("-" * 145 + "\n")
         f.write(
             f"{'Rank':<5} | {'Original_Filename':<26} | {'Status':<19} | {'Max_Score':<9} | "
@@ -1433,8 +1857,31 @@ def stitch_and_filter_anomalies(
 
 def main():
     parser = argparse.ArgumentParser(description="FoundAD 無GT高解析度推論主程式 (Stage 2: Inference)")
-    parser.add_argument("--pool_dir", type=str, required=True)
-    parser.add_argument("--ckpt", type=str, default="auto")
+    parser.add_argument("--pool_dir", type=str, required=True, help="欲進行推論的新資料集圖片資料夾路徑")
+    parser.add_argument("--ckpt", type=str, default="auto", help="DINO 預訓練 Backbone 權重路徑")
+    parser.add_argument(
+        "--golden_src",
+        "--custom_golden_dir",
+        dest="golden_src",
+        type=str,
+        default="",
+        help=(
+            "直接指定舊資料集挑過的 Golden Image 來源（支援：1. Golden 圖片資料夾路徑、"
+            "2. 舊資料集的 shot_dir 如 ./datasets/wafer_TMQB28_4shot、"
+            "3. selected_4_golden_images.txt、4. 逗號分隔的多張圖片路徑）"
+        ),
+    )
+    parser.add_argument(
+        "--trained_ckpt",
+        "--custom_ckpt",
+        dest="trained_ckpt",
+        type=str,
+        default="",
+        help=(
+            "直接指定舊資料集訓練過的 FoundAD 權重檔路徑（支援直接傳入 .pth.tar 檔案路徑 "
+            "如 ./logs/.../train-step2000.pth.tar 或 pretrained.pth.tar，或傳入權重所在資料夾路徑）"
+        ),
+    )
     parser.add_argument("--out_dir", type=str, default="./output/2_fab_no_gt")
     parser.add_argument("--datasets_dir", type=str, default="./datasets")
     parser.add_argument("--data_name", type=str, default="mvtec_sim_4shot")
@@ -1525,13 +1972,15 @@ def main():
         f"\n{'='*75}\n"
         f"[Task 2 無GT推論階段啟動時間] {start_dt_str}\n"
         f"[本次專屬時間戳記輸出目錄] {run_out_dir}\n"
+        f"[指定 Golden 來源 (--golden_src)] {args.golden_src if args.golden_src else '(預設沿用 shot_dir)'}\n"
+        f"[指定訓練權重 (--trained_ckpt)] {args.trained_ckpt if args.trained_ckpt else '(預設搜尋 ./logs/' + args.data_name + ')'}\n"
         f"[微瑕疵高靈敏模式狀態] {'ON (已啟動白頂帽增強與防稀釋局部尖峰計分)' if args.micro_defect_mode else 'OFF (標準四合一濾波模式)'}\n"
         f"{'='*75}",
         log_files,
     )
 
     # 1. 載入 Golden 檔案清單與對接訓練權重
-    golden_filenames, meta_step, recorded_train_time = load_golden_filenames_for_infer(
+    golden_filenames, external_golden_paths, meta_step, recorded_train_time = load_golden_filenames_for_infer(
         pool_dir=args.pool_dir,
         shot_dir=shot_dir,
         category=args.category,
@@ -1545,21 +1994,34 @@ def main():
         min_tile_trigger=args.min_tile_trigger,
         run_out_dir=run_out_dir,
         log_files=log_files,
+        golden_src=args.golden_src,
     )
 
-    req_step = meta_step if meta_step is not None else args.ckpt_step
+    req_step = meta_step if (meta_step is not None and not args.trained_ckpt) else args.ckpt_step
     actual_step, ckpt_dirs, _ = prepare_ckpt_for_demo(
-        args.data_name,
-        args.diy_name,
-        req_step,
-        log_files,
+        data_name=args.data_name,
+        diy_name=args.diy_name,
+        req_step=req_step,
+        log_files=log_files,
+        trained_ckpt=args.trained_ckpt,
     )
 
-    # 2. 測試池高解析度切塊與快取檢查
+    # 2. 測試池高解析度切塊與快取檢查 (將外部 Golden 清單納入快取指紋，確保更換 Golden 時自動更新)
     pool_signature = compute_pool_signature(args.pool_dir)
+    ext_golden_sig = ""
+    if external_golden_paths:
+        h_ext = hashlib.md5()
+        for gp in external_golden_paths:
+            try:
+                sz = os.path.getsize(gp)
+            except OSError:
+                sz = 0
+            h_ext.update(f"{os.path.abspath(gp)}:{sz};".encode("utf-8"))
+        ext_golden_sig = f"_extG{h_ext.hexdigest()[:10]}"
+
     tile_config_key = (
         f"t{args.tile_size}_ov{args.tile_overlap}_trig{args.min_tile_trigger}_"
-        f"bg{args.bg_std_thresh:g}_dt{int(args.disable_tiling)}"
+        f"bg{args.bg_std_thresh:g}_dt{int(args.disable_tiling)}{ext_golden_sig}"
     )
 
     amap_dump_dir = os.path.join(run_out_dir, "amap_npy")
@@ -1593,7 +2055,7 @@ def main():
         num_test_images = manifest.get("num_images", 1)
         total_test_tiles = manifest.get("total_tiles", num_test_images)
         log_and_print(
-            f"\n[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger={args.min_tile_trigger}px)，"
+            f"\n[⚡ 測試池切塊快取命中] 測試圖片池、Golden 基準與切塊參數未變動 (min_tile_trigger={args.min_tile_trigger}px)，"
             f"直接沿用既有 {total_test_tiles} 張推論圖塊 PNG (0.00 秒)",
             log_files,
         )
@@ -1612,6 +2074,7 @@ def main():
             tile_config_key=tile_config_key,
             cached_manifest_path=cached_manifest_path,
             log_files=log_files,
+            external_golden_paths=external_golden_paths,
         )
         test_tile_sec = time.perf_counter() - t_test_tile_start
         num_test_images = manifest.get("num_images", 1)
@@ -1708,12 +2171,12 @@ def main():
         f"{'-'*75}\n"
         f"  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):\n"
         f"      📦 使用之訓練權重資料夾       : {ckpt_dirs[0]}\n"
+        f"      🏆 指定之 Golden 來源         : {args.golden_src if args.golden_src else shot_dir}\n"
         f"      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)\n"
         f"      📂 本次時間戳記推論主資料夾   : {run_out_dir}\n"
         f"          ├── 異常紅框三合一對照圖  : {anomaly_dir}\n"
         f"          ├── 異常1:1全解析度紅框圖 : {anomaly_fullres_bbox_dir}\n"
         f"          ├── 整張Wafer熱力圖(.npy) : {amap_dump_dir}\n"
-        f"          ├── Golden圖塊二次純化報表: {os.path.join(run_out_dir, 'golden_tile_purity_report.txt')}\n"
         f"          ├── 完整排名報表 (TXT)    : {report_txt_path}\n"
         f"          ├── 完整排名報表 (CSV)    : {report_csv_path}\n"
         f"          └── 本次執行日誌 (log.txt): {fixed_log_txt}\n"
