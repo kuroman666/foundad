@@ -277,8 +277,73 @@ def inspect_and_extract_patch_proj(ckpt_path: str, device: torch.device):
     return proj_conv, qkv_weights, patch_h
 
 
+def _robust_mad_z(arr: np.ndarray, directional: str = "both") -> np.ndarray:
+    """計算穩健 MAD Z-score：directional='both' 雙邊偏離，'high' 僅懲罰過高，'low' 僅懲罰過低。"""
+    med = float(np.median(arr))
+    mad = float(1.4826 * np.median(np.abs(arr - med)))
+    std_fallback = float(np.std(arr)) * 0.5
+    scale = max(mad, std_fallback, 1e-4)
+    if directional == "high":
+        return np.maximum(0.0, (arr - med) / scale)
+    if directional == "low":
+        return np.maximum(0.0, (med - arr) / scale)
+    return np.abs(arr - med) / scale
+
+
+def _select_diverse_top_indices(
+    scores: np.ndarray,
+    global_feats: np.ndarray,
+    spatial_feats: np.ndarray,
+    target_k: int,
+    sim_thresh_global: float = 0.992,
+    sim_thresh_spatial: float = 0.975,
+) -> List[int]:
+    """
+    多樣性非極大值抑制 (Near-Duplicate Diversity NMS)：
+    防止同一顆工件的多重曝光/微位移變體 (如 bad_000_regular, bad_000_underexposed, bad_000_shift_1)
+    同時霸佔 Top-16 候選池並在 Stage 2 切塊投票中串通得票。
+    """
+    order = [int(i) for i in np.argsort(scores)[::-1]]
+    if len(order) <= target_k:
+        return order
+
+    selected: List[int] = []
+    deferred: List[int] = []
+
+    for idx in order:
+        if not selected:
+            selected.append(idx)
+            if len(selected) >= target_k:
+                break
+            continue
+
+        g_sims = np.dot(global_feats[selected], global_feats[idx])
+        s_sims = np.dot(spatial_feats[selected], spatial_feats[idx])
+
+        # 若全域特徵與空間網格特徵皆極度相似，或單一特徵幾乎完全重疊，視為同源重複拍攝樣本，暫緩排入
+        is_near_dup = bool(
+            np.any((g_sims >= sim_thresh_global) & (s_sims >= sim_thresh_spatial))
+            or np.any(s_sims >= 0.985)
+            or np.any(g_sims >= 0.9975)
+        )
+        if is_near_dup:
+            deferred.append(idx)
+        else:
+            selected.append(idx)
+            if len(selected) >= target_k:
+                break
+
+    # 若嚴格去重後不足 target_k 張，再依分數由高至低補齊
+    for idx in deferred:
+        if len(selected) >= target_k:
+            break
+        selected.append(idx)
+
+    return selected
+
+
 # =====================================================================
-# Stage 1: 支援上千張大資料集子抽樣 + 挑出 Top-M (預設 16 張) 候選池
+# Stage 1: 支援上千張大資料集子抽樣 + 四合一特徵過濾鎖定 Top-M (預設 16 張) 候選池
 # =====================================================================
 @torch.no_grad()
 def select_golden_images(
@@ -294,11 +359,11 @@ def select_golden_images(
     sample_seed: int = 42,
 ) -> List[str]:
     """
-    Stage 1 候選池初篩 (支援上千張大資料集快速抽樣)：
-    1. 若盲池圖片數 > max_coarse_scan (例如 1,000~2,000 張)，自動以固定 Seed 隨機均勻抽樣 max_coarse_scan 張進行全域評估。
-    2. 結合全域 DINO Medoid Centrality 與局部 Patch Token 尖峰懲罰，先選出 Top-M (預設 M=16) 張候選池圖片存入 `candidate_pool/`，
-       供後續 Stage 2 在 RAM 內切塊並進行跨片同座標投票，選出最終 4 張 Golden！
-    3. 同時將前 `shots` (4) 張預先存入 `train/<category>`，確保若原圖無需切塊時可直接訓練。
+    Stage 1 候選池初篩 (支援上千張大資料集快速抽樣 + 光度/空間位移/跨片局部異常/去重四合一過濾)：
+    1. 光度與對比度穩健過濾 (Photometric Gate)：自動攔截曝光不足 (underexposed) 與過曝 (overexposed) 樣本。
+    2. 空間網格對齊中心度 (Spatial Grid Alignment)：攔截平移或旋轉偏移 (shift_1 / shift_2) 樣本。
+    3. 跨片同座標局部 Patch 異常峰值懲罰 (Cross-Image Spatial Patch Anomaly)：攔截曝光與位置正常但帶有局部瑕疵的樣本。
+    4. 近鄰多樣性去重 (Diversity NMS)：防止同一工件的多重拍攝分身壟斷候選池。
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     all_imgs = scan_pool_images(pool_dir)
@@ -327,20 +392,37 @@ def select_golden_images(
 
     proj_conv, qkv_weights, patch_size = inspect_and_extract_patch_proj(ckpt_path, device)
     img_size = 518 if patch_size == 14 else 512
+    grid_side = img_size // patch_size
     transform = transforms.Compose([
         transforms.Resize((img_size, img_size)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
-    features, token_spike_scores, valid_paths = [], [], []
+    features = []
+    spatial_align_vecs = []
+    grid16_maps = []
+    token_spike_scores = []
+    luma_medians, luma_stds, luma_spans = [], [], []
+    valid_paths = []
+
     for path in scan_imgs:
         try:
-            img = load_pil_rgb_uint8(path)
-            x = transform(img).unsqueeze(0).to(device)
-            tokens = proj_conv(x).flatten(2).transpose(1, 2)
-            tokens = F.layer_norm(tokens, (tokens.shape[-1],))
+            rgb_u8 = load_image_rgb_uint8(path)
+            # 1. 提取光度與對比度統計量 (攔截 underexposed / overexposed)
+            small_rgb = cv2.resize(rgb_u8, (256, 256), interpolation=cv2.INTER_AREA).astype(np.float32)
+            gray = 0.299 * small_rgb[:, :, 0] + 0.587 * small_rgb[:, :, 1] + 0.114 * small_rgb[:, :, 2]
+            luma_medians.append(float(np.median(gray)))
+            luma_stds.append(float(np.std(gray)))
+            p5, p95 = np.percentile(gray, [5.0, 95.0])
+            luma_spans.append(float(p95 - p5))
 
+            pil_img = Image.fromarray(rgb_u8, mode="RGB")
+            x = transform(pil_img).unsqueeze(0).to(device)
+            tokens_raw = proj_conv(x).flatten(2).transpose(1, 2)  # (1, N, D)
+            tokens = F.layer_norm(tokens_raw, (tokens_raw.shape[-1],))
+
+            # 單圖內部 Token Spike
             token_mean = tokens.mean(dim=1, keepdim=True)
             token_dev = torch.norm(tokens - token_mean, dim=-1).squeeze(0)
             top_k_tok = max(1, int(token_dev.numel() * 0.02))
@@ -349,6 +431,17 @@ def select_golden_images(
             spike_ratio = float((top_vals.mean() / med_val).item())
             token_spike_scores.append(spike_ratio)
 
+            # 2. 空間網格特徵：8x8 用於檢驗位置對齊 (攔截 shift_1/shift_2)，16x16 用於跨片局部異常檢驗
+            tok_2d = tokens.transpose(1, 2).reshape(1, -1, grid_side, grid_side)
+            sp8 = F.adaptive_avg_pool2d(tok_2d, (8, 8)).flatten(1)
+            sp8 = F.normalize(sp8, dim=-1)
+            spatial_align_vecs.append(sp8.cpu())
+
+            sp16 = F.adaptive_avg_pool2d(tok_2d, (16, 16)).squeeze(0).flatten(1).transpose(0, 1)  # (256, D)
+            sp16 = F.normalize(sp16, dim=-1)
+            grid16_maps.append(sp16.cpu())
+
+            # 全域統計特徵
             feat_list = [tokens.mean(dim=1), tokens.std(dim=1)]
             for w in qkv_weights[:3]:
                 qkv = F.linear(tokens, w)
@@ -364,25 +457,76 @@ def select_golden_images(
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    if len(valid_paths) < shots:
-        raise ValueError(f"有效可讀取圖片數量 ({len(valid_paths)}) 少於所需的 shots ({shots})！")
+    num_valid = len(valid_paths)
+    if num_valid < shots:
+        raise ValueError(f"有效可讀取圖片數量 ({num_valid}) 少於所需的 shots ({shots})！")
 
-    eff_cand_size = min(len(valid_paths), max(shots, int(candidate_pool_size)))
+    eff_cand_size = min(num_valid, max(shots, int(candidate_pool_size)))
+
+    # (A) 全域特徵中心度 (Global Centrality)
     feats_tensor = torch.cat(features, dim=0)
     sim_matrix = torch.mm(feats_tensor, feats_tensor.t()).numpy()
     np.fill_diagonal(sim_matrix, 0.0)
-    raw_centrality = sim_matrix.sum(axis=1) / max(1, len(valid_paths) - 1)
+    # 取前 60% 最相似鄰居計算 Trimmed Centrality，避免被池內少數離群樣本拉偏
+    k_trim = max(1, int(round((num_valid - 1) * 0.60)))
+    sorted_sims = np.sort(sim_matrix, axis=1)[:, ::-1]
+    raw_centrality = sorted_sims[:, :k_trim].mean(axis=1)
 
+    # (B) 空間網格對齊中心度 (Spatial Alignment Centrality — 攔截 shift 位移)
+    sp8_tensor = torch.cat(spatial_align_vecs, dim=0).numpy()  # (M, 8*8*D)
+    sp8_med = np.median(sp8_tensor, axis=0, keepdims=True)
+    sp8_med = sp8_med / (np.linalg.norm(sp8_med, axis=-1, keepdims=True) + 1e-8)
+    spatial_alignment = np.sum(sp8_tensor * sp8_med, axis=-1)  # [-1, 1]
+    shift_z = _robust_mad_z(spatial_alignment, directional="low")
+
+    # (C) 跨片同座標 16x16 局部異常峰值 (Cross-Image Patch Anomaly — 攔截 regular 局部瑕疵)
+    sp16_stack = torch.stack(grid16_maps, dim=0).numpy()  # (M, 256, D)
+    sp16_med = np.median(sp16_stack, axis=0, keepdims=True)
+    sp16_med = sp16_med / (np.linalg.norm(sp16_med, axis=-1, keepdims=True) + 1e-8)
+    patch_cos_dist = np.maximum(0.0, 1.0 - np.sum(sp16_stack * sp16_med, axis=-1))  # (M, 256)
+    # 正規化每個座標位置的基準變異，聚焦於突發的局部瑕疵區塊 (Top-3 patches)
+    coord_med_dist = np.median(patch_cos_dist, axis=0, keepdims=True) + 1e-4
+    rel_patch_dist = patch_cos_dist / coord_med_dist
+    top3_patch_anomaly = np.sort(rel_patch_dist, axis=1)[:, -3:].mean(axis=1)
+    patch_anom_z = _robust_mad_z(top3_patch_anomaly, directional="high")
+
+    # (D) 單圖內部 Token Spike Z-score
     spike_arr = np.array(token_spike_scores, dtype=np.float32)
-    spike_med = float(np.median(spike_arr))
-    spike_mad = float(1.4826 * np.median(np.abs(spike_arr - spike_med))) + 1e-5
-    spike_z = np.maximum(0.0, (spike_arr - spike_med) / spike_mad)
-    purity_penalty = 0.0025 * np.clip(spike_z, 0.0, 6.0)
-    hybrid_centrality = raw_centrality - purity_penalty
+    spike_z = _robust_mad_z(spike_arr, directional="high")
 
-    sorted_indices = np.argsort(hybrid_centrality)[::-1]
-    cand_indices = sorted_indices[:eff_cand_size]
-    selected_indices = sorted_indices[:shots]
+    # (E) 光度與對比度穩健過濾 (Photometric Gate — 攔截 underexposed / overexposed)
+    luma_med_z = _robust_mad_z(np.array(luma_medians, dtype=np.float32), directional="both")
+    luma_std_z = _robust_mad_z(np.array(luma_stds, dtype=np.float32), directional="low")
+    luma_span_z = _robust_mad_z(np.array(luma_spans, dtype=np.float32), directional="low")
+    photo_z = np.maximum(luma_med_z, 0.75 * np.maximum(luma_std_z, luma_span_z))
+
+    # 計算綜合純淨度懲罰：
+    # - 光度偏離 > 1.25 MAD 時快速加重懲罰 (淘汰 underexposed/overexposed)
+    # - 空間對齊偏低時加重懲罰 (淘汰 shift_1/shift_2)
+    # - 跨片局部 Patch 異常過高時加重懲罰 (淘汰局部瑕疵圖)
+    photo_penalty = 0.015 * np.maximum(0.0, photo_z - 1.0) + 0.045 * np.maximum(0.0, photo_z - 1.8)
+    shift_penalty = 0.012 * np.maximum(0.0, shift_z - 0.8) + 0.035 * np.maximum(0.0, shift_z - 1.6)
+    patch_penalty = 0.008 * np.clip(patch_anom_z, 0.0, 6.0)
+    spike_penalty = 0.003 * np.clip(spike_z, 0.0, 6.0)
+
+    hybrid_centrality = (
+        0.55 * raw_centrality
+        + 0.45 * spatial_alignment
+        - photo_penalty
+        - shift_penalty
+        - patch_penalty
+        - spike_penalty
+    )
+
+    # 執行多樣性非極大值抑制 (Near-Duplicate NMS)，選取不重複的 Top-16 候選池與 Top-4 初始 Golden
+    feats_np = feats_tensor.numpy()
+    cand_indices = _select_diverse_top_indices(
+        scores=hybrid_centrality,
+        global_feats=feats_np,
+        spatial_feats=sp8_tensor,
+        target_k=eff_cand_size,
+    )
+    selected_indices = cand_indices[:shots]
     selected_paths = [valid_paths[idx] for idx in selected_indices]
 
     # 儲存 Top-M (例如 16 張) 候選池資訊供 Stage 2 切塊後投票選 Golden 使用
@@ -397,6 +541,9 @@ def select_golden_images(
                 "rel_path": rel_n,
                 "hybrid_score": float(hybrid_centrality[idx]),
                 "raw_centrality": float(raw_centrality[idx]),
+                "spatial_align": float(spatial_alignment[idx]),
+                "photo_z": float(photo_z[idx]),
+                "patch_anom_z": float(patch_anom_z[idx]),
                 "token_spike": float(spike_arr[idx]),
             }
         )
@@ -408,7 +555,7 @@ def select_golden_images(
             {
                 "pool_dir": os.path.abspath(pool_dir),
                 "total_pool_images": int(total_pool_count),
-                "scanned_images": int(len(valid_paths)),
+                "scanned_images": int(num_valid),
                 "candidate_pool_size": int(eff_cand_size),
                 "shots": int(shots),
                 "candidates": cand_records,
@@ -426,12 +573,14 @@ def select_golden_images(
     with open(record_txt, "w", encoding="utf-8") as f:
         f.write(
             f"=== Stage 1 Coarse Top-{shots} Golden Images "
-            f"(Scanned {len(valid_paths)}/{total_pool_count} imgs, Candidate Pool={eff_cand_size}) ===\n"
+            f"(Scanned {num_valid}/{total_pool_count} imgs, Candidate Pool={eff_cand_size}) ===\n"
         )
         for i, idx in enumerate(selected_indices):
             src_path = valid_paths[idx]
             h_score = hybrid_centrality[idx]
             r_score = raw_centrality[idx]
+            s_align = spatial_alignment[idx]
+            p_z = photo_z[idx]
             s_ratio = spike_arr[idx]
             ext = os.path.splitext(src_path)[1].lower()
             dst_path = os.path.join(dest_dir, f"{i:03d}{ext}")
@@ -439,7 +588,8 @@ def select_golden_images(
             rel_name = os.path.relpath(src_path, pool_dir).replace("\\", "/")
             log_line = (
                 f"Golden #{i+1} (-> {i:03d}{ext}): {rel_name} | "
-                f"Hybrid_Score: {h_score:.6f} (Raw_Centrality: {r_score:.6f}, Token_Spike: {s_ratio:.3f})"
+                f"Hybrid_Score: {h_score:.6f} (Raw_Cent: {r_score:.6f}, Spatial_Align: {s_align:.4f}, "
+                f"Photo_Z: {p_z:.2f}, Token_Spike: {s_ratio:.3f})"
             )
             log_and_print("  " + log_line, log_files)
             f.write(log_line + "\n")
@@ -510,27 +660,58 @@ def _compute_local_patch_peak_residuals(
     eval_res: int = 256,
     patch_grid: int = 16,
 ) -> np.ndarray:
+    """
+    計算同座標跨片切塊殘差：
+    除了原始像素差異外，加入零均值標準化結構殘差 (Zero-Mean Normalized Structural Residual)
+    與圖塊光度偏離懲罰，防止暗部無細節的曝光不足 (underexposed) 切塊因像素值低而假性勝出。
+    """
     n = len(crops)
     if n <= 1:
         return np.zeros(n, dtype=np.float32)
 
     blurred_stack = []
+    norm_stack = []
+    tile_means = []
+    tile_stds = []
+
     for c in crops:
         small = cv2.resize(c, (eval_res, eval_res), interpolation=cv2.INTER_AREA).astype(np.float32)
         blur = cv2.GaussianBlur(small, (3, 3), 0)
         blurred_stack.append(blur)
 
+        m_val = float(np.mean(blur))
+        s_val = float(np.std(blur))
+        tile_means.append(m_val)
+        tile_stds.append(s_val)
+        norm_stack.append((blur - m_val) / max(s_val, 4.0))
+
+    # 1. 原始像素中位數殘差
     arr = np.stack(blurred_stack, axis=0)
     med_tile = np.median(arr, axis=0, keepdims=True)
     abs_diff = np.mean(np.abs(arr - med_tile), axis=-1)
 
+    # 2. 對比度正規化結構殘差 (讓暗圖上的微弱刮痕/凹痕與正常亮度圖站在同一基準對決)
+    norm_arr = np.stack(norm_stack, axis=0)
+    med_norm_tile = np.median(norm_arr, axis=0, keepdims=True)
+    struct_diff = np.mean(np.abs(norm_arr - med_norm_tile), axis=-1) * 18.0
+
+    combined_diff = 0.50 * abs_diff + 0.50 * struct_diff
+
     cell_h = eval_res // patch_grid
     cell_w = eval_res // patch_grid
-    patched = abs_diff.reshape(n, patch_grid, cell_h, patch_grid, cell_w).mean(axis=(2, 4)).reshape(n, -1)
+    patched = combined_diff.reshape(n, patch_grid, cell_h, patch_grid, cell_w).mean(axis=(2, 4)).reshape(n, -1)
 
     top2_patch_peak = np.sort(patched, axis=1)[:, -2:].mean(axis=1)
-    global_l1 = abs_diff.mean(axis=(1, 2))
-    return (0.70 * top2_patch_peak + 0.30 * global_l1).astype(np.float32)
+    global_l1 = combined_diff.mean(axis=(1, 2))
+
+    # 3. 切塊亮度與對比度偏離懲罰 (懲罰相較於同座標其他候選圖明顯過暗或失去紋理的切塊)
+    means_arr = np.array(tile_means, dtype=np.float32)
+    stds_arr = np.array(tile_stds, dtype=np.float32)
+    mean_z = _robust_mad_z(means_arr, directional="both")
+    std_low_z = _robust_mad_z(stds_arr, directional="low")
+    exposure_penalty = 2.5 * np.maximum(0.0, mean_z - 1.2) + 3.0 * np.maximum(0.0, std_low_z - 1.2)
+
+    return (0.65 * top2_patch_peak + 0.35 * global_l1 + exposure_penalty).astype(np.float32)
 
 
 def purify_golden_tiles_two_stage(
@@ -539,14 +720,14 @@ def purify_golden_tiles_two_stage(
     ckpt_path: str = "auto",
     num_candidates: int = 4,
     shots: int = 4,
+    stage1_priors: Optional[List[float]] = None,
 ) -> Tuple[List[Tuple[int, int, int, float]], Dict]:
     """
     Stage 2 先切塊後投票選 Golden 演算法：
     1. 在每個網格座標 (y, x) 對來自 num_candidates (例如 16 張) 候選圖的子圖塊計算：
-       「16x16 局部區塊殘差峰值」+「輕量 DINO 圖塊特徵距離」。
+       「16x16 局部區塊結構+像素殘差峰值」+「輕量 DINO 圖塊特徵距離」。
     2. 統計每張候選原圖在所有非背景座標中獲得「最純淨前 2 名」的勝出票數 (Win Votes) 與累積殘差，
-       投票選出整體切塊最乾淨的 Top-`shots` (4) 張作為最終 Golden 原圖 (`winning_cand_indices`)！
-    3. 同時透過徑向分層純淨度篩選 (Radial Stratified Purity Binning)，從整個候選池挑出 48 張最純淨的訓練圖塊。
+       並結合 Stage 1 的全域純淨度排名解決平手，選出最終 Top-`shots` (4) 張作為 Golden 原圖！
     """
     flat_tiles: List[np.ndarray] = []
     coord_slices: List[Tuple[int, int]] = []
@@ -565,6 +746,14 @@ def purify_golden_tiles_two_stage(
     cand_win_votes = np.zeros(max(1, num_candidates), dtype=np.int32)
     cand_cost_sums = np.zeros(max(1, num_candidates), dtype=np.float64)
     cand_eval_counts = np.zeros(max(1, num_candidates), dtype=np.int32)
+
+    # 若 Stage 1 分數明顯較低 (例如排在候選池後段)，給予輕微先驗正則化，避免邊緣圖片靠背景塊僥倖高票
+    prior_arr = np.zeros(max(1, num_candidates), dtype=np.float32)
+    if stage1_priors and len(stage1_priors) == num_candidates:
+        s1_arr = np.array(stage1_priors, dtype=np.float32)
+        s1_max = float(np.max(s1_arr))
+        s1_mad = max(float(1.4826 * np.median(np.abs(s1_arr - np.median(s1_arr)))), 1e-4)
+        prior_arr = np.clip((s1_max - s1_arr) / s1_mad, 0.0, 4.0) * 0.08
 
     for idx, (y, x, radius, non_bg_items) in enumerate(coord_Execution_items):
         s_idx, e_idx = coord_slices[idx]
@@ -601,6 +790,11 @@ def purify_golden_tiles_two_stage(
         else:
             hybrid_cost = norm_peak
             raw_abs_cost = peak_res
+
+        # 加入 Stage 1 光度/對齊先驗微調
+        for loc_i, (c_idx, _) in enumerate(non_bg_items):
+            if int(c_idx) < len(prior_arr):
+                hybrid_cost[loc_i] += float(prior_arr[int(c_idx)])
 
         sorted_order = np.argsort(hybrid_cost)
         best_local_i = int(sorted_order[0])
@@ -843,12 +1037,14 @@ def prepare_tiled_golden_trainset(
             crop0 = c0[y:y + tile_size, x:x + tile_size]
             coord_Execution_items.append((y, x, 0.0, [(0, crop0)]))
 
+    s1_priors = [float(r.get("hybrid_score", 1.0)) for r in valid_cand_records]
     selected_specs, purity_stats = purify_golden_tiles_two_stage(
         coord_Execution_items=coord_Execution_items,
         max_train_tiles=max_train_tiles,
         ckpt_path=ckpt_path,
         num_candidates=num_cands,
         shots=shots,
+        stage1_priors=s1_priors,
     )
 
     # 根據切塊投票結果，正式選出 Top-shots (4) 張全圖 Golden 存入 golden_full_res_backup 與更新名單

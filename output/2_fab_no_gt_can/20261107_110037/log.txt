@@ -1,0 +1,6 @@
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 11:00:37
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261107_110037
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train_meta_can.json 載入 4 張 Golden 清單

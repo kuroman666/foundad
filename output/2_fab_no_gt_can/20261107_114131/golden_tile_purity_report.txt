@@ -1,0 +1,74 @@
+=== Stage 2: Tile-First Candidate Pool Voting & Purification Report ===
+Candidate Pool Size (Stage 1->2): 16 full-res images
+Total Evaluated Candidate Tiles : 240
+Valid Non-Background Coords     : 15
+Rejected Outlier Tiles (Stage2) : 65
+Radial Bin Purity Swaps         : 0
+DINO Feature Guidance Active    : YES
+------------------------------------------------------------------------------
+--- Candidate Pool Tile-Level Voting Leaderboard ---
+Rank #01 [🏆 SELECTED GOLDEN #1]: escape_bad_000_underexposed.png | Win_Votes=016 | Mean_Tile_Cost=0.7657
+Rank #02 [🏆 SELECTED GOLDEN #2]: escape_bad_000_regular.png | Win_Votes=010 | Mean_Tile_Cost=0.8086
+Rank #03 [🏆 SELECTED GOLDEN #3]: escape_bad_000_shift_1.png | Win_Votes=010 | Mean_Tile_Cost=1.0914
+Rank #04 [🏆 SELECTED GOLDEN #4]: clean_001_underexposed.png | Win_Votes=004 | Mean_Tile_Cost=0.9421
+Rank #05 [   Candidate]: escape_bad_000_shift_2.png | Win_Votes=002 | Mean_Tile_Cost=0.9765
+Rank #06 [   Candidate]: clean_001_shift_2.png | Win_Votes=002 | Mean_Tile_Cost=1.1249
+Rank #07 [   Candidate]: clean_004_regular.png | Win_Votes=001 | Mean_Tile_Cost=1.2854
+Rank #08 [   Candidate]: clean_001_regular.png | Win_Votes=000 | Mean_Tile_Cost=0.9381
+Rank #09 [   Candidate]: escape_bad_000_overexposed.png | Win_Votes=000 | Mean_Tile_Cost=0.9713
+Rank #10 [   Candidate]: clean_003_regular.png | Win_Votes=000 | Mean_Tile_Cost=1.1110
+Rank #11 [   Candidate]: clean_003_underexposed.png | Win_Votes=000 | Mean_Tile_Cost=1.1411
+Rank #12 [   Candidate]: clean_001_shift_1.png | Win_Votes=000 | Mean_Tile_Cost=1.1499
+Rank #13 [   Candidate]: clean_003_overexposed.png | Win_Votes=000 | Mean_Tile_Cost=1.1920
+Rank #14 [   Candidate]: clean_003_shift_2.png | Win_Votes=000 | Mean_Tile_Cost=1.2461
+Rank #15 [   Candidate]: clean_003_shift_1.png | Win_Votes=000 | Mean_Tile_Cost=1.2997
+Rank #16 [   Candidate]: clean_004_underexposed.png | Win_Votes=000 | Mean_Tile_Cost=1.3008
+------------------------------------------------------------------------------
+Tile #01: 000_g0_tile_y0448_x0896.png | Source=escape_bad_000_underexposed.png | Coord=(y=0448, x=0896) | Hybrid_Residual=21.4687
+Tile #02: 001_g0_tile_y0000_x0896.png | Source=escape_bad_000_underexposed.png | Coord=(y=0000, x=0896) | Hybrid_Residual=17.5282
+Tile #03: 002_g2_tile_y0512_x0896.png | Source=escape_bad_000_shift_1.png | Coord=(y=0512, x=0896) | Hybrid_Residual=18.4712
+Tile #04: 003_g2_tile_y0448_x0448.png | Source=escape_bad_000_shift_1.png | Coord=(y=0448, x=0448) | Hybrid_Residual=24.2721
+Tile #05: 004_g3_tile_y0000_x0448.png | Source=clean_001_underexposed.png | Coord=(y=0000, x=0448) | Hybrid_Residual=21.9272
+Tile #06: 005_g2_tile_y0512_x0448.png | Source=escape_bad_000_shift_1.png | Coord=(y=0512, x=0448) | Hybrid_Residual=23.8419
+Tile #07: 006_g1_tile_y0448_x1344.png | Source=escape_bad_000_regular.png | Coord=(y=0448, x=1344) | Hybrid_Residual=13.1588
+Tile #08: 007_g0_tile_y0000_x1344.png | Source=escape_bad_000_underexposed.png | Coord=(y=0000, x=1344) | Hybrid_Residual=10.1362
+Tile #09: 008_g1_tile_y0512_x1344.png | Source=escape_bad_000_regular.png | Coord=(y=0512, x=1344) | Hybrid_Residual=10.5832
+Tile #10: 009_g0_tile_y0448_x0000.png | Source=escape_bad_000_underexposed.png | Coord=(y=0448, x=0000) | Hybrid_Residual=20.5191
+Tile #11: 010_g1_tile_y0448_x1720.png | Source=escape_bad_000_regular.png | Coord=(y=0448, x=1720) | Hybrid_Residual=11.1532
+Tile #12: 011_g3_tile_y0000_x0000.png | Source=clean_001_underexposed.png | Coord=(y=0000, x=0000) | Hybrid_Residual=18.0413
+Tile #13: 012_g1_tile_y0000_x1720.png | Source=escape_bad_000_regular.png | Coord=(y=0000, x=1720) | Hybrid_Residual=11.5553
+Tile #14: 013_g2_tile_y0512_x0000.png | Source=escape_bad_000_shift_1.png | Coord=(y=0512, x=0000) | Hybrid_Residual=18.1749
+Tile #15: 014_g1_tile_y0512_x1720.png | Source=escape_bad_000_regular.png | Coord=(y=0512, x=1720) | Hybrid_Residual=10.9349
+Tile #16: 015_c02_tile_y0000_x1720.png | Source=escape_bad_000_shift_2.png | Coord=(y=0000, x=1720) | Hybrid_Residual=11.6892
+Tile #17: 016_g2_tile_y0512_x1344.png | Source=escape_bad_000_shift_1.png | Coord=(y=0512, x=1344) | Hybrid_Residual=11.8680
+Tile #18: 017_g0_tile_y0512_x1344.png | Source=escape_bad_000_underexposed.png | Coord=(y=0512, x=1344) | Hybrid_Residual=12.2470
+Tile #19: 018_g0_tile_y0448_x1344.png | Source=escape_bad_000_underexposed.png | Coord=(y=0448, x=1344) | Hybrid_Residual=12.5634
+Tile #20: 019_g0_tile_y0000_x1720.png | Source=escape_bad_000_underexposed.png | Coord=(y=0000, x=1720) | Hybrid_Residual=12.9127
+Tile #21: 020_g0_tile_y0512_x1720.png | Source=escape_bad_000_underexposed.png | Coord=(y=0512, x=1720) | Hybrid_Residual=12.9307
+Tile #22: 021_c02_tile_y0000_x1344.png | Source=escape_bad_000_shift_2.png | Coord=(y=0000, x=1344) | Hybrid_Residual=12.9520
+Tile #23: 022_g1_tile_y0000_x1344.png | Source=escape_bad_000_regular.png | Coord=(y=0000, x=1344) | Hybrid_Residual=12.9767
+Tile #24: 023_g0_tile_y0448_x1720.png | Source=escape_bad_000_underexposed.png | Coord=(y=0448, x=1720) | Hybrid_Residual=13.2195
+Tile #25: 024_c07_tile_y0512_x1344.png | Source=clean_001_regular.png | Coord=(y=0512, x=1344) | Hybrid_Residual=13.3303
+Tile #26: 025_c07_tile_y0448_x1344.png | Source=clean_001_regular.png | Coord=(y=0448, x=1344) | Hybrid_Residual=13.7533
+Tile #27: 026_g3_tile_y0512_x1344.png | Source=clean_001_underexposed.png | Coord=(y=0512, x=1344) | Hybrid_Residual=13.7728
+Tile #28: 027_c07_tile_y0000_x1344.png | Source=clean_001_regular.png | Coord=(y=0000, x=1344) | Hybrid_Residual=13.7988
+Tile #29: 028_g3_tile_y0448_x1344.png | Source=clean_001_underexposed.png | Coord=(y=0448, x=1344) | Hybrid_Residual=14.0882
+Tile #30: 029_c14_tile_y0000_x1344.png | Source=clean_004_regular.png | Coord=(y=0000, x=1344) | Hybrid_Residual=14.7277
+Tile #31: 030_c12_tile_y0000_x1720.png | Source=escape_bad_000_overexposed.png | Coord=(y=0000, x=1720) | Hybrid_Residual=15.0656
+Tile #32: 031_c08_tile_y0512_x1720.png | Source=clean_003_shift_1.png | Coord=(y=0512, x=1720) | Hybrid_Residual=15.0658
+Tile #33: 032_c13_tile_y0512_x1720.png | Source=clean_003_underexposed.png | Coord=(y=0512, x=1720) | Hybrid_Residual=15.0989
+Tile #34: 033_c12_tile_y0512_x1344.png | Source=escape_bad_000_overexposed.png | Coord=(y=0512, x=1344) | Hybrid_Residual=15.4372
+Tile #35: 034_c12_tile_y0512_x1720.png | Source=escape_bad_000_overexposed.png | Coord=(y=0512, x=1720) | Hybrid_Residual=15.4550
+Tile #36: 035_c10_tile_y0512_x1344.png | Source=clean_001_shift_1.png | Coord=(y=0512, x=1344) | Hybrid_Residual=15.7552
+Tile #37: 036_c12_tile_y0448_x1720.png | Source=escape_bad_000_overexposed.png | Coord=(y=0448, x=1720) | Hybrid_Residual=15.7845
+Tile #38: 037_c13_tile_y0448_x1720.png | Source=clean_003_underexposed.png | Coord=(y=0448, x=1720) | Hybrid_Residual=15.9230
+Tile #39: 038_c11_tile_y0512_x1720.png | Source=clean_004_underexposed.png | Coord=(y=0512, x=1720) | Hybrid_Residual=16.3328
+Tile #40: 039_c07_tile_y0512_x1720.png | Source=clean_001_regular.png | Coord=(y=0512, x=1720) | Hybrid_Residual=16.5134
+Tile #41: 040_c15_tile_y0000_x1344.png | Source=clean_001_shift_2.png | Coord=(y=0000, x=1344) | Hybrid_Residual=16.5426
+Tile #42: 041_c11_tile_y0448_x1720.png | Source=clean_004_underexposed.png | Coord=(y=0448, x=1720) | Hybrid_Residual=16.6379
+Tile #43: 042_c13_tile_y0000_x1720.png | Source=clean_003_underexposed.png | Coord=(y=0000, x=1720) | Hybrid_Residual=16.8301
+Tile #44: 043_c11_tile_y0000_x1720.png | Source=clean_004_underexposed.png | Coord=(y=0000, x=1720) | Hybrid_Residual=16.8650
+Tile #45: 044_g2_tile_y0512_x1720.png | Source=escape_bad_000_shift_1.png | Coord=(y=0512, x=1720) | Hybrid_Residual=17.1926
+Tile #46: 045_g3_tile_y0000_x1344.png | Source=clean_001_underexposed.png | Coord=(y=0000, x=1344) | Hybrid_Residual=17.2686
+Tile #47: 046_c10_tile_y0448_x1344.png | Source=clean_001_shift_1.png | Coord=(y=0448, x=1344) | Hybrid_Residual=17.4111
+Tile #48: 047_c14_tile_y0448_x1720.png | Source=clean_004_regular.png | Coord=(y=0448, x=1720) | Hybrid_Residual=17.4290

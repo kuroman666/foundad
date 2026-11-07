@@ -72,15 +72,23 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
 
 
 def _get_candidate_log_dirs(data_name: str, diy_name: str, shots: int = 4) -> List[str]:
-    """搜尋當前命名與舊版相容命名的權重目錄。"""
+    """
+    嚴格搜尋當前 data_name 專屬的權重目錄。
+    避免誤抓舊版 mvtec_sim_4shot 共用目錄或其他類別的權重，導致新類別未訓練就被跳過！
+    """
     patterns = [
         f"./logs/{data_name}/*{diy_name}*",
         f"./logs/{data_name}/*",
-        f"./logs/mvtec_sim_{shots}shot/*{diy_name}*",
-        f"./logs/mvtec_sim_{shots}shot/*sim_escape*",
-        f"./logs/mvtec_fab_{shots}shot/*{diy_name}*",
-        f"./logs/mvtec_fab_{shots}shot/*fab_wafer*",
     ]
+    # 僅當 data_name 本身就是舊版通用名稱時，才搜尋舊版目錄
+    if data_name in (f"mvtec_sim_{shots}shot", f"mvtec_fab_{shots}shot"):
+        patterns.extend([
+            f"./logs/mvtec_sim_{shots}shot/*{diy_name}*",
+            f"./logs/mvtec_sim_{shots}shot/*sim_escape*",
+            f"./logs/mvtec_fab_{shots}shot/*{diy_name}*",
+            f"./logs/mvtec_fab_{shots}shot/*fab_wafer*",
+        ])
+
     seen = set()
     dirs = []
     for pat in patterns:
@@ -97,7 +105,7 @@ def find_existing_trained_ckpt(
     req_step: int,
     shots: int = 4,
 ) -> Optional[str]:
-    """檢查是否已經有訓練好的權重檔 (優先找對應步數，其次找最大步數)。"""
+    """檢查當前 data_name 是否已經有訓練好的權重檔 (優先找對應步數，其次找最大步數)。"""
     for d in _get_candidate_log_dirs(data_name, diy_name, shots):
         exact = os.path.join(d, f"train-step{req_step}.pth.tar")
         if os.path.isfile(exact):
@@ -198,10 +206,12 @@ def main():
 
     if not args.rebuild_golden and not os.path.isdir(os.path.join(abs_datasets_dir, args.data_name, "train", args.category)):
         legacy_data_name = f"mvtec_sim_{args.shots}shot"
-        if os.path.isdir(os.path.join(abs_datasets_dir, legacy_data_name, "train", args.category)):
+        if (
+            os.path.isdir(os.path.join(abs_datasets_dir, legacy_data_name, "train", args.category))
+            and os.path.isdir(f"./logs/{legacy_data_name}/dinov3sim_escape")
+        ):
             args.data_name = legacy_data_name
-            if os.path.isdir(f"./logs/{legacy_data_name}/dinov3sim_escape"):
-                args.diy_name = "sim_escape"
+            args.diy_name = "sim_escape"
 
     shot_dir = os.path.join(abs_datasets_dir, args.data_name)
 
@@ -258,7 +268,7 @@ def main():
     )
     total_grad_updates = effective_epochs * iters_per_epoch
 
-    # 2. 自動防呆檢查：確認是否已有訓練好的權重，且訓練樣本數未發生結構變更
+    # 2. 自動防呆檢查：確認是否已有訓練好的權重，若找不到權重檔則強制自動開始訓練
     train_meta_path = os.path.join(shot_dir, f"train_meta_{args.category}.json")
     prev_trained_samples = None
     if os.path.isfile(train_meta_path):
@@ -271,7 +281,20 @@ def main():
 
     existing_ckpt = find_existing_trained_ckpt(args.data_name, args.diy_name, effective_epochs, shots=args.shots)
     structure_changed = (prev_trained_samples is not None and int(prev_trained_samples) != int(num_train_samples))
-    if structure_changed and not args.skip_train:
+
+    if existing_ckpt is None:
+        if args.skip_train:
+            log_and_print(
+                f"[⚠️ 自動切換訓練] 雖設定了 --skip_train，但在 ./logs/{args.data_name}/ 下找不到任何權重檔，將自動開始訓練！",
+                log_files,
+            )
+            args.skip_train = False
+        else:
+            log_and_print(
+                f"[🚀 啟動新訓練] 在 ./logs/{args.data_name}/ 下尚未發現權重檔，自動開始執行模型訓練...",
+                log_files,
+            )
+    elif structure_changed and not args.skip_train:
         log_and_print(
             f"[🔄 訓練集結構升級] 訓練集由舊版 {prev_trained_samples} 張變更為 {num_train_samples} 張影像，"
             f"將自動重新訓練一次以確保空間對齊精度！",

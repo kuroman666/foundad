@@ -1,0 +1,27 @@
+{
+  "data_name": "mvtec_2_sim_can_4shot",
+  "category": "can",
+  "diy_name": "sim_escape_can",
+  "actual_step": 400,
+  "golden_filenames": [
+    "escape_bad_000_underexposed.png",
+    "escape_bad_000_regular.png",
+    "escape_bad_000_shift_1.png",
+    "clean_001_underexposed.png"
+  ],
+  "num_train_samples": 48,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "golden_select_sec": 0.0,
+  "train_tile_sec": 0.0,
+  "model_train_sec": 2148.9844883370097,
+  "total_train_time": 2148.9844883370097,
+  "ckpt_dirs": [
+    "/home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_can"
+  ],
+  "ckpt_files": [
+    "/home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_can/train-step400.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_can/pretrained.pth.tar"
+  ],
+  "timestamp": "20261107_110540"
+}

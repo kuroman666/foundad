@@ -13,12 +13,12 @@ if [ $# -ge 1 ]; then
 else
     TARGET_CAT_DIRS=(
         "${DATASETS_DIR}/mvtec/capsule"
-        # "${DATASETS_DIR}/mvtec-2/can"
-        # "${DATASETS_DIR}/mvtec/bottle"
-        # "${DATASETS_DIR}/mvtec/cable"
-        # "${DATASETS_DIR}/mvtec/grid"
-        # "${DATASETS_DIR}/mvtec/tile"
-        # "${DATASETS_DIR}/mvtec/transistor"
+        "${DATASETS_DIR}/mvtec-2/can"
+        "${DATASETS_DIR}/mvtec/bottle"
+        "${DATASETS_DIR}/mvtec/cable"
+        "${DATASETS_DIR}/mvtec/grid"
+        "${DATASETS_DIR}/mvtec/tile"
+        "${DATASETS_DIR}/mvtec/transistor"
     )
 fi
 
