@@ -10,12 +10,12 @@
   "disable_tiling": false,
   "min_tile_trigger": 1280,
   "golden_filenames": [
-    "escape_bad_000_underexposed.png",
-    "escape_bad_000_regular.png",
-    "escape_bad_000_shift_1.png",
-    "clean_001_underexposed.png"
+    "clean_000_regular.png",
+    "clean_008_regular.png",
+    "clean_000_overexposed.png",
+    "clean_008_overexposed.png"
   ],
   "num_train_samples": 48,
-  "golden_select_sec": 5.489293912018184,
-  "train_tile_sec": 4.526152673992328
+  "golden_select_sec": 5.633702482038643,
+  "train_tile_sec": 5.28068050800357
 }

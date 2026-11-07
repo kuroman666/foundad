@@ -14,8 +14,8 @@
   "max_coarse_scan": 250,
   "golden_select_sec": 0.0,
   "train_tile_sec": 0.0,
-  "model_train_sec": 1275.0354165339959,
-  "total_train_time": 1275.0354165339959,
+  "model_train_sec": 0.0,
+  "total_train_time": 0.0,
   "ckpt_dirs": [
     "/home/kenny/project/FoundAD/logs/mvtec_sim_cable_4shot/dinov3sim_escape_cable"
   ],
@@ -23,5 +23,6 @@
     "/home/kenny/project/FoundAD/logs/mvtec_sim_cable_4shot/dinov3sim_escape_cable/train-step2000.pth.tar",
     "/home/kenny/project/FoundAD/logs/mvtec_sim_cable_4shot/dinov3sim_escape_cable/pretrained.pth.tar"
   ],
-  "timestamp": "20261107_115924"
+  "timestamp": "20261107_231958",
+  "timezone": "Asia/Taipei (UTC+8)"
 }

@@ -1,0 +1,22 @@
+=== FoundAD Split Eval Report — Pack #2 (eval_pack_2) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/20261107_223120
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 0.0985
+Pack Total Images: 10 | Exported Anomaly Images: 10 | Skipped Normal Images: 0
+Normal False Positives (FPR): 8/8 (100.00%) | Escape Caught (Recall): 2/2 (100.00%)
+Non-Golden Normal Score Dist: Max=0.1367 | P99=0.1365 | P95=0.1357 | Median=0.1315 | Mean=0.1261 | Std=0.0109
+Ablation Compare (Normal)   : Raw_Max=0.1516, Raw_Mean=0.1409 vs Filtered_Max=0.1367, Filtered_Mean=0.1261
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1371 | mean+2*std=0.1480 | mean+3*std=0.1589
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) (Golden_Mean=0.0154, BlindNormal_Med=0.0902, Ratio=7.32x, Gap=+0.0975)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 6      | escape_bent_000.png        | ANOMALY             | 0.5936    | 0.6093    | 0.5936     | -0.0157  | 3      | Rank006_Score0.5936_Box03_escape_bent_000.png
+2      | 7      | escape_bent_007.png        | ANOMALY             | 0.4882    | 0.5119    | 0.4882     | -0.0238  | 3      | Rank007_Score0.4882_Box03_escape_bent_007.png
+3      | 11     | clean_018.png              | ANOMALY             | 0.1367    | 0.1477    | 0.1367     | -0.0110  | 16     | Rank011_Score0.1367_Box16_clean_018.png
+4      | 12     | clean_014.png              | ANOMALY             | 0.1336    | 0.1487    | 0.1336     | -0.0151  | 1      | Rank012_Score0.1336_Box01_clean_014.png
+5      | 13     | clean_004.png              | ANOMALY             | 0.1336    | 0.1513    | 0.1336     | -0.0177  | 2      | Rank013_Score0.1336_Box02_clean_004.png
+6      | 14     | clean_008.png              | ANOMALY             | 0.1329    | 0.1473    | 0.1329     | -0.0143  | 9      | Rank014_Score0.1329_Box09_clean_008.png
+7      | 15     | clean_019.png              | ANOMALY             | 0.1300    | 0.1516    | 0.1300     | -0.0216  | 14     | Rank015_Score0.1300_Box14_clean_019.png
+8      | 17     | clean_017.png              | ANOMALY             | 0.1245    | 0.1361    | 0.1245     | -0.0116  | 13     | Rank017_Score0.1245_Box13_clean_017.png
+9      | 18     | clean_003.png              | ANOMALY             | 0.1146    | 0.1258    | 0.1146     | -0.0112  | 1      | Rank018_Score0.1146_Box01_clean_003.png
+10     | 23     | clean_013.png              | ANOMALY             | 0.1030    | 0.1189    | 0.1030     | -0.0158  | 2      | Rank023_Score0.1030_Box02_clean_013.png

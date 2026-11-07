@@ -1,0 +1,29 @@
+===============================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All Split Evaluations Comparison)]
+-----------------------------------------------------------------------------------------------
+  📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134
+  📂 拆分結果根目錄   : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs
+  🎚️ 採用有效門檻     : 0.0766 (Mode: hybrid, Score: FILTERED_ROBUST)
+-----------------------------------------------------------------------------------------------
+Eval包名稱        | 總張數    | 非Golden正常    | 正常誤報(FPR)        | 抓出Escape瑕疵       | Normal Mean±Std   | mean+3*std
+-----------------------------------------------------------------------------------------------
+eval_pack_1    | 14     | 11           | 10/11 (90.9%)    | 1/2 (50.0%)      | 0.1019±0.0194     | 0.1601
+eval_pack_2    | 14     | 8            | 7/8 (87.5%)      | 5/5 (100.0%)     | 0.1038±0.0175     | 0.1565
+eval_pack_3    | 13     | 11           | 7/11 (63.6%)     | 1/1 (100.0%)     | 0.1126±0.0836     | 0.3632
+-----------------------------------------------------------------------------------------------
+  🔹 [eval_pack_1] (共 14 張, 輸出異常紅框圖 11 張)
+     ├── 正常圖分數分佈 : Max=0.1294 | P99=0.1291 | P95=0.1281 | Median=0.0991 | Mean=0.1019 | Std=0.0194
+     ├── 門檻參考值     : mean+1*std=0.1213 | mean+2*std=0.1407 | mean+3*std=0.1601
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs/eval_pack_1/anomaly_images
+  🔹 [eval_pack_2] (共 14 張, 輸出異常紅框圖 12 張)
+     ├── 正常圖分數分佈 : Max=0.1247 | P99=0.1244 | P95=0.1231 | Median=0.1077 | Mean=0.1038 | Std=0.0175
+     ├── 門檻參考值     : mean+1*std=0.1214 | mean+2*std=0.1389 | mean+3*std=0.1565
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs/eval_pack_2/anomaly_images
+  🔹 [eval_pack_3] (共 13 張, 輸出異常紅框圖 8 張)
+     ├── 正常圖分數分佈 : Max=0.3717 | P99=0.3473 | P95=0.2500 | Median=0.0845 | Mean=0.1126 | Std=0.0836
+     ├── 門檻參考值     : mean+1*std=0.1961 | mean+2*std=0.2797 | mean+3*std=0.3632
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/20261107_223134/split_eval_3packs/eval_pack_3/anomaly_images
+===============================================================================================

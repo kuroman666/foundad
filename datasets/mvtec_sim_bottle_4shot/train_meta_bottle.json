@@ -14,8 +14,8 @@
   "max_coarse_scan": 250,
   "golden_select_sec": 0.0,
   "train_tile_sec": 0.0,
-  "model_train_sec": 935.1826684899861,
-  "total_train_time": 935.1826684899861,
+  "model_train_sec": 0.0,
+  "total_train_time": 0.0,
   "ckpt_dirs": [
     "/home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle"
   ],
@@ -23,5 +23,6 @@
     "/home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar",
     "/home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar"
   ],
-  "timestamp": "20261107_114328"
+  "timestamp": "20261107_231947",
+  "timezone": "Asia/Taipei (UTC+8)"
 }

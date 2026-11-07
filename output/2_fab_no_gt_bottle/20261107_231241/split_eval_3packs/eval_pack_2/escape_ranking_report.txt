@@ -1,0 +1,21 @@
+=== FoundAD Split Eval Report — Pack #2 (eval_pack_2) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 0.1063
+Pack Total Images: 9 | Exported Anomaly Images: 7 | Skipped Normal Images: 2
+Normal False Positives (FPR): 4/5 (80.00%) | Escape Caught (Recall): 3/3 (100.00%)
+Non-Golden Normal Score Dist: Max=0.1401 | P99=0.1394 | P95=0.1368 | Median=0.1169 | Mean=0.1160 | Std=0.0160
+Ablation Compare (Normal)   : Raw_Max=0.1568, Raw_Mean=0.1260 vs Filtered_Max=0.1401, Filtered_Mean=0.1160
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1320 | mean+2*std=0.1481 | mean+3*std=0.1641
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) (Golden_Mean=0.0164, BlindNormal_Med=0.0977, Ratio=6.52x, Gap=+0.0903)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 2      | escape_broken_large_004.png | ANOMALY             | 0.7867    | 0.8129    | 0.7867     | -0.0262  | 1      | Rank002_Score0.7867_Box01_escape_broken_large_004.png
+2      | 4      | escape_broken_large_005.png | ANOMALY             | 0.7010    | 0.7580    | 0.7010     | -0.0570  | 1      | Rank004_Score0.7010_Box01_escape_broken_large_005.png
+3      | 7      | escape_broken_large_006.png | ANOMALY             | 0.5879    | 0.6002    | 0.5879     | -0.0124  | 5      | Rank007_Score0.5879_Box05_escape_broken_large_006.png
+4      | 12     | clean_014.png              | ANOMALY             | 0.1401    | 0.1568    | 0.1401     | -0.0167  | 4      | Rank012_Score0.1401_Box04_clean_014.png
+5      | 14     | clean_013.png              | ANOMALY             | 0.1237    | 0.1313    | 0.1237     | -0.0076  | 4      | Rank014_Score0.1237_Box04_clean_013.png
+6      | 15     | clean_000.png              | ANOMALY             | 0.1169    | 0.1246    | 0.1169     | -0.0077  | 2      | Rank015_Score0.1169_Box02_clean_000.png
+7      | 18     | clean_010.png              | ANOMALY             | 0.1071    | 0.1173    | 0.1071     | -0.0102  | 1      | Rank018_Score0.1071_Box01_clean_010.png
+8      | 23     | clean_005.png              | PASS_SKIPPED        | 0.0922    | 0.1000    | 0.0922     | -0.0078  | 0      | (未超過動態門檻，不輸出圖片)
+9      | 27     | clean_003.png              | GOLDEN_PASS         | 0.0159    | 0.0170    | 0.0159     | -0.0010  | 0      | (未超過動態門檻，不輸出圖片)

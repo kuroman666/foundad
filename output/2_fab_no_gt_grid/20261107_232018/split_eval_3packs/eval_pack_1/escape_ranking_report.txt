@@ -1,0 +1,22 @@
+=== FoundAD Split Eval Report — Pack #1 (eval_pack_1) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/20261107_232018
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 0.1241
+Pack Total Images: 10 | Exported Anomaly Images: 7 | Skipped Normal Images: 3
+Normal False Positives (FPR): 2/4 (50.00%) | Escape Caught (Recall): 5/5 (100.00%)
+Non-Golden Normal Score Dist: Max=0.1336 | P99=0.1335 | P95=0.1331 | Median=0.1273 | Mean=0.1252 | Std=0.0080
+Ablation Compare (Normal)   : Raw_Max=0.1516, Raw_Mean=0.1402 vs Filtered_Max=0.1336, Filtered_Mean=0.1252
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1332 | mean+2*std=0.1411 | mean+3*std=0.1491
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) (Golden_Mean=0.0154, BlindNormal_Med=0.1126, Ratio=7.32x, Gap=+0.0975)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 2      | escape_bent_005.png        | ANOMALY             | 0.7423    | 0.7544    | 0.7423     | -0.0122  | 2      | Rank002_Score0.7423_Box02_escape_bent_005.png
+2      | 5      | escape_bent_001.png        | ANOMALY             | 0.5942    | 0.6328    | 0.5942     | -0.0387  | 2      | Rank005_Score0.5942_Box02_escape_bent_001.png
+3      | 6      | escape_bent_000.png        | ANOMALY             | 0.5936    | 0.6093    | 0.5936     | -0.0157  | 3      | Rank006_Score0.5936_Box03_escape_bent_000.png
+4      | 7      | escape_bent_007.png        | ANOMALY             | 0.4882    | 0.5119    | 0.4882     | -0.0238  | 3      | Rank007_Score0.4882_Box03_escape_bent_007.png
+5      | 8      | escape_bent_004.png        | ANOMALY             | 0.4699    | 0.5184    | 0.4699     | -0.0485  | 2      | Rank008_Score0.4699_Box02_escape_bent_004.png
+6      | 12     | clean_014.png              | ANOMALY             | 0.1336    | 0.1487    | 0.1336     | -0.0151  | 1      | Rank012_Score0.1336_Box01_clean_014.png
+7      | 15     | clean_019.png              | ANOMALY             | 0.1300    | 0.1516    | 0.1300     | -0.0216  | 2      | Rank015_Score0.1300_Box02_clean_019.png
+8      | 17     | clean_017.png              | PASS_NOISE_FILTERED | 0.1245    | 0.1361    | 0.1245     | -0.0116  | 0      | (微小單點噪點已自動濾除，不輸出圖片)
+9      | 20     | clean_007.png              | PASS_SKIPPED        | 0.1126    | 0.1244    | 0.1126     | -0.0118  | 0      | (未超過動態門檻，不輸出圖片)
+10     | 26     | clean_002.png              | GOLDEN_PASS         | 0.0170    | 0.0180    | 0.0170     | -0.0009  | 0      | (未超過動態門檻，不輸出圖片)

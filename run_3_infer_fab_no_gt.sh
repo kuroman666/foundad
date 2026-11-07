@@ -28,6 +28,7 @@ AUTO_PERCENTILE=95.0     # 自動對齊盲池分位數 (如 95.0 代表 P95)
 TOP_K=0                  # 若設 > 0 (如 10)，限制最多只輸出前 K 張最可疑晶圓
 CORE_RATIO=0.55          # 紅框核心收斂比例 (0.45~0.65)
 RAW_SCORE_MODE=""        # 預設 "" (啟用四合一防誤報濾波)；若想對照未濾波原生分數設為 "--raw_score_mode"
+MICRO_DEFECT_MODE="--micro_defect_mode"  # 設為 "--micro_defect_mode" 啟動微瑕疵高靈敏模式；設為 "" 則為一般模式
 
 # 3. 晶圓圓周邊緣抑制與單點微塵濾除參數
 WAFER_EDGE_MODE="on"     # 圓形晶圓建議設 "on" (或 "auto")
@@ -97,7 +98,7 @@ python 3_infer_fab_no_gt.py \
     --max_train_tiles "${MAX_TRAIN_TILES}" \
     --infer_batch_size "${INFER_BATCH_SIZE}" \
     --bg_std_thresh "${BG_STD_THRESH}" \
-    ${FORCE_INFER} ${RAW_SCORE_MODE} ${DISABLE_TILING}
+    ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
 
 # 終端機列印最新報表統計總結
 python - "${FAB_RESULT_DIR}" << 'EOF'

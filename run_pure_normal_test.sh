@@ -19,8 +19,8 @@ SHOTS=4
 FAB_CKPT_STEP=2000
 THRESH_MODE="hybrid"                  # 門檻模式: "hybrid"(P95+MAD穩健上界+保底)、"mean_std"(直接用 mean+SIGMA_K*std 當門檻)、"percentile"、"top_k"、"fixed"
 SIGMA_K=3.5                           # 當 THRESH_MODE="mean_std" 時為 mean + k*std 的倍數 k (如 1.0, 2.0, 3.0)；當為 "hybrid" 時為 MAD 標準差倍數
-THRESHOLD=0.25                        # 當 THRESH_MODE="fixed" 時為絕對門檻；當為 "hybrid" 時為基礎下限
-MIN_THRESHOLD=0.27                    # 動態門檻最低安全底線 (適用於 hybrid / percentile / top_k)
+THRESHOLD=0                        # 當 THRESH_MODE="fixed" 時為絕對門檻；當為 "hybrid" 時為基礎下限
+MIN_THRESHOLD=0                    # 動態門檻最低安全底線 (適用於 hybrid / percentile / top_k)
 AUTO_PERCENTILE=95.0                  # 自動對齊分位數 (P95)
 TOP_K=0                               # 若設 > 0 則限制最多輸出前 K 張
 CORE_RATIO=0.55                       # 異常熱區峰值核心收斂比例 (0.45~0.65)

@@ -1,0 +1,28 @@
+{
+  "data_name": "mvtec_sim_tile_4shot",
+  "category": "tile",
+  "diy_name": "sim_escape_tile",
+  "actual_step": 2000,
+  "golden_filenames": [
+    "clean_004.png",
+    "escape_crack_001.png",
+    "clean_003.png",
+    "clean_001.png"
+  ],
+  "num_train_samples": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "golden_select_sec": 0.0,
+  "train_tile_sec": 0.0,
+  "model_train_sec": 0.0,
+  "total_train_time": 0.0,
+  "ckpt_dirs": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_tile_4shot/dinov3sim_escape_tile"
+  ],
+  "ckpt_files": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_tile_4shot/dinov3sim_escape_tile/train-step2000.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_tile_4shot/dinov3sim_escape_tile/pretrained.pth.tar"
+  ],
+  "timestamp": "20261107_232029",
+  "timezone": "Asia/Taipei (UTC+8)"
+}

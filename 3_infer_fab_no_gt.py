@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/3_infer_fab_no_gt.py (負責測試池切塊、模型推論、RAM 縫合與四合一防誤報篩選)
+# 檔案位置: FoundAD/3_infer_fab_no_gt.py (全選覆蓋此檔：新增 --micro_defect_mode 微瑕疵高靈敏模式)
 import shlex
 import os
 import re
@@ -164,7 +164,6 @@ def load_golden_filenames_for_infer(
         except Exception:
             pass
 
-    # Fallback: 透過 load_or_prepare_golden_dataset 讀取既有 Golden 資料集
     try:
         golden_filenames, _, _, golden_select_sec, train_tile_sec = load_or_prepare_golden_dataset(
             pool_dir=pool_dir,
@@ -250,7 +249,6 @@ def prepare_tiled_test_pool(
         img = load_image_rgb_uint8(fpath)
         h, w = img.shape[:2]
 
-        # 同步 min_tile_trigger=1280：<= 1280px 直接 1:1 整張推論；> 1280px 才啟動重疊切塊
         if disable_tiling or (max(h, w) <= min_tile_trigger) or (h <= tile_size and w <= tile_size):
             ys, xs = [0], [0]
             eff_tile_h, eff_tile_w = h, w
@@ -456,7 +454,7 @@ def stitch_single_image_amap(
 
 
 # =====================================================================
-# 防誤報核心演算法：晶圓圓周邊緣抑制 + 微塵單點尖峰濾除 + 動態門檻對齊
+# 防誤報核心演算法：晶圓圓周邊緣抑制 + 微瑕疵白頂帽增強 + 動態門檻對齊
 # =====================================================================
 def detect_circular_wafer_geometry(
     img_path: str,
@@ -555,29 +553,43 @@ def refine_amap_for_wafer_and_noise(
     speckle_filter_ratio: float,
     golden_spatial_ref: Optional[np.ndarray] = None,
     golden_tol_weight: float = 0.15,
+    micro_defect_mode: bool = False,
+    micro_boost_weight: float = 0.35,
 ) -> np.ndarray:
     """
-    四合一防誤報熱力圖純化器 (保護細小裂痕與針孔版)：
+    四合一防誤報熱力圖純化器 (支援 --micro_defect_mode 微瑕疵白頂帽局部峰值增強)：
     1. 矩形外圍 Padding 偽影抑制 (border_ratio)。
     2. 晶圓圓周邊緣 / 倒角區 (Wafer Bevel / Edge Ring) 自動餘弦衰減抑制。
-    3. 3x3 輕量單點微塵抑制 (取代原本會吃掉細小裂痕與針孔的大核 MORPH_OPEN)。
-    4. 溫和跨 Golden 結構複雜區容差補償 (golden_tol_weight=0.15)。
+    3. 一般模式：3x3 輕量微塵抑制；
+       微瑕疵模式 (micro_defect_mode=True)：啟動形態學白頂帽變換 (White Top-Hat Local Contrast Booster)，
+       將小於局部結構核 (15x15~31x31) 的微米級凸起尖峰放大，同時壓制大範圍光照緩變背景。
+    4. 跨 Golden 結構複雜區容差補償 (微瑕疵模式下自動調降扣除權重至 0.08，避免微瑕疵被結構容差吃掉)。
     """
     h, w = full_amap.shape[:2]
     work_map = full_amap.astype(np.float32).copy()
     img_median = float(np.median(work_map))
 
-    if golden_spatial_ref is not None and golden_tol_weight > 0:
+    eff_tol_weight = min(golden_tol_weight, 0.08) if micro_defect_mode else golden_tol_weight
+    if golden_spatial_ref is not None and eff_tol_weight > 0:
         if golden_spatial_ref.shape[:2] != (h, w):
             g_ref = cv2.resize(golden_spatial_ref, (w, h), interpolation=cv2.INTER_LINEAR)
         else:
             g_ref = golden_spatial_ref
         g_med = float(np.median(g_ref))
         structural_excess = np.maximum(0.0, g_ref - g_med)
-        work_map = img_median + np.maximum(0.0, (work_map - img_median) - golden_tol_weight * structural_excess)
+        work_map = img_median + np.maximum(0.0, (work_map - img_median) - eff_tol_weight * structural_excess)
 
-    if speckle_filter_ratio > 0:
-        # 改用固定 3x3 輕量單點微塵抑制，保護細小裂痕 (crack) 與針孔 (poke/pinhole) 不被大核吃掉
+    if micro_defect_mode:
+        # [微瑕疵模式] 1. 先以 3x3 高斯微平滑壓制單一像素熱噪點，但不削平 3x3~25x25 的微瑕疵
+        smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
+        # [微瑕疵模式] 2. 形態學白頂帽 (White Top-Hat) 提取局部高頻異常尖峰
+        k_bg = max(15, min(35, int(round(max(h, w) * 0.006)) | 1))
+        bg_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_bg, k_bg))
+        local_bg = cv2.morphologyEx(smooth_3x3, cv2.MORPH_OPEN, bg_kernel)
+        local_bg = cv2.GaussianBlur(local_bg, (k_bg, k_bg), 0)
+        tophat_peak = np.maximum(0.0, smooth_3x3 - local_bg)
+        work_map = smooth_3x3 + float(micro_boost_weight) * tophat_peak
+    elif speckle_filter_ratio > 0:
         light_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         opened_3x3 = cv2.morphologyEx(work_map, cv2.MORPH_OPEN, light_kernel)
         smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
@@ -664,10 +676,15 @@ def extract_tight_bboxes_for_anomaly_image(
     core_ratio: float = 0.55,
     min_area_ratio: float = 0.00012,
     raw_score_mode: bool = False,
+    micro_defect_mode: bool = False,
 ) -> Tuple[List[Tuple[int, int, int, int, float, int]], float]:
     """
     峰值自適應核心收斂 (Peak-Adaptive Core Thresholding) 演算法：
-    針對通過門檻的異常熱力圖切出核心缺陷紅框。
+    - 一般模式：先做 k_size 開運算再做閉運算，過濾面積 < min_area_ratio (5000x5000 上為 3000px) 的區域。
+    - 微瑕疵模式 (micro_defect_mode=True)：
+      1. 取消會抹除 <11px 微瑕疵的大核 MORPH_OPEN，改為先執行 5x5 MORPH_CLOSE 連接斷裂微刮痕。
+      2. 將最小有效面積門檻自動下修至 0.000004 (5000x5000 上僅需 10x10px、1000x1000 上僅需 4px 即可成框)。
+      3. 連通域分數取 Top-10% 核心尖峰像素，避免微瑕疵被連通域邊緣像素稀釋而低於 img_threshold。
     """
     h, w = refined_amap.shape[:2]
     work_map = refined_amap.copy()
@@ -676,20 +693,34 @@ def extract_tight_bboxes_for_anomaly_image(
     if max_score < img_threshold:
         return [], img_threshold
 
-    core_thresh = img_median + core_ratio * (max_score - img_median)
-    pixel_box_thresh = max(float(img_threshold * 0.92), float(core_thresh))
+    eff_core_ratio = min(core_ratio, 0.45) if micro_defect_mode else core_ratio
+    core_thresh = img_median + eff_core_ratio * (max_score - img_median)
+    thresh_relax = 0.88 if micro_defect_mode else 0.92
+    pixel_box_thresh = max(float(img_threshold * thresh_relax), float(core_thresh))
 
     binary_mask = (work_map >= pixel_box_thresh).astype(np.uint8) * 255
     if not raw_score_mode:
-        k_size = max(3, int(round(max(h, w) / 500)) | 1)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
-        binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_OPEN, kernel)
-        binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, kernel)
+        if micro_defect_mode:
+            # 微瑕疵模式：先做 5x5 閉運算連接微細刮傷/裂紋，不做大核開運算以免吃掉微粒與針孔
+            close_k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, close_k)
+        else:
+            k_size = max(3, int(round(max(h, w) / 500)) | 1)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
+            binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_OPEN, kernel)
+            binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, kernel)
 
     num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
-    min_area = 1 if raw_score_mode else max(16, int(round((h * w) * min_area_ratio)))
+    if raw_score_mode:
+        min_area = 1
+    elif micro_defect_mode:
+        eff_min_ratio = min(min_area_ratio, 0.000004)
+        min_area = max(4, int(round((h * w) * eff_min_ratio)))
+    else:
+        min_area = max(16, int(round((h * w) * min_area_ratio)))
+
     vis_scale = max(1.0, max(h, w) / 900.0)
-    pad = max(3, int(round(4 * vis_scale)))
+    pad = max(4, int(round(5 * vis_scale))) if micro_defect_mode else max(3, int(round(4 * vis_scale)))
 
     raw_bboxes = []
     for lbl_idx in range(1, num_labels):
@@ -702,6 +733,9 @@ def extract_tight_bboxes_for_anomaly_image(
             continue
         if raw_score_mode:
             region_score = float(np.max(region_pixels))
+        elif micro_defect_mode:
+            top_n = max(1, min(16, int(round(region_pixels.size * 0.10))))
+            region_score = float(np.mean(np.partition(region_pixels, -top_n)[-top_n:]))
         else:
             top_n = max(1, int(round(region_pixels.size * 0.25)))
             region_score = float(np.mean(np.partition(region_pixels, -top_n)[-top_n:]))
@@ -725,8 +759,7 @@ def estimate_blind_normal_core_stats(
 ) -> Tuple[float, float, float, np.ndarray]:
     """
     真無 GT 盲池左半部正常核心估計器 (Left-Half Normal Core Estimator, sigma_left)：
-    完全不偷看檔名 (如 escape_)，直接從盲池分佈的下半部 (<= 中位數/Golden 錨點) 估計正常樣本中心與左半標準差，
-    徹底防止盲池中含有高比例瑕疵時，將異常高分算入 std 或 P95 導致動態門檻暴衝到 1.1884。
+    完全不偷看檔名 (如 escape_)，直接從盲池分佈的下半部 (<= 中位數/Golden 錨點) 估計正常樣本中心與左半標準差。
     """
     pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
@@ -736,7 +769,6 @@ def estimate_blind_normal_core_stats(
     sorted_pool = np.sort(pool_arr)
     n = sorted_pool.size
 
-    # 取盲池較低分前 50% 作為初步正常核心候選
     half_n = max(1, (n + 1) // 2)
     lower_half = sorted_pool[:half_n]
     med_pool = float(np.median(sorted_pool))
@@ -745,7 +777,6 @@ def estimate_blind_normal_core_stats(
         g_med = float(np.median(g_arr))
         g_max = float(np.max(g_arr))
         g_std = float(np.std(g_arr)) if g_arr.size > 1 else 0.015
-        # 若盲池整體中位數已被過半異常樣本拉高，使用 Golden 基準錨定正常核心中心
         core_anchor = min(med_pool, max(g_med * 1.25, g_max + 2.0 * max(g_std, 0.012)))
     else:
         g_med = float(np.median(lower_half))
@@ -755,12 +786,10 @@ def estimate_blind_normal_core_stats(
     if left_samples.size < max(3, n // 5):
         left_samples = lower_half
 
-    # 以左半部高分端 (接近 core_anchor) 與中位數穩健估計正常核心中心 mu_core
     mu_core = float(np.percentile(left_samples, 75.0)) if left_samples.size >= 4 else float(np.median(left_samples))
     if g_arr.size > 0:
         mu_core = float(np.clip(mu_core, g_med, core_anchor))
 
-    # 計算左半部單邊離差 sigma_left (不受右側異常高分尾巴污染)
     left_diffs = mu_core - sorted_pool[sorted_pool <= mu_core]
     if left_diffs.size >= 2:
         sigma_left_rms = float(np.sqrt(np.mean(np.square(left_diffs))))
@@ -775,7 +804,6 @@ def estimate_blind_normal_core_stats(
 
     sigma_left = float(np.clip(sigma_left, 0.010, 0.065))
 
-    # 篩選出落於 [0, mu_core + 2.5 * sigma_left] 內的推估正常樣本供報表診斷使用
     est_normal_mask = sorted_pool <= (mu_core + 2.5 * sigma_left)
     est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else left_samples
     return mu_core, sigma_left, g_med, est_normal_arr
@@ -793,8 +821,7 @@ def compute_dynamic_effective_threshold(
 ) -> Tuple[float, str]:
     """
     計算真無 GT 盲池最終異常判定門檻：
-    完全不依賴檔名標籤 (如 escape_)，採用左半部正常核心估計器 (sigma_left) 與 Golden 基準雙重校準，
-    徹底防止異常樣本污染分佈導致門檻暴衝至 1.1884。
+    完全不依賴檔名標籤 (如 escape_)，採用左半部正常核心估計器 (sigma_left) 與 Golden 基準雙重校準。
     """
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
@@ -807,10 +834,8 @@ def compute_dynamic_effective_threshold(
         golden_scores=golden_scores,
     )
 
-    # 1. 左半部正常核心統計門檻: mu_core + sigma_k * sigma_left
     left_stat_bound = float(mu_core + sigma_k * sigma_left)
 
-    # 2. Golden 基準校準門檻與安全上界 (雙重校準，防止門檻暴衝)
     if g_arr.size > 0:
         g_mean = float(np.mean(g_arr))
         g_max = float(np.max(g_arr))
@@ -827,7 +852,6 @@ def compute_dynamic_effective_threshold(
 
     calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
 
-    # 分位數在無標註盲池中僅針對推估正常核心子集計算，避免切在異常高分區
     p_clip = float(np.clip(auto_percentile, 50.0, 99.9))
     p_val_core = float(np.percentile(est_normal_arr, p_clip))
     p_val_raw = float(np.percentile(scores_arr, p_clip))
@@ -861,7 +885,6 @@ def compute_dynamic_effective_threshold(
         eff = max(float(min_threshold), topk_bound if top_k > 0 else calibrated_bound)
         desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f} (TopK_Bound={topk_bound:.4f}, MinFloor={min_threshold:.4f})"
     else:
-        # Hybrid 模式：結合保底門檻、左半部核心統計門檻與 Golden 基準校準，不受盲池高異常比例影響
         hybrid_stat = max(floor_val, calibrated_bound, min(p_val_core, golden_safety_cap))
         eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
         desc = (
@@ -925,9 +948,12 @@ def stitch_and_filter_anomalies(
     speckle_filter_ratio: float,
     min_area_ratio: float,
     raw_score_mode: bool,
+    micro_defect_mode: bool,
+    micro_boost_weight: float,
+    micro_peak_pixels: int,
     log_files: List[str],
 ) -> Tuple[int, int, float, str, str, str]:
-    """三階段 RAM 串流縫合、碎片即時銷毀與異常紅框篩選輸出。"""
+    """三階段 RAM 串流縫合、碎片即時銷毀與異常紅框篩選輸出 (支援 --micro_defect_mode)。"""
     os.makedirs(final_amap_dir, exist_ok=True)
     anomaly_dir = os.path.join(out_dir, "anomaly_images")
     anomaly_fullres_bbox_dir = os.path.join(anomaly_dir, "full_res_bbox_only")
@@ -941,11 +967,19 @@ def stitch_and_filter_anomalies(
     golden_set = set(golden_filenames)
     total_imgs = len(manifest["images"])
 
-    score_mode_label = (
-        "RAW_UNFILTERED (未經四合一濾波 + 單點最大值 np.max)"
-        if raw_score_mode
-        else "FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)"
-    )
+    if raw_score_mode:
+        score_mode_label = "RAW_UNFILTERED (未經四合一濾波 + 單點最大值 np.max)"
+        score_mode_code = "RAW_UNFILTERED"
+    elif micro_defect_mode:
+        score_mode_label = (
+            f"MICRO_DEFECT_SENSITIVE (微瑕疵白頂帽增強 [boost={micro_boost_weight:g}] + "
+            f"Top-{micro_peak_pixels}px 防稀釋局部尖峰 + 5x5閉運算微框保護)"
+        )
+        score_mode_code = "MICRO_DEFECT_SENSITIVE"
+    else:
+        score_mode_label = "FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)"
+        score_mode_code = "FILTERED_ROBUST"
+
     log_and_print(
         f"\n[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 {total_imgs} 張原圖) | 計分模式: {score_mode_label}",
         log_files,
@@ -999,7 +1033,13 @@ def stitch_and_filter_anomalies(
 
         raw_flat = raw_amap.reshape(-1)
         raw_single_max = float(np.max(raw_flat))
-        peak_k = max(8, int(round(raw_flat.size * 0.00015)))
+
+        # 決定計分峰值像素數 peak_k：微瑕疵模式下固定取 Top-N (預設 24) 核心像素，防止 5000x5000 大圖被 3750 個背景像素稀釋
+        if micro_defect_mode:
+            peak_k = max(6, min(int(micro_peak_pixels), int(round(raw_flat.size * 0.00002))))
+        else:
+            peak_k = max(8, int(round(raw_flat.size * 0.00015)))
+
         raw_top_peak = float(np.mean(np.partition(raw_flat, -peak_k)[-peak_k:]))
 
         refined_amap = refine_amap_for_wafer_and_noise(
@@ -1012,6 +1052,8 @@ def stitch_and_filter_anomalies(
             speckle_filter_ratio=speckle_filter_ratio,
             golden_spatial_ref=golden_spatial_ref if not is_golden_img else None,
             golden_tol_weight=0.15,
+            micro_defect_mode=micro_defect_mode,
+            micro_boost_weight=micro_boost_weight,
         )
         ref_flat = refined_amap.reshape(-1)
         filtered_robust_max = float(np.mean(np.partition(ref_flat, -peak_k)[-peak_k:]))
@@ -1031,7 +1073,6 @@ def stitch_and_filter_anomalies(
         if is_golden_img:
             golden_max_scores.append(active_max_score)
         else:
-            # 真無 GT 盲池：完全不偷看 escape_ 檔名，所有非 Golden 樣本一視同仁進入盲池統計
             non_golden_all_scores.append(active_max_score)
 
         cache_npy_path = os.path.join(refined_cache_dir, f"{idx:05d}_{meta['stem']}.npy")
@@ -1065,7 +1106,6 @@ def stitch_and_filter_anomalies(
         log_files,
     )
 
-    # 使用左半部正常核心估計器與 Golden 基準雙重校準計算動態門檻
     effective_threshold, thresh_mode_str = compute_dynamic_effective_threshold(
         non_golden_scores=non_golden_all_scores,
         golden_scores=golden_max_scores,
@@ -1090,7 +1130,7 @@ def stitch_and_filter_anomalies(
 
     log_and_print(
         f"[Step 3.2] 異常判定門檻設定: {thresh_mode_str}\n"
-        f"           (計分模式={'RAW未濾波' if raw_score_mode else '四合一純化濾波 [3x3微塵抑制 + tol=0.15]'}, "
+        f"           (計分模式={score_mode_code}, "
         f"圓周邊緣抑制={'OFF(Raw)' if raw_score_mode else wafer_edge_mode}, "
         f"邊界縮減={0.0 if raw_score_mode else wafer_edge_margin*100:.1f}%)\n"
         f"[Step 3.2b] 過擬合自檢診斷 : {overfit_badge} "
@@ -1159,6 +1199,7 @@ def stitch_and_filter_anomalies(
             core_ratio=core_ratio,
             min_area_ratio=min_area_ratio,
             raw_score_mode=raw_score_mode,
+            micro_defect_mode=micro_defect_mode,
         )
 
         if not bboxes:
@@ -1233,7 +1274,7 @@ def stitch_and_filter_anomalies(
 
         banner_h = max(36, int(round(panel_h * 0.055)))
         banner = np.zeros((banner_h, tri_panel.shape[1], 3), dtype=np.uint8)
-        mode_tag = "RAW" if raw_score_mode else "FILT"
+        mode_tag = "RAW" if raw_score_mode else ("MICRO" if micro_defect_mode else "FILT")
         banner_txt = (
             f"[{mode_tag}] Orig: {fname} | Score: {max_score:.4f} (Raw:{raw_max_score:.4f}, Filt:{filtered_max_score:.4f}, "
             f"EffThresh:{effective_threshold:.4f}) | Status: ANOMALY (Boxes:{len(bboxes)})"
@@ -1276,7 +1317,6 @@ def stitch_and_filter_anomalies(
     del golden_spatial_ref
     gc.collect()
 
-    # 統計報表：完全不依賴檔名標籤，針對未超過動態門檻的盲池正常樣本 (或左半核心) 進行統計
     non_golden_recs = [r for r in ranking_records if not r["status"].startswith("GOLDEN")]
     passed_normal_recs = [r for r in non_golden_recs if r["status"].startswith("PASS")]
     target_recs = passed_normal_recs if passed_normal_recs else non_golden_recs
@@ -1305,12 +1345,12 @@ def stitch_and_filter_anomalies(
     filt_std_s = float(np.std(filt_dist_scores))
 
     dist_summary_lines = (
-        f"      📊 盲池正常核心分數分佈 ({'RAW未濾波' if raw_score_mode else '四合一濾波後'}) : "
+        f"      📊 盲池正常核心分數分佈 ({score_mode_code}) : "
         f"Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}\n"
         f"      📐 盲池正常核心門檻參考值      : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
         f"      🔬 濾波前後正常圖對照 (Ablation): "
         f"[未濾波 Raw] Max={raw_max_s:.4f}, Mean={raw_mean_s:.4f}, Std={raw_std_s:.4f}  vs  "
-        f"[四合一濾波] Max={filt_max_s:.4f}, Mean={filt_mean_s:.4f}, Std={filt_std_s:.4f}\n"
+        f"[當前模式] Max={filt_max_s:.4f}, Mean={filt_mean_s:.4f}, Std={filt_std_s:.4f}\n"
         f"      🩺 模型過擬合自檢 (Overfit)    : {overfit_badge}\n"
         f"                                       [Golden平均={g_mean_score:.4f} vs 盲池正常中位數={median_s:.4f} | Overfit_Ratio={overfit_ratio:.2f}x | Gap={golden_gap:+.4f}]"
     )
@@ -1323,7 +1363,7 @@ def stitch_and_filter_anomalies(
     with open(report_txt, "w", encoding="utf-8") as f:
         f.write("=== FoundAD High-Res Anomaly Detection Report ===\n")
         f.write(
-            f"Score Mode: {'RAW_UNFILTERED' if raw_score_mode else 'FILTERED_ROBUST'} | "
+            f"Score Mode: {score_mode_code} | "
             f"Threshold Mode: {thresh_mode} | Effective Threshold: {effective_threshold:.4f} | "
             f"Wafer Edge Mode: {'off(raw)' if raw_score_mode else wafer_edge_mode} (Margin: {wafer_edge_margin:.3f})\n"
             f"Core Box Ratio: {core_ratio:.2f} | Exported Anomaly Images: {anomaly_count} | "
@@ -1417,8 +1457,25 @@ def main():
     parser.add_argument("--top_k", type=int, default=0)
     parser.add_argument("--sigma_k", type=float, default=3.5)
 
-    # 晶圓圓周邊緣抑制與微塵濾波參數 + Raw 未濾波對照開關
-    parser.add_argument("--raw_score_mode", action="store_true")
+    # 晶圓圓周邊緣抑制、微塵濾波與「微瑕疵高靈敏模式 (--micro_defect_mode)」開關
+    parser.add_argument("--raw_score_mode", action="store_true", help="完全不經過濾波之原始最大值模式 (消融實驗對照組)")
+    parser.add_argument(
+        "--micro_defect_mode",
+        action="store_true",
+        help="一鍵啟動微瑕疵高靈敏模式：形態學白頂帽局部對比度增強 + Top-24px 防稀釋峰值計分 + 5x5閉運算微框保護",
+    )
+    parser.add_argument(
+        "--micro_boost_weight",
+        type=float,
+        default=0.35,
+        help="micro_defect_mode 下白頂帽局部尖峰增強權重 (預設 0.35)",
+    )
+    parser.add_argument(
+        "--micro_peak_pixels",
+        type=int,
+        default=24,
+        help="micro_defect_mode 下計算全圖異常分數的局部尖峰像素數上限 (預設 24，防止微瑕疵被背景稀釋)",
+    )
     parser.add_argument("--core_ratio", type=float, default=0.55)
     parser.add_argument("--border_ratio", type=float, default=0.02)
     parser.add_argument("--wafer_edge_mode", type=str, default="auto", choices=["auto", "on", "off"])
@@ -1468,6 +1525,7 @@ def main():
         f"\n{'='*75}\n"
         f"[Task 2 無GT推論階段啟動時間] {start_dt_str}\n"
         f"[本次專屬時間戳記輸出目錄] {run_out_dir}\n"
+        f"[微瑕疵高靈敏模式狀態] {'ON (已啟動白頂帽增強與防稀釋局部尖峰計分)' if args.micro_defect_mode else 'OFF (標準四合一濾波模式)'}\n"
         f"{'='*75}",
         log_files,
     )
@@ -1497,7 +1555,7 @@ def main():
         log_files,
     )
 
-    # 2. 測試池高解析度切塊與快取檢查 (將 min_tile_trigger 納入快取金鑰)
+    # 2. 測試池高解析度切塊與快取檢查
     pool_signature = compute_pool_signature(args.pool_dir)
     tile_config_key = (
         f"t{args.tile_size}_ov{args.tile_overlap}_trig{args.min_tile_trigger}_"
@@ -1615,6 +1673,9 @@ def main():
             speckle_filter_ratio=args.speckle_filter_ratio,
             min_area_ratio=args.min_area_ratio,
             raw_score_mode=args.raw_score_mode,
+            micro_defect_mode=args.micro_defect_mode,
+            micro_boost_weight=args.micro_boost_weight,
+            micro_peak_pixels=args.micro_peak_pixels,
             log_files=log_files,
         )
     )
@@ -1624,6 +1685,7 @@ def main():
     avg_infer_per_img = total_infer_time / max(1, num_test_images)
     total_wall_time = time.perf_counter() - pipeline_start_t
 
+    mode_summary_str = "RAW" if args.raw_score_mode else ("MICRO_DEFECT" if args.micro_defect_mode else "FILTERED")
     infer_done_summary = (
         f"\n{'='*75}\n"
         f" [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]\n"
@@ -1634,12 +1696,12 @@ def main():
         f"      ├─ Step 2.1 測試池圖塊準備 ({total_test_tiles} 塊, trigger={args.min_tile_trigger}px) : {format_duration(test_tile_sec)}"
         f"{' (Cached)' if used_png_tile_cache else ''}\n"
         f"      ├─ Step 2.2 FoundAD 模型推論               : {format_duration(model_infer_sec)}\n"
-        f"      ├─ Step 3 RAM 縫合銷毀碎片與{'未濾波' if args.raw_score_mode else '四合一濾波'}畫框 : {format_duration(stitch_vis_sec)}\n"
+        f"      ├─ Step 3 RAM 縫合銷毀碎片與{mode_summary_str}畫框 : {format_duration(stitch_vis_sec)}\n"
         f"      └─ 平均每張原圖推論耗時 ({num_test_images} 張原圖)         : {avg_infer_per_img:.2f} 秒/張\n"
         f"{'-'*75}\n"
         f"  [3] 本次推論腳本總執行時間 (Total Wall Time)  : {format_duration(total_wall_time)}\n"
         f"{'-'*75}\n"
-        f"  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score={'RAW' if args.raw_score_mode else 'FILTERED'}, Mode={args.thresh_mode}, Eff_Thresh={eff_thresh:.4f}):\n"
+        f"  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score={mode_summary_str}, Mode={args.thresh_mode}, Eff_Thresh={eff_thresh:.4f}):\n"
         f"      🚨 超過門檻判定異常並畫框輸出 : {anomaly_count} 張\n"
         f"      ✅ 未達門檻或微塵濾除直接略過 : {skipped_count} 張 (不輸出圖片)\n"
         f"{dist_summary_lines}\n"

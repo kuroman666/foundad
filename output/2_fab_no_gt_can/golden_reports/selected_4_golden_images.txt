@@ -1,5 +1,5 @@
 === Auto-Selected Golden Images (Stage 2 Tile-First Voting from 16 Candidates) ===
-Golden #1 (-> 000.png): escape_bad_000_underexposed.png | Tile_Win_Votes: 16 | Mean_Tile_Cost: 0.7657 | Stage1_Score: 0.993343
-Golden #2 (-> 001.png): escape_bad_000_regular.png | Tile_Win_Votes: 10 | Mean_Tile_Cost: 0.8086 | Stage1_Score: 0.992835
-Golden #3 (-> 002.png): escape_bad_000_shift_1.png | Tile_Win_Votes: 10 | Mean_Tile_Cost: 1.0914 | Stage1_Score: 0.992429
-Golden #4 (-> 003.png): clean_001_underexposed.png | Tile_Win_Votes: 4 | Mean_Tile_Cost: 0.9421 | Stage1_Score: 0.992026
+Golden #1 (-> 000.png): clean_000_regular.png | Tile_Win_Votes: 20 | Mean_Tile_Cost: 0.8509 | Stage1_Score: 0.987191
+Golden #2 (-> 001.png): clean_008_regular.png | Tile_Win_Votes: 7 | Mean_Tile_Cost: 0.9615 | Stage1_Score: 0.981596
+Golden #3 (-> 002.png): clean_000_overexposed.png | Tile_Win_Votes: 5 | Mean_Tile_Cost: 0.9667 | Stage1_Score: 0.984710
+Golden #4 (-> 003.png): clean_008_overexposed.png | Tile_Win_Votes: 5 | Mean_Tile_Cost: 0.9803 | Stage1_Score: 0.982224

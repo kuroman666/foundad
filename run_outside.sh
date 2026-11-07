@@ -40,9 +40,9 @@ APP_TRAIN="train_dinov3"
 APP_TEST="test"
 
 THRESH_MODE="hybrid"
-SIGMA_K=3.5
-THRESHOLD=0.25
-MIN_THRESHOLD=0.27
+SIGMA_K=5
+THRESHOLD=0
+MIN_THRESHOLD=0
 AUTO_PERCENTILE=95.0
 TOP_K=0
 CORE_RATIO=0.55
@@ -53,6 +53,10 @@ WAFER_EDGE_MARGIN=0.04
 BORDER_RATIO=0.02
 SPECKLE_FILTER_RATIO=0.008
 MIN_AREA_RATIO=0.00012
+MICRO_DEFECT_MODE="--micro_defect_mode"  # 一鍵啟動微瑕疵高靈敏模式
+
+# 並在 Step 3/4 執行 python 3_infer_fab_no_gt.py 的最後一行加上 ${MICRO_DEFECT_MODE}：
+        ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
 
 # --- 高解析度切塊與縫合參數 ---
 TILE_SIZE=512
@@ -301,7 +305,7 @@ run_single_public_category() {
         --max_train_tiles "${MAX_TRAIN_TILES}" \
         --infer_batch_size "${INFER_BATCH_SIZE}" \
         --bg_std_thresh "${BG_STD_THRESH}" \
-        ${FORCE_INFER} ${RAW_SCORE_MODE} ${DISABLE_TILING}
+        ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
 
     # Step 4: 執行評估結果拆分 (自動相容 4_split_eval_results.py 或 3_split_eval_results.py)
     if [ "${RUN_SPLIT_EVAL}" -eq 1 ]; then

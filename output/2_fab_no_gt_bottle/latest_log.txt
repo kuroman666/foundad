@@ -137,3 +137,843 @@ Normed features: False
           ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_115904/escape_ranking_report.csv
           └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_115904/log.txt
 ===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 22:21:43 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot/train_meta_bottle.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 28 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 28 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_bottle_4shot diy_name=sim_escape_bottle data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=48437)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=127072741540288>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_bottle_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_bottle_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 48437},
+  'diy_name': 'sim_escape_bottle',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 28 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [28/28] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 28 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.2700 [左半核心上界(mu+3.5*σ_left)=0.0870 (mu=0.0420, σ_left=0.0129), Golden基準上界=0.0614, Core_P95=0.1256, MinFloor=0.2700]
+           (計分模式=四合一純化濾波 [3x3微塵抑制 + tol=0.15], 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) [Golden平均=0.0164 | 盲池正常核心中位數=0.1067 | Overfit_Ratio=6.52x (Gap=+0.0903)]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+[Step 3.3] 篩選與畫框完成：共 9 張超過有效門檻 (0.2700) 已畫框並將整張 Wafer .npy 存於 output；其餘 19 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:09.64 (9.64 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:07.75 (7.75 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:01.89 (1.89 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.34 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:09.66 (9.66 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.2700):
+      🚨 超過門檻判定異常並畫框輸出 : 9 張
+      ✅ 未達門檻或微塵濾除直接略過 : 19 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.1944 | P99=0.1890 | P95=0.1671 | Median=0.1121 | Mean=0.1180 | Std=0.0274
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1454 | mean+2*std=0.1728 | mean+3*std=0.2001
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.2134, Mean=0.1300, Std=0.0303  vs  [四合一濾波] Max=0.1944, Mean=0.1180, Std=0.0274
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.1121 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222143/log.txt
+===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 22:25:56 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot/train_meta_bottle.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 28 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 28 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_bottle_4shot diy_name=sim_escape_bottle data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=50255)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=124599841734336>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_bottle_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_bottle_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 50255},
+  'diy_name': 'sim_escape_bottle',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 28 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [28/28] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 28 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.2700 [左半核心上界(mu+3.5*σ_left)=0.0870 (mu=0.0420, σ_left=0.0129), Golden基準上界=0.0614, Core_P95=0.1256, MinFloor=0.2700]
+           (計分模式=四合一純化濾波 [3x3微塵抑制 + tol=0.15], 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) [Golden平均=0.0164 | 盲池正常核心中位數=0.1067 | Overfit_Ratio=6.52x (Gap=+0.0903)]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+[Step 3.3] 篩選與畫框完成：共 9 張超過有效門檻 (0.2700) 已畫框並將整張 Wafer .npy 存於 output；其餘 19 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:08.04 (8.04 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:06.16 (6.16 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:01.88 (1.88 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.29 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:08.06 (8.06 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.2700):
+      🚨 超過門檻判定異常並畫框輸出 : 9 張
+      ✅ 未達門檻或微塵濾除直接略過 : 19 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.1944 | P99=0.1890 | P95=0.1671 | Median=0.1121 | Mean=0.1180 | Std=0.0274
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1454 | mean+2*std=0.1728 | mean+3*std=0.2001
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.2134, Mean=0.1300, Std=0.0303  vs  [四合一濾波] Max=0.1944, Mean=0.1180, Std=0.0274
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.1121 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_222556/log.txt
+===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 22:30:47 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot/train_meta_bottle.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 28 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 28 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_bottle_4shot diy_name=sim_escape_bottle data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=46711)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=128451539308800>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_bottle_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_bottle_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 46711},
+  'diy_name': 'sim_escape_bottle',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 28 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [28/28] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 28 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.0999 [左半核心上界(mu+3*σ_left)=0.0806 (mu=0.0420, σ_left=0.0129), Golden基準上界=0.0550, Core_P95=0.1256, MinFloor=0.0000]
+           (計分模式=四合一純化濾波 [3x3微塵抑制 + tol=0.15], 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) [Golden平均=0.0164 | 盲池正常核心中位數=0.1067 | Overfit_Ratio=6.52x (Gap=+0.0903)]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+[Step 3.3] 篩選與畫框完成：共 21 張超過有效門檻 (0.0999) 已畫框並將整張 Wafer .npy 存於 output；其餘 7 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:09.28 (9.28 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:06.13 (6.13 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:03.15 (3.15 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.33 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:09.30 (9.30 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.0999):
+      🚨 超過門檻判定異常並畫框輸出 : 21 張
+      ✅ 未達門檻或微塵濾除直接略過 : 7 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.0954 | P99=0.0953 | P95=0.0951 | Median=0.0922 | Mean=0.0898 | Std=0.0058
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.0956 | mean+2*std=0.1014 | mean+3*std=0.1073
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1328, Mean=0.1064, Std=0.0195  vs  [四合一濾波] Max=0.0954, Mean=0.0898, Std=0.0058
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.0922 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_223047/log.txt
+===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 23:12:41 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot/train_meta_bottle.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 28 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 28 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_bottle_4shot diy_name=sim_escape_bottle data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=46889)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=139230420304768>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_bottle_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_bottle_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 46889},
+  'diy_name': 'sim_escape_bottle',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 28 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [28/28] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 28 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.1063 [左半核心上界(mu+3.5*σ_left)=0.0870 (mu=0.0420, σ_left=0.0129), Golden基準上界=0.0614, Core_P95=0.1256, MinFloor=0.0000]
+           (計分模式=四合一純化濾波 [3x3微塵抑制 + tol=0.15], 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) [Golden平均=0.0164 | 盲池正常核心中位數=0.1067 | Overfit_Ratio=6.52x (Gap=+0.0903)]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+[Step 3.3] 篩選與畫框完成：共 18 張超過有效門檻 (0.1063) 已畫框並將整張 Wafer .npy 存於 output；其餘 10 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:08.99 (8.99 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:06.16 (6.16 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:02.83 (2.83 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.32 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:09.00 (9.00 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.1063):
+      🚨 超過門檻判定異常並畫框輸出 : 18 張
+      ✅ 未達門檻或微塵濾除直接略過 : 10 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.1063 | P99=0.1060 | P95=0.1051 | Median=0.0977 | Mean=0.0962 | Std=0.0078
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1040 | mean+2*std=0.1118 | mean+3*std=0.1196
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1328, Mean=0.1088, Std=0.0141  vs  [四合一濾波] Max=0.1063, Mean=0.0962, Std=0.0078
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.0977 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231241/log.txt
+===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 23:16:03 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot/train_meta_bottle.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 28 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 28 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_bottle_4shot diy_name=sim_escape_bottle data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=42815)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=131177780383488>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_bottle_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_bottle_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 42815},
+  'diy_name': 'sim_escape_bottle',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 28 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [28/28] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 28 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.1128 [左半核心上界(mu+4*σ_left)=0.0935 (mu=0.0420, σ_left=0.0129), Golden基準上界=0.0678, Core_P95=0.1256, MinFloor=0.0000]
+           (計分模式=四合一純化濾波 [3x3微塵抑制 + tol=0.15], 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) [Golden平均=0.0164 | 盲池正常核心中位數=0.1067 | Overfit_Ratio=6.52x (Gap=+0.0903)]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+[Step 3.3] 篩選與畫框完成：共 16 張超過有效門檻 (0.1128) 已畫框並將整張 Wafer .npy 存於 output；其餘 12 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:10.45 (10.45 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:07.82 (7.82 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:02.62 (2.62 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.37 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:10.46 (10.46 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.1128):
+      🚨 超過門檻判定異常並畫框輸出 : 16 張
+      ✅ 未達門檻或微塵濾除直接略過 : 12 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.1121 | P99=0.1117 | P95=0.1103 | Median=0.1007 | Mean=0.0995 | Std=0.0090
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1085 | mean+2*std=0.1176 | mean+3*std=0.1266
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1328, Mean=0.1108, Std=0.0127  vs  [四合一濾波] Max=0.1121, Mean=0.0995, Std=0.0090
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.1007 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/log.txt
+===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-07 23:19:48 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot/train_meta_bottle.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 28 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 28 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_bottle_4shot diy_name=sim_escape_bottle data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=43135)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=125345776666816>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_bottle_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_bottle_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 43135},
+  'diy_name': 'sim_escape_bottle',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 28 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_bottle_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [28/28] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 28 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 [3x3輕量濾微塵+tol=0.15] + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.1256 [左半核心上界(mu+5*σ_left)=0.1063 (mu=0.0420, σ_left=0.0129), Golden基準上界=0.0807, Core_P95=0.1256, MinFloor=0.0000]
+           (計分模式=四合一純化濾波 [3x3微塵抑制 + tol=0.15], 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) [Golden平均=0.0164 | 盲池正常核心中位數=0.1067 | Overfit_Ratio=6.52x (Gap=+0.0903)]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+[Step 3.3] 篩選與畫框完成：共 13 張超過有效門檻 (0.1256) 已畫框並將整張 Wafer .npy 存於 output；其餘 15 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:08.46 (8.46 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:06.15 (6.15 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:02.31 (2.31 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.30 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:08.47 (8.47 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.1256):
+      🚨 超過門檻判定異常並畫框輸出 : 13 張
+      ✅ 未達門檻或微塵濾除直接略過 : 15 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.1237 | P99=0.1231 | P95=0.1203 | Median=0.1063 | Mean=0.1048 | Std=0.0117
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1165 | mean+2*std=0.1282 | mean+3*std=0.1399
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1328, Mean=0.1155, Std=0.0134  vs  [四合一濾波] Max=0.1237, Mean=0.1048, Std=0.0117
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.1063 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231948/log.txt
+===========================================================================

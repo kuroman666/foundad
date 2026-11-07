@@ -1,0 +1,76 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 0.1128 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 16 | Skipped Normal Images: 12
+Blind Normal Core Score Dist: Max=0.1121 | P99=0.1117 | P95=0.1103 | Median=0.1007 | Mean=0.0995 | Std=0.0090
+Ablation Compare (Normal)   : Raw_Max=0.1328, Raw_Mean=0.1108 vs Filtered_Max=0.1121, Filtered_Mean=0.0995
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1085 | mean+2*std=0.1176 | mean+3*std=0.1266
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning) (Golden_Mean=0.0164, BlindNormal_Med=0.1007, Ratio=6.52x, Gap=+0.0903)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1     | escape_broken_large_000.png | ANOMALY             | 0.8250    | 0.8529    | 0.8250     | -0.0279  | 5      | Rank001_Score0.8250_Box05_escape_broken_large_000.png
+2     | escape_broken_large_004.png | ANOMALY             | 0.7867    | 0.8129    | 0.7867     | -0.0262  | 1      | Rank002_Score0.7867_Box01_escape_broken_large_004.png
+3     | escape_broken_large_001.png | ANOMALY             | 0.7838    | 0.7900    | 0.7838     | -0.0063  | 7      | Rank003_Score0.7838_Box07_escape_broken_large_001.png
+4     | escape_broken_large_005.png | ANOMALY             | 0.7010    | 0.7580    | 0.7010     | -0.0570  | 1      | Rank004_Score0.7010_Box01_escape_broken_large_005.png
+5     | escape_broken_large_007.png | ANOMALY             | 0.6864    | 0.7313    | 0.6864     | -0.0448  | 5      | Rank005_Score0.6864_Box05_escape_broken_large_007.png
+6     | escape_broken_large_003.png | ANOMALY             | 0.6762    | 0.7142    | 0.6762     | -0.0380  | 6      | Rank006_Score0.6762_Box06_escape_broken_large_003.png
+7     | escape_broken_large_006.png | ANOMALY             | 0.5879    | 0.6002    | 0.5879     | -0.0124  | 5      | Rank007_Score0.5879_Box05_escape_broken_large_006.png
+8     | escape_broken_large_002.png | ANOMALY             | 0.5759    | 0.6036    | 0.5759     | -0.0277  | 3      | Rank008_Score0.5759_Box03_escape_broken_large_002.png
+9     | clean_006.png              | ANOMALY             | 0.2703    | 0.2784    | 0.2703     | -0.0081  | 1      | Rank009_Score0.2703_Box01_clean_006.png
+10    | clean_015.png              | ANOMALY             | 0.1944    | 0.2134    | 0.1944     | -0.0189  | 3      | Rank010_Score0.1944_Box03_clean_015.png
+11    | clean_009.png              | ANOMALY             | 0.1553    | 0.1723    | 0.1553     | -0.0169  | 1      | Rank011_Score0.1553_Box01_clean_009.png
+12    | clean_014.png              | ANOMALY             | 0.1401    | 0.1568    | 0.1401     | -0.0167  | 4      | Rank012_Score0.1401_Box04_clean_014.png
+13    | clean_012.png              | ANOMALY             | 0.1278    | 0.1373    | 0.1278     | -0.0095  | 1      | Rank013_Score0.1278_Box01_clean_012.png
+14    | clean_013.png              | ANOMALY             | 0.1237    | 0.1313    | 0.1237     | -0.0076  | 3      | Rank014_Score0.1237_Box03_clean_013.png
+15    | clean_000.png              | ANOMALY             | 0.1169    | 0.1246    | 0.1169     | -0.0077  | 2      | Rank015_Score0.1169_Box02_clean_000.png
+16    | clean_018.png              | ANOMALY             | 0.1159    | 0.1286    | 0.1159     | -0.0127  | 1      | Rank016_Score0.1159_Box01_clean_018.png
+17    | clean_002.png              | PASS_SKIPPED        | 0.1121    | 0.1159    | 0.1121     | -0.0039  | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_010.png              | PASS_SKIPPED        | 0.1071    | 0.1173    | 0.1071     | -0.0102  | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_019.png              | PASS_SKIPPED        | 0.1063    | 0.1137    | 0.1063     | -0.0074  | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_016.png              | PASS_SKIPPED        | 0.1014    | 0.1114    | 0.1014     | -0.0100  | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_007.png              | PASS_SKIPPED        | 0.0999    | 0.1086    | 0.0999     | -0.0087  | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_017.png              | PASS_SKIPPED        | 0.0954    | 0.1328    | 0.0954     | -0.0374  | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_005.png              | PASS_SKIPPED        | 0.0922    | 0.1000    | 0.0922     | -0.0078  | 0      | (未超過動態門檻，不輸出圖片)
+24    | clean_008.png              | PASS_SKIPPED        | 0.0818    | 0.0864    | 0.0818     | -0.0046  | 0      | (未超過動態門檻，不輸出圖片)
+25    | clean_001.png              | GOLDEN_PASS         | 0.0180    | 0.0185    | 0.0180     | -0.0005  | 0      | (未超過動態門檻，不輸出圖片)
+26    | clean_004.png              | GOLDEN_PASS         | 0.0162    | 0.0168    | 0.0162     | -0.0006  | 0      | (未超過動態門檻，不輸出圖片)
+27    | clean_003.png              | GOLDEN_PASS         | 0.0159    | 0.0170    | 0.0159     | -0.0010  | 0      | (未超過動態門檻，不輸出圖片)
+28    | clean_011.png              | GOLDEN_PASS         | 0.0153    | 0.0157    | 0.0153     | -0.0004  | 0      | (未超過動態門檻，不輸出圖片)
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:10.45 (10.45 秒)
+      ├─ Step 2.1 測試池圖塊準備 (28 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:07.82 (7.82 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:02.62 (2.62 秒)
+      └─ 平均每張原圖推論耗時 (28 張原圖)         : 0.37 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:10.46 (10.46 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.1128):
+      🚨 超過門檻判定異常並畫框輸出 : 16 張
+      ✅ 未達門檻或微塵濾除直接略過 : 12 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (四合一濾波後) : Max=0.1121 | P99=0.1117 | P95=0.1103 | Median=0.1007 | Mean=0.0995 | Std=0.0090
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1085 | mean+2*std=0.1176 | mean+3*std=0.1266
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1328, Mean=0.1108, Std=0.0127  vs  [四合一濾波] Max=0.1121, Mean=0.0995, Std=0.0090
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合 (Overfit Warning)
+                                       [Golden平均=0.0164 vs 盲池正常中位數=0.1007 | Overfit_Ratio=6.52x | Gap=+0.0903]
+  [⚠️ 過擬合自檢建議] 盲池正常核心中位數 (0.1067) 顯著高於 Golden 訓練圖平均 (0.0164) [Overfit_Ratio=6.52x, Gap=+0.0903]！
+                     代表模型可能過度記憶 Golden 圖塊微結構。若發現正常晶圓誤報偏多，
+                     可直接調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 3.5) 或調降 --ckpt_step。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_bottle_4shot/dinov3sim_escape_bottle
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/amap_npy
+          ├── Golden圖塊二次純化報表: /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/golden_tile_purity_report.txt
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/20261107_231603/log.txt
+===========================================================================

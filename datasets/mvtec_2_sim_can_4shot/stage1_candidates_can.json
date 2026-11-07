@@ -7,131 +7,179 @@
   "candidates": [
     {
       "cand_rank": 1,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_underexposed.png",
-      "rel_path": "escape_bad_000_underexposed.png",
-      "hybrid_score": 0.993342936038971,
-      "raw_centrality": 0.993342936038971,
-      "token_spike": 1.513491153717041
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_regular.png",
+      "rel_path": "clean_000_regular.png",
+      "hybrid_score": 0.9871909022331238,
+      "raw_centrality": 0.996648907661438,
+      "spatial_align": 0.9775055646896362,
+      "photo_z": 0.7872551083564758,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.6619043350219727
     },
     {
       "cand_rank": 2,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_regular.png",
-      "rel_path": "escape_bad_000_regular.png",
-      "hybrid_score": 0.9928353428840637,
-      "raw_centrality": 0.9928353428840637,
-      "token_spike": 1.4792721271514893
-    },
-    {
-      "cand_rank": 3,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_shift_2.png",
-      "rel_path": "escape_bad_000_shift_2.png",
-      "hybrid_score": 0.9926096200942993,
-      "raw_centrality": 0.9926096200942993,
-      "token_spike": 1.4766993522644043
-    },
-    {
-      "cand_rank": 4,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_shift_1.png",
-      "rel_path": "escape_bad_000_shift_1.png",
-      "hybrid_score": 0.9924289584159851,
-      "raw_centrality": 0.9924289584159851,
-      "token_spike": 1.448407769203186
-    },
-    {
-      "cand_rank": 5,
       "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_regular.png",
       "rel_path": "clean_003_regular.png",
-      "hybrid_score": 0.992246150970459,
-      "raw_centrality": 0.993208110332489,
+      "hybrid_score": 0.979947566986084,
+      "raw_centrality": 0.9959732890129089,
+      "spatial_align": 0.962925910949707,
+      "photo_z": 0.3641539216041565,
+      "patch_anom_z": 0.0,
       "token_spike": 1.6833218336105347
     },
     {
+      "cand_rank": 3,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_shift_3.png",
+      "rel_path": "clean_011_shift_3.png",
+      "hybrid_score": 0.9787530303001404,
+      "raw_centrality": 0.9956618547439575,
+      "spatial_align": 0.9605034589767456,
+      "photo_z": 0.6062994599342346,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.6787159442901611
+    },
+    {
+      "cand_rank": 4,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_regular.png",
+      "rel_path": "escape_bad_000_regular.png",
+      "hybrid_score": 0.9779558181762695,
+      "raw_centrality": 0.9970552921295166,
+      "spatial_align": 0.9552950859069824,
+      "photo_z": 0.40849626064300537,
+      "patch_anom_z": 0.038423214107751846,
+      "token_spike": 1.4792721271514893
+    },
+    {
+      "cand_rank": 5,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_overexposed.png",
+      "rel_path": "clean_002_overexposed.png",
+      "hybrid_score": 0.9650396704673767,
+      "raw_centrality": 0.9959151148796082,
+      "spatial_align": 0.9373027086257935,
+      "photo_z": 0.9691007137298584,
+      "patch_anom_z": 0.012723742052912712,
+      "token_spike": 1.3083335161209106
+    },
+    {
       "cand_rank": 6,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_shift_2.png",
-      "rel_path": "clean_003_shift_2.png",
-      "hybrid_score": 0.9920836091041565,
-      "raw_centrality": 0.9932542443275452,
-      "token_spike": 1.7005678415298462
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_underexposed.png",
+      "rel_path": "clean_008_underexposed.png",
+      "hybrid_score": 0.9393179416656494,
+      "raw_centrality": 0.9944299459457397,
+      "spatial_align": 0.968135416507721,
+      "photo_z": 1.6123878955841064,
+      "patch_anom_z": 4.2053375244140625,
+      "token_spike": 1.6348702907562256
     },
     {
       "cand_rank": 7,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_underexposed.png",
-      "rel_path": "clean_001_underexposed.png",
-      "hybrid_score": 0.9920263886451721,
-      "raw_centrality": 0.9920263886451721,
-      "token_spike": 1.4300625324249268
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_shift_3.png",
+      "rel_path": "clean_004_shift_3.png",
+      "hybrid_score": 0.9383211731910706,
+      "raw_centrality": 0.9950594902038574,
+      "spatial_align": 0.9696056246757507,
+      "photo_z": 2.3026862144470215,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.8188992738723755
     },
     {
       "cand_rank": 8,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_regular.png",
-      "rel_path": "clean_001_regular.png",
-      "hybrid_score": 0.99183189868927,
-      "raw_centrality": 0.99183189868927,
-      "token_spike": 1.4042003154754639
-    },
-    {
-      "cand_rank": 9,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_shift_1.png",
-      "rel_path": "clean_003_shift_1.png",
-      "hybrid_score": 0.9917778372764587,
-      "raw_centrality": 0.9929646253585815,
-      "token_spike": 1.7019025087356567
-    },
-    {
-      "cand_rank": 10,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_overexposed.png",
-      "rel_path": "clean_003_overexposed.png",
-      "hybrid_score": 0.9917422533035278,
-      "raw_centrality": 0.9934130311012268,
-      "token_spike": 1.7419079542160034
-    },
-    {
-      "cand_rank": 11,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_shift_1.png",
-      "rel_path": "clean_001_shift_1.png",
-      "hybrid_score": 0.9917069673538208,
-      "raw_centrality": 0.9917069673538208,
-      "token_spike": 1.3951208591461182
-    },
-    {
-      "cand_rank": 12,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_underexposed.png",
-      "rel_path": "clean_004_underexposed.png",
-      "hybrid_score": 0.9916459918022156,
-      "raw_centrality": 0.9923161268234253,
-      "token_spike": 1.659204363822937
-    },
-    {
-      "cand_rank": 13,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_overexposed.png",
-      "rel_path": "escape_bad_000_overexposed.png",
-      "hybrid_score": 0.991600513458252,
-      "raw_centrality": 0.991600513458252,
-      "token_spike": 1.4550796747207642
-    },
-    {
-      "cand_rank": 14,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_underexposed.png",
-      "rel_path": "clean_003_underexposed.png",
-      "hybrid_score": 0.9915787577629089,
-      "raw_centrality": 0.991766631603241,
-      "token_spike": 1.6193417310714722
-    },
-    {
-      "cand_rank": 15,
       "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_regular.png",
       "rel_path": "clean_004_regular.png",
-      "hybrid_score": 0.991558313369751,
-      "raw_centrality": 0.9931016564369202,
+      "hybrid_score": 0.9865371584892273,
+      "raw_centrality": 0.9967291951179504,
+      "spatial_align": 0.9781959056854248,
+      "photo_z": 0.5871885418891907,
+      "patch_anom_z": 0.0,
       "token_spike": 1.7313730716705322
     },
     {
+      "cand_rank": 9,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_overexposed.png",
+      "rel_path": "clean_000_overexposed.png",
+      "hybrid_score": 0.9847095012664795,
+      "raw_centrality": 0.9960984587669373,
+      "spatial_align": 0.9742991924285889,
+      "photo_z": 0.805265486240387,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.7125849723815918
+    },
+    {
+      "cand_rank": 10,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_overexposed.png",
+      "rel_path": "clean_009_overexposed.png",
+      "hybrid_score": 0.9829590320587158,
+      "raw_centrality": 0.9965181350708008,
+      "spatial_align": 0.9677653908729553,
+      "photo_z": 0.8002316951751709,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.6465412378311157
+    },
+    {
+      "cand_rank": 11,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_shift_1.png",
+      "rel_path": "clean_004_shift_1.png",
+      "hybrid_score": 0.9827356934547424,
+      "raw_centrality": 0.9966949820518494,
+      "spatial_align": 0.9702118039131165,
+      "photo_z": 0.9866442680358887,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.7444465160369873
+    },
+    {
+      "cand_rank": 12,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_overexposed.png",
+      "rel_path": "clean_006_overexposed.png",
+      "hybrid_score": 0.982345461845398,
+      "raw_centrality": 0.9963558316230774,
+      "spatial_align": 0.9668625593185425,
+      "photo_z": 0.7747278809547424,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.654669165611267
+    },
+    {
+      "cand_rank": 13,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_overexposed.png",
+      "rel_path": "clean_008_overexposed.png",
+      "hybrid_score": 0.9822240471839905,
+      "raw_centrality": 0.996596097946167,
+      "spatial_align": 0.9665054082870483,
+      "photo_z": 0.7143200635910034,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.6610687971115112
+    },
+    {
+      "cand_rank": 14,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_overexposed.png",
+      "rel_path": "clean_011_overexposed.png",
+      "hybrid_score": 0.9817309379577637,
+      "raw_centrality": 0.996239423751831,
+      "spatial_align": 0.9656394720077515,
+      "photo_z": 0.7247624397277832,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.6546752452850342
+    },
+    {
+      "cand_rank": 15,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_shift_1.png",
+      "rel_path": "clean_000_shift_1.png",
+      "hybrid_score": 0.9816842675209045,
+      "raw_centrality": 0.99631267786026,
+      "spatial_align": 0.9664570093154907,
+      "photo_z": 0.4987233877182007,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.686004638671875
+    },
+    {
       "cand_rank": 16,
-      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_shift_2.png",
-      "rel_path": "clean_001_shift_2.png",
-      "hybrid_score": 0.9914224147796631,
-      "raw_centrality": 0.9914224147796631,
-      "token_spike": 1.3847877979278564
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_regular.png",
+      "rel_path": "clean_008_regular.png",
+      "hybrid_score": 0.9815961718559265,
+      "raw_centrality": 0.9962542057037354,
+      "spatial_align": 0.9693745374679565,
+      "photo_z": 1.160901665687561,
+      "patch_anom_z": 0.0,
+      "token_spike": 1.614058494567871
     }
   ]
 }

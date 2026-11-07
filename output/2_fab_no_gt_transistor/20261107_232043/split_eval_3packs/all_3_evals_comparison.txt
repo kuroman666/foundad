@@ -1,0 +1,29 @@
+===============================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All Split Evaluations Comparison)]
+-----------------------------------------------------------------------------------------------
+  📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043
+  📂 拆分結果根目錄   : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs
+  🎚️ 採用有效門檻     : 0.1373 (Mode: hybrid, Score: FILTERED_ROBUST)
+-----------------------------------------------------------------------------------------------
+Eval包名稱        | 總張數    | 非Golden正常    | 正常誤報(FPR)        | 抓出Escape瑕疵       | Normal Mean±Std   | mean+3*std
+-----------------------------------------------------------------------------------------------
+eval_pack_1    | 23     | 21           | 10/21 (47.6%)    | 1/1 (100.0%)     | 0.1378±0.0262     | 0.2164
+eval_pack_2    | 23     | 20           | 13/20 (65.0%)    | 2/2 (100.0%)     | 0.1495±0.0289     | 0.2362
+eval_pack_3    | 22     | 15           | 8/15 (53.3%)     | 5/5 (100.0%)     | 0.1698±0.0652     | 0.3655
+-----------------------------------------------------------------------------------------------
+  🔹 [eval_pack_1] (共 23 張, 輸出異常紅框圖 11 張)
+     ├── 正常圖分數分佈 : Max=0.2017 | P99=0.1985 | P95=0.1860 | Median=0.1349 | Mean=0.1378 | Std=0.0262
+     ├── 門檻參考值     : mean+1*std=0.1640 | mean+2*std=0.1902 | mean+3*std=0.2164
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs/eval_pack_1/anomaly_images
+  🔹 [eval_pack_2] (共 23 張, 輸出異常紅框圖 15 張)
+     ├── 正常圖分數分佈 : Max=0.1967 | P99=0.1965 | P95=0.1955 | Median=0.1523 | Mean=0.1495 | Std=0.0289
+     ├── 門檻參考值     : mean+1*std=0.1784 | mean+2*std=0.2073 | mean+3*std=0.2362
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs/eval_pack_2/anomaly_images
+  🔹 [eval_pack_3] (共 22 張, 輸出異常紅框圖 13 張)
+     ├── 正常圖分數分佈 : Max=0.3370 | P99=0.3311 | P95=0.3072 | Median=0.1409 | Mean=0.1698 | Std=0.0652
+     ├── 門檻參考值     : mean+1*std=0.2350 | mean+2*std=0.3003 | mean+3*std=0.3655
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/split_eval_3packs/eval_pack_3/anomaly_images
+===============================================================================================
