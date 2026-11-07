@@ -7,9 +7,9 @@ run_full_layer_pipeline() {
     local POOL_DIR="$3"
 
     bash run_1_auto_golden.sh "${DATASET_ID}" "${LAYER_ID}" "${POOL_DIR}"
-    bash run_2a_train_fab_no_gt.sh "${DATASET_ID}" "${LAYER_ID}" "${POOL_DIR}"
-    bash run_2b_infer_fab_no_gt.sh "${DATASET_ID}" "${LAYER_ID}" "${POOL_DIR}"
-    bash run_3_split_eval_results.sh "${DATASET_ID}" "${LAYER_ID}"
+    bash run_2_train_fab_no_gt.sh "${DATASET_ID}" "${LAYER_ID}" "${POOL_DIR}"
+    bash run_3_infer_fab_no_gt.sh "${DATASET_ID}" "${LAYER_ID}" "${POOL_DIR}"
+    bash run_4_split_eval_results.sh "${DATASET_ID}" "${LAYER_ID}"
 }
 
 # Layer 28

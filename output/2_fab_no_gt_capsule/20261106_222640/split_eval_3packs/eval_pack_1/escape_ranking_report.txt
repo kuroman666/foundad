@@ -1,0 +1,23 @@
+=== FoundAD Split Eval Report — Pack #1 (eval_pack_1) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/20261106_222640
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Effective Threshold: 1.1884
+Pack Total Images: 11 | Exported Anomaly Images: 0 | Skipped Normal Images: 11
+Normal False Positives (FPR): 0/5 (0.00%) | Escape Caught (Recall): 0/6 (0.00%)
+Non-Golden Normal Score Dist: Max=0.7631 | P99=0.7506 | P95=0.7009 | Median=0.0980 | Mean=0.2990 | Std=0.2705
+Ablation Compare (Normal)   : Raw_Max=0.9458, Raw_Mean=0.3845 vs Filtered_Max=0.7631, Filtered_Mean=0.2990
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.5695 | mean+2*std=0.8400 | mean+3*std=1.1105
+Overfit Diagnostic          : 🟢 良好: 無過擬合現象 (Healthy Generalization — Golden與盲池正常分佈一致) (Golden_Mean=0.2093, NonGolden_Med=0.1686, Ratio=0.81x, Gap=-0.0407)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 1      | clean_002.png              | PASS_SKIPPED        | 0.7631    | 0.9458    | 0.7631     | -0.1827  | 0      | (未超過動態門檻，不輸出圖片)
+2      | 5      | escape_crack_004.png       | PASS_SKIPPED        | 0.6236    | 0.7894    | 0.6236     | -0.1658  | 0      | (未超過動態門檻，不輸出圖片)
+3      | 6      | escape_crack_001.png       | PASS_SKIPPED        | 0.5981    | 0.6309    | 0.5981     | -0.0329  | 0      | (未超過動態門檻，不輸出圖片)
+4      | 8      | escape_crack_006.png       | PASS_SKIPPED        | 0.5422    | 0.7268    | 0.5422     | -0.1846  | 0      | (未超過動態門檻，不輸出圖片)
+5      | 12     | clean_021.png              | PASS_SKIPPED        | 0.4520    | 0.6052    | 0.4520     | -0.1533  | 0      | (未超過動態門檻，不輸出圖片)
+6      | 13     | escape_crack_007.png       | PASS_SKIPPED        | 0.3793    | 0.4115    | 0.3793     | -0.0322  | 0      | (未超過動態門檻，不輸出圖片)
+7      | 17     | escape_crack_000.png       | PASS_SKIPPED        | 0.2086    | 0.2240    | 0.2086     | -0.0154  | 0      | (未超過動態門檻，不輸出圖片)
+8      | 22     | escape_crack_005.png       | PASS_SKIPPED        | 0.1307    | 0.1452    | 0.1307     | -0.0145  | 0      | (未超過動態門檻，不輸出圖片)
+9      | 25     | clean_003.png              | PASS_SKIPPED        | 0.0980    | 0.1267    | 0.0980     | -0.0287  | 0      | (未超過動態門檻，不輸出圖片)
+10     | 27     | clean_018.png              | PASS_SKIPPED        | 0.0971    | 0.1211    | 0.0971     | -0.0241  | 0      | (未超過動態門檻，不輸出圖片)
+11     | 28     | clean_013.png              | PASS_SKIPPED        | 0.0846    | 0.1236    | 0.0846     | -0.0390  | 0      | (未超過動態門檻，不輸出圖片)

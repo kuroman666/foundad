@@ -1,5 +1,6 @@
-# 檔案位置: FoundAD/fab_tools/auto_golden.py (全選覆蓋此檔)
+# 檔案位置: FoundAD/1_auto_golden.py (全選覆蓋此檔)
 import os
+import re
 import gc
 import stat
 import glob
@@ -81,12 +82,11 @@ def scan_pool_images(pool_dir: str) -> List[str]:
 
 
 def compute_pool_signature(pool_dir: str) -> str:
-    """遞迴計算測試盲池所有有效影像之 (相對路徑, 檔案大小) MD5 指紋，用於判斷資料池是否變動。"""
+    """計算測試盲池所有有效影像之 (相對路徑, 檔案大小) MD5 指紋（不含絕對路徑，避免目錄搬移失效）。"""
     if not os.path.isdir(pool_dir):
         return ""
     img_paths = scan_pool_images(pool_dir)
     h = hashlib.md5()
-    h.update(os.path.abspath(pool_dir).encode("utf-8"))
     for fpath in img_paths:
         rel_path = os.path.relpath(fpath, pool_dir).replace("\\", "/")
         try:
@@ -98,7 +98,7 @@ def compute_pool_signature(pool_dir: str) -> str:
 
 
 def _robust_normalize_to_uint8(arr: np.ndarray) -> np.ndarray:
-    """使用 P0.1 ~ P99.9 穩健百分位數將 16-bit / float 陣列轉為 uint8，防止單點飽和亮點壓扁對比度。"""
+    """使用 P0.1 ~ P99.9 穩健百分位數將 16-bit / float 陣列轉為 uint8。"""
     arr_f = arr.astype(np.float32)
     p_low, p_high = np.percentile(arr_f, [0.1, 99.9])
     if p_high <= p_low:
@@ -111,10 +111,7 @@ def _robust_normalize_to_uint8(arr: np.ndarray) -> np.ndarray:
 
 
 def load_image_rgb_uint8(img_path: str) -> np.ndarray:
-    """
-    安全讀取影像並統一轉為 (H, W, 3) uint8 RGB 格式。
-    自動相容晶圓廠常見之 16-bit TIFF (.tif/.tiff)、單通道灰階或 8-bit 圖檔。
-    """
+    """安全讀取影像並統一轉為 (H, W, 3) uint8 RGB 格式。"""
     try:
         with Image.open(img_path) as pil_img:
             if pil_img.mode in ("I;16", "I;16B", "I;16L", "I", "F"):
@@ -161,13 +158,18 @@ def prepare_mock_unlabeled_pool_from_mvtec(
     mock_pool_dir: str,
     log_files: Optional[List[str]] = None,
     defect_limit: int = 8,
+    rebuild: bool = False,
 ):
-    """
-    從 MVTec 建立模擬無 GT 盲池：
-    保留原始圖片名稱 (例如 000.png)，並在前方補上說明前綴：
-      - 正常樣本: clean_<原始檔名> (例如 clean_000.png)
-      - 瑕疵樣本: escape_<瑕疵類別>_<原始檔名> (例如 escape_crack_025.png)
-    """
+    """從 MVTec 建立模擬無 GT 盲池（若已存在且未指定 rebuild 則直接沿用）。"""
+    if not rebuild and os.path.isdir(mock_pool_dir):
+        existing = scan_pool_images(mock_pool_dir)
+        if existing:
+            log_and_print(
+                f"[⚡ 模擬無GT盲池已存在] 直接沿用既有 {len(existing)} 張圖片 -> {os.path.abspath(mock_pool_dir)}",
+                log_files,
+            )
+            return
+
     safe_rmtree(mock_pool_dir)
     os.makedirs(mock_pool_dir, exist_ok=True)
     test_dir = os.path.join(mvtec_cat_dir, "test")
@@ -195,7 +197,7 @@ def prepare_mock_unlabeled_pool_from_mvtec(
                 total_count += 1
 
     log_and_print(
-        f"[模擬無GT盲池建立完成] 共 {total_count} 張圖 (含 {defect_count} 張隱藏 Escape 瑕疵，保留原圖檔名並加上前綴) "
+        f"[模擬無GT盲池建立完成] 共 {total_count} 張圖 (含 {defect_count} 張隱藏 Escape 瑕疵) "
         f"-> {os.path.abspath(mock_pool_dir)}",
         log_files,
     )
@@ -275,9 +277,6 @@ def inspect_and_extract_patch_proj(ckpt_path: str, device: torch.device):
     return proj_conv, qkv_weights, patch_h
 
 
-# =====================================================================
-# Stage 1: 全域 DINO 特徵中心度 + 局部 Token 尖峰防禦挑選 Golden 原圖
-# =====================================================================
 @torch.no_grad()
 def select_golden_images(
     pool_dir: str,
@@ -288,9 +287,7 @@ def select_golden_images(
     report_dir: Optional[str] = None,
     log_files: Optional[List[str]] = None,
 ) -> List[str]:
-    """
-    Stage 1: 全域 DINO 特徵中心度 (Medoid Centrality) + 局部 Patch Token 尖峰懲罰挑選 Golden 原圖。
-    """
+    """Stage 1: 全域 DINO 特徵中心度 (Medoid Centrality) + 局部 Patch Token 尖峰懲罰挑選 Golden 原圖。"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     all_imgs = scan_pool_images(pool_dir)
     if len(all_imgs) < shots:
@@ -389,19 +386,12 @@ def select_golden_images(
     return selected_paths
 
 
-# =====================================================================
-# Stage 2: 圖塊級二次純化 (Two-Stage Hybrid Tile-Level Filtering)
-# =====================================================================
 @torch.no_grad()
 def _extract_lightweight_dino_tile_embeddings(
     tiles_rgb: List[np.ndarray],
     ckpt_path: str,
     batch_size: int = 32,
 ) -> Optional[np.ndarray]:
-    """
-    使用 DINO patch_embed 與前 3 層 QKV 權重，對候選高解析度子圖塊批次提取特徵向量。
-    包含 [Mean, Std, P98_Max] 以同時捕捉圖塊整體結構與局部高頻異常。
-    """
     if not tiles_rgb:
         return None
     try:
@@ -448,9 +438,6 @@ def _compute_local_patch_peak_residuals(
     eval_res: int = 256,
     patch_grid: int = 16,
 ) -> np.ndarray:
-    """
-    計算同座標 (y, x) 跨 Golden 圖塊之「微位移容忍局部區塊殘差峰值 (Shift-Tolerant Local Patch-Peak Residual)」。
-    """
     n = len(crops)
     if n <= 1:
         return np.zeros(n, dtype=np.float32)
@@ -479,10 +466,6 @@ def purify_golden_tiles_two_stage(
     max_train_tiles: int,
     ckpt_path: str = "auto",
 ) -> Tuple[List[Tuple[int, int, int, float]], Dict[str, int]]:
-    """
-    Stage 2 圖塊級二次純化器 (Two-Stage Hybrid Filtering)：
-    結合局部 16x16 區塊殘差尖峰、DINO 圖塊語意距離與徑向分層純淨度篩選 (Radial Stratified Purity Binning)。
-    """
     flat_tiles: List[np.ndarray] = []
     coord_slices: List[Tuple[int, int]] = []
     for (_, _, _, non_bg_items) in coord_Execution_items:
@@ -618,11 +601,12 @@ def prepare_tiled_golden_trainset(
     log_files: Optional[List[str]] = None,
     ckpt_path: str = "auto",
     report_dir: Optional[str] = None,
+    min_tile_trigger: int = 1280,
 ) -> int:
     """
     Stage 2 圖塊級二次純化流程：
-    將 Stage 1 挑出的 Golden Image 備份至 golden_full_res_backup，切分為高解析度子圖塊，
-    執行跨片局部殘差與 DINO 特徵離群剔除，並輸出最純淨的代表性訓練圖塊至 train/<category>。
+    當原圖尺寸 <= max(tile_size, min_tile_trigger) 時（如 MVTec 1000x1000），自動保持整張原圖訓練，
+    避免將完整工件切碎破壞空間對齊；當晶圓廠大圖 > 1280px 時，自動啟動切塊與跨片二次純化。
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
     golden_files = sorted(
@@ -644,11 +628,24 @@ def prepare_tiled_golden_trainset(
         golden_imgs.append(img)
 
     h0, w0 = golden_imgs[0].shape[:2]
-    if h0 <= tile_size and w0 <= tile_size:
+    eff_trigger = max(tile_size, min_tile_trigger)
+    if max(h0, w0) <= eff_trigger:
         log_and_print(
-            f"[Tiling] 原始圖片尺寸 ({w0}x{h0}) <= tile_size ({tile_size})，保持原圖訓練。",
+            f"[Full-Image Alignment Mode] 原始圖片尺寸 ({w0}x{h0}) <= 切塊啟動門檻 ({eff_trigger}px)，"
+            f"自動保持整張原圖訓練以保留完整空間結構對齊 (共 {len(golden_files)} 張 Golden 原圖)。",
             log_files,
         )
+        purity_txt_path = os.path.join(shot_dir, "golden_tile_purity_report.txt")
+        lines = [
+            "=== Stage 2: Full-Image Spatial Alignment Mode (No Sub-Tile Fragmentation) ===",
+            f"Original Image Resolution : {w0}x{h0} (<= {eff_trigger}px trigger)",
+            f"Retained Full Golden Imgs : {len(golden_files)}",
+        ]
+        with open(purity_txt_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(lines) + "\n")
+        if report_dir:
+            os.makedirs(report_dir, exist_ok=True)
+            safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
         del golden_imgs
         gc.collect()
         return len(golden_files)
@@ -752,9 +749,39 @@ def prepare_tiled_golden_trainset(
     return num_saved
 
 
-# =====================================================================
-# 整合型 Golden 資料集建置與快取載入介面
-# =====================================================================
+def _recover_golden_filenames_from_disk(shot_dir: str, shots: int, category: str) -> List[str]:
+    """從既有 selected_*_golden_images.txt 或備份資料夾推斷已挑選的 Golden 檔名清單。"""
+    txt_candidates = [os.path.join(shot_dir, f"selected_{shots}_golden_images.txt")] + glob.glob(
+        os.path.join(shot_dir, "selected_*_golden_images.txt")
+    )
+    for rec_txt in txt_candidates:
+        if os.path.isfile(rec_txt):
+            names = []
+            try:
+                with open(rec_txt, "r", encoding="utf-8") as f:
+                    for line in f:
+                        m = re.search(r":\s*([^|]+?)\s*(?:\||$)", line)
+                        if m and "Golden #" in line:
+                            names.append(m.group(1).strip())
+                if names:
+                    return names
+            except Exception:
+                pass
+
+    backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
+    if os.path.isdir(backup_dir):
+        b_files = sorted([f for f in os.listdir(backup_dir) if f.lower().endswith(IMG_EXTENSIONS)])
+        if b_files:
+            return b_files
+
+    cat_train_dir = os.path.join(shot_dir, "train", category)
+    if os.path.isdir(cat_train_dir):
+        t_files = sorted([f for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)])
+        if t_files:
+            return t_files[:shots]
+    return []
+
+
 def run_auto_golden_pipeline(
     pool_dir: str,
     shot_dir: str,
@@ -768,11 +795,9 @@ def run_auto_golden_pipeline(
     disable_tiling: bool = False,
     report_dir: Optional[str] = None,
     log_files: Optional[List[str]] = None,
+    min_tile_trigger: int = 1280,
 ) -> Dict:
-    """
-    執行完整 Stage 1 (Golden 原圖挑選) + Stage 2 (Golden 圖塊級二次純化)，
-    並於 shot_dir 寫入 golden_cache_meta.json。
-    """
+    """執行完整 Stage 1 (Golden 原圖挑選) + Stage 2 (Golden 圖塊級二次純化)，並寫入 golden_cache_meta.json。"""
     safe_rmtree(shot_dir)
     os.makedirs(shot_dir, exist_ok=True)
     pool_signature = compute_pool_signature(pool_dir)
@@ -808,6 +833,7 @@ def run_auto_golden_pipeline(
             log_files=log_files,
             ckpt_path=ckpt_path,
             report_dir=report_dir,
+            min_tile_trigger=min_tile_trigger,
         )
     else:
         num_train_samples = len(golden_filenames)
@@ -821,6 +847,7 @@ def run_auto_golden_pipeline(
         "tile_overlap": int(tile_overlap),
         "max_train_tiles": int(max_train_tiles),
         "disable_tiling": bool(disable_tiling),
+        "min_tile_trigger": int(min_tile_trigger),
         "golden_filenames": golden_filenames,
         "num_train_samples": int(num_train_samples),
         "golden_select_sec": float(golden_select_sec),
@@ -847,51 +874,106 @@ def load_or_prepare_golden_dataset(
     rebuild_golden: bool = False,
     report_dir: Optional[str] = None,
     log_files: Optional[List[str]] = None,
+    min_tile_trigger: int = 1280,
 ) -> Tuple[List[str], int, bool, float, float]:
     """
-    供 2_run_fab_no_gt.py 呼叫：
-    優先直接載入已由 auto_golden.py 建立好的 Golden 訓練集與 metadata；
-    若尚未建立 Golden 訓練集或指定 rebuild_golden=True，則自動呼叫 run_auto_golden_pipeline 建立。
-    回傳: (golden_filenames, num_train_samples, used_existing_golden, golden_select_sec, train_tile_sec)
+    防呆機制：
+    1. 只要未指定 rebuild_golden=True，且已存在挑好的 Golden Image，絕不重新執行 Stage 1 挑選！
+    2. 若發現舊版將 <= 1280px 的中小型圖片（如 1000x1000 MVTec）切成了 *_tile_* 碎片，
+       自動從 golden_full_res_backup 直接還原已挑選的 4 張完整 Golden 原圖（不重挑 Golden！）。
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
+    backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
     golden_meta_path = os.path.join(shot_dir, "golden_cache_meta.json")
-    pool_signature = compute_pool_signature(pool_dir)
 
     if not rebuild_golden and os.path.isdir(cat_train_dir):
-        train_files = [
+        train_files = sorted([
             f for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)
-        ]
-        if train_files and os.path.isfile(golden_meta_path):
-            try:
-                with open(golden_meta_path, "r", encoding="utf-8") as f:
-                    g_meta = json.load(f)
-                if (
-                    g_meta.get("pool_signature") == pool_signature
-                    and g_meta.get("category") == category
-                    and int(g_meta.get("shots", -1)) == int(shots)
-                    and int(g_meta.get("tile_size", -1)) == int(tile_size)
-                    and int(g_meta.get("max_train_tiles", -1)) == int(max_train_tiles)
-                    and g_meta.get("golden_filenames")
-                ):
-                    golden_filenames = list(g_meta["golden_filenames"])
-                    num_train_samples = len(train_files)
-                    if report_dir:
-                        os.makedirs(report_dir, exist_ok=True)
-                        rec_src = os.path.join(shot_dir, f"selected_{shots}_golden_images.txt")
-                        if os.path.exists(rec_src):
-                            safe_copy(rec_src, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
-                        purity_src = os.path.join(shot_dir, "golden_tile_purity_report.txt")
-                        if os.path.exists(purity_src):
-                            safe_copy(purity_src, os.path.join(report_dir, "golden_tile_purity_report.txt"))
-                    log_and_print(
-                        f"[⚡ 已載入既有 Golden 訓練集] 直接沿用 {shot_dir} 內之 {len(golden_filenames)} 張 Golden 原圖 "
-                        f"({', '.join(golden_filenames)}) 與 {num_train_samples} 張純化訓練圖塊",
-                        log_files,
-                    )
-                    return golden_filenames, num_train_samples, True, 0.0, 0.0
-            except Exception:
-                pass
+        ])
+        if train_files:
+            # 檢查是否為舊版把 <=1280px 圖片切碎的殘留圖塊；若是，直接從 backup 還原整張原圖（不重挑 Golden）
+            has_fragmented_tiles = any("_tile_y" in f for f in train_files)
+            if has_fragmented_tiles and os.path.isdir(backup_dir):
+                backup_files = sorted([
+                    os.path.join(backup_dir, f)
+                    for f in os.listdir(backup_dir)
+                    if f.lower().endswith(IMG_EXTENSIONS)
+                ])
+                if backup_files:
+                    sample_img = load_image_rgb_uint8(backup_files[0])
+                    bh, bw = sample_img.shape[:2]
+                    eff_trigger = max(tile_size, min_tile_trigger)
+                    if disable_tiling or max(bh, bw) <= eff_trigger:
+                        for f in train_files:
+                            p = os.path.join(cat_train_dir, f)
+                            try:
+                                os.chmod(p, stat.S_IRUSR | stat.S_IWUSR)
+                                os.remove(p)
+                            except OSError:
+                                pass
+                        for bp in backup_files:
+                            safe_copy(bp, os.path.join(cat_train_dir, os.path.basename(bp)))
+                        train_files = sorted([
+                            f for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)
+                        ])
+                        log_and_print(
+                            f"[🔧 自動修復碎片化 Golden] 偵測到原圖尺寸 ({bw}x{bh}) <= {eff_trigger}px，"
+                            f"已直接從備份還原既有 {len(train_files)} 張完整 Golden 原圖 (保留原挑選名單，不重挑 Golden)！",
+                            log_files,
+                        )
+
+            golden_filenames = []
+            if os.path.isfile(golden_meta_path):
+                try:
+                    with open(golden_meta_path, "r", encoding="utf-8") as f:
+                        g_meta = json.load(f)
+                    golden_filenames = list(g_meta.get("golden_filenames", []))
+                    if int(g_meta.get("num_train_samples", -1)) != len(train_files):
+                        g_meta["num_train_samples"] = len(train_files)
+                        with open(golden_meta_path, "w", encoding="utf-8") as fw:
+                            json.dump(g_meta, fw, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+
+            if not golden_filenames:
+                golden_filenames = _recover_golden_filenames_from_disk(shot_dir, shots, category)
+                try:
+                    meta_patch = {
+                        "pool_signature": compute_pool_signature(pool_dir),
+                        "category": category,
+                        "shots": int(shots),
+                        "tile_size": int(tile_size),
+                        "tile_overlap": int(tile_overlap),
+                        "max_train_tiles": int(max_train_tiles),
+                        "disable_tiling": bool(disable_tiling),
+                        "min_tile_trigger": int(min_tile_trigger),
+                        "golden_filenames": golden_filenames,
+                        "num_train_samples": len(train_files),
+                        "golden_select_sec": 0.0,
+                        "train_tile_sec": 0.0,
+                    }
+                    with open(golden_meta_path, "w", encoding="utf-8") as f:
+                        json.dump(meta_patch, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+
+            num_train_samples = len(train_files)
+            if report_dir:
+                os.makedirs(report_dir, exist_ok=True)
+                rec_src = os.path.join(shot_dir, f"selected_{shots}_golden_images.txt")
+                if os.path.exists(rec_src):
+                    safe_copy(rec_src, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
+                purity_src = os.path.join(shot_dir, "golden_tile_purity_report.txt")
+                if os.path.exists(purity_src):
+                    safe_copy(purity_src, os.path.join(report_dir, "golden_tile_purity_report.txt"))
+
+            log_and_print(
+                f"[⚡ 防呆略過 Golden 重挑] 偵測到已存在 Golden 訓練集 ({cat_train_dir})，"
+                f"直接沿用既有 {len(golden_filenames)} 張 Golden 原圖 ({', '.join(golden_filenames)}) "
+                f"與 {num_train_samples} 張訓練樣本 (若需強制重挑請加上 --rebuild_golden)",
+                log_files,
+            )
+            return golden_filenames, num_train_samples, True, 0.0, 0.0
 
     meta = run_auto_golden_pipeline(
         pool_dir=pool_dir,
@@ -906,6 +988,7 @@ def load_or_prepare_golden_dataset(
         disable_tiling=disable_tiling,
         report_dir=report_dir,
         log_files=log_files,
+        min_tile_trigger=min_tile_trigger,
     )
     return (
         meta["golden_filenames"],
@@ -927,8 +1010,10 @@ def main():
     parser.add_argument("--tile_size", type=int, default=512, help="Stage 2 子圖塊像素大小")
     parser.add_argument("--tile_overlap", type=int, default=64, help="相鄰子圖塊重疊像素寬度")
     parser.add_argument("--max_train_tiles", type=int, default=48, help="Stage 2 最終保留的代表性訓練圖塊上限")
+    parser.add_argument("--min_tile_trigger", type=int, default=1280, help="原圖長或寬大於此像素值才啟動切塊 (<=此值保持整張原圖)")
     parser.add_argument("--bg_std_thresh", type=float, default=1.5, help="過濾純背景角落塊的標準差門檻")
     parser.add_argument("--disable_tiling", action="store_true", help="關閉切塊，直接使用整張 Golden 原圖")
+    parser.add_argument("--rebuild_golden", action="store_true", help="強制刪除既有 Golden 並重新挑選")
     parser.add_argument("--mock_from_mvtec", type=str, default="", help="從 MVTec 類別目錄建立模擬無 GT 盲池")
     parser.add_argument("--report_dir", type=str, default="", help="額外複製挑選與純化報表的輸出目錄")
     args = parser.parse_args()
@@ -940,13 +1025,24 @@ def main():
             args.category = os.path.basename(os.path.normpath(args.pool_dir))
 
     if args.mock_from_mvtec:
-        prepare_mock_unlabeled_pool_from_mvtec(args.mock_from_mvtec, args.pool_dir, defect_limit=8)
+        prepare_mock_unlabeled_pool_from_mvtec(
+            args.mock_from_mvtec,
+            args.pool_dir,
+            defect_limit=8,
+            rebuild=args.rebuild_golden,
+        )
 
     abs_datasets_dir = os.path.abspath(args.datasets_dir)
     shot_dir = os.path.join(abs_datasets_dir, args.data_name)
     report_dir = os.path.abspath(args.report_dir) if args.report_dir else None
 
-    meta = run_auto_golden_pipeline(
+    if not args.rebuild_golden and not os.path.isdir(os.path.join(shot_dir, "train", args.category)):
+        legacy_shot_dir = os.path.join(abs_datasets_dir, f"mvtec_sim_{args.shots}shot")
+        if os.path.isdir(os.path.join(legacy_shot_dir, "train", args.category)):
+            print(f"[🔄 向下相容命中] 自動沿用舊版命名 Golden 目錄: {legacy_shot_dir}")
+            shot_dir = legacy_shot_dir
+
+    golden_filenames, num_train_samples, used_existing, _, _ = load_or_prepare_golden_dataset(
         pool_dir=args.pool_dir,
         shot_dir=shot_dir,
         category=args.category,
@@ -957,12 +1053,15 @@ def main():
         max_train_tiles=args.max_train_tiles,
         bg_std_thresh=args.bg_std_thresh,
         disable_tiling=args.disable_tiling,
+        rebuild_golden=args.rebuild_golden,
         report_dir=report_dir,
+        min_tile_trigger=args.min_tile_trigger,
     )
+    status_str = "⚡ 直接沿用既有 Golden (未重挑)" if used_existing else "✅ 新建完成"
     print(
-        f"\n[✅ Auto-Golden 執行完成]\n"
-        f"  ├── 挑選之 Golden 原圖 : {', '.join(meta['golden_filenames'])}\n"
-        f"  ├── 最終訓練圖塊數量   : {meta['num_train_samples']} 張\n"
+        f"\n[{status_str}]\n"
+        f"  ├── 挑選之 Golden 原圖 : {', '.join(golden_filenames)}\n"
+        f"  ├── 最終訓練樣本數量   : {num_train_samples} 張\n"
         f"  └── 輸出資料集目錄     : {shot_dir}"
     )
 

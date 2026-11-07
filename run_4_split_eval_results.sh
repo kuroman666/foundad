@@ -47,7 +47,7 @@ echo " [Step 3: 推論結果拆分器啟動] 來源目錄: ${SRC_DIR}"
 echo " [拆分設定] NUM_PACKS=${NUM_PACKS} | ORDER=${SPLIT_ORDER} | COUNTS=${COUNTS:-無} | RATIOS=${RATIOS:-預設}"
 echo "============================================================"
 
-python 3_split_eval_results.py \
+python 4_split_eval_results.py \
     --src_dir "${SRC_DIR}" \
     --num_packs "${NUM_PACKS}" \
     --split_order "${SPLIT_ORDER}" \

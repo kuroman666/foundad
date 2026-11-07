@@ -1,0 +1,18 @@
+{
+  "pool_signature": "85b7fbd086bd18a4b0fe4b0ef3e4377b",
+  "category": "capsule",
+  "shots": 4,
+  "tile_size": 512,
+  "tile_overlap": 64,
+  "max_train_tiles": 48,
+  "disable_tiling": false,
+  "golden_filenames": [
+    "clean_022.png",
+    "clean_016.png",
+    "clean_001.png",
+    "clean_017.png"
+  ],
+  "num_train_samples": 4,
+  "golden_select_sec": 1.8115064190351404,
+  "train_tile_sec": 2.8729243220295757
+}

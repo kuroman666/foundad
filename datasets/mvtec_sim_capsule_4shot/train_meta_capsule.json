@@ -1,0 +1,28 @@
+{
+  "data_name": "mvtec_sim_capsule_4shot",
+  "category": "capsule",
+  "diy_name": "sim_escape_capsule",
+  "actual_step": 2000,
+  "golden_filenames": [
+    "clean_022.png",
+    "clean_016.png",
+    "clean_001.png",
+    "clean_017.png"
+  ],
+  "num_train_samples": 4,
+  "golden_select_sec": 0.0,
+  "train_tile_sec": 0.0,
+  "model_train_sec": 731.127894137986,
+  "total_train_time": 731.127894137986,
+  "ckpt_dirs": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape"
+  ],
+  "ckpt_files": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/train-step2000.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/pretrained.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/train-step2000.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_4shot/dinov3sim_escape/pretrained.pth.tar"
+  ],
+  "timestamp": "20261106_231431"
+}

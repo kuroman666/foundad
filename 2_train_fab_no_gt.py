@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/2a_train_fab_no_gt.py (負責 Golden 資料準備與模型訓練)
+# 檔案位置: FoundAD/2_train_fab_no_gt.py (負責 Golden 資料準備與模型訓練)
 import shlex
 import os
 import re
@@ -8,19 +8,19 @@ import json
 import socket
 import subprocess
 import argparse
+import importlib
 from datetime import datetime
 from typing import List, Dict, Tuple, Optional
 
 import numpy as np
 
-from auto_golden import (
-    format_duration,
-    log_and_print,
-    safe_copy,
-    scan_pool_images,
-    prepare_mock_unlabeled_pool_from_mvtec,
-    load_or_prepare_golden_dataset,
-)
+_ag = importlib.import_module("1_auto_golden")
+format_duration = _ag.format_duration
+log_and_print = _ag.log_and_print
+safe_copy = _ag.safe_copy
+scan_pool_images = _ag.scan_pool_images
+prepare_mock_unlabeled_pool_from_mvtec = _ag.prepare_mock_unlabeled_pool_from_mvtec
+load_or_prepare_golden_dataset = _ag.load_or_prepare_golden_dataset
 
 
 def get_free_port() -> int:
@@ -71,14 +71,56 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
     return full_out
 
 
+def _get_candidate_log_dirs(data_name: str, diy_name: str, shots: int = 4) -> List[str]:
+    """搜尋當前命名與舊版相容命名的權重目錄。"""
+    patterns = [
+        f"./logs/{data_name}/*{diy_name}*",
+        f"./logs/{data_name}/*",
+        f"./logs/mvtec_sim_{shots}shot/*{diy_name}*",
+        f"./logs/mvtec_sim_{shots}shot/*sim_escape*",
+        f"./logs/mvtec_fab_{shots}shot/*{diy_name}*",
+        f"./logs/mvtec_fab_{shots}shot/*fab_wafer*",
+    ]
+    seen = set()
+    dirs = []
+    for pat in patterns:
+        for d in sorted(glob.glob(pat)):
+            if os.path.isdir(d) and os.path.abspath(d) not in seen:
+                seen.add(os.path.abspath(d))
+                dirs.append(d)
+    return dirs
+
+
+def find_existing_trained_ckpt(
+    data_name: str,
+    diy_name: str,
+    req_step: int,
+    shots: int = 4,
+) -> Optional[str]:
+    """檢查是否已經有訓練好的權重檔 (優先找對應步數，其次找最大步數)。"""
+    for d in _get_candidate_log_dirs(data_name, diy_name, shots):
+        exact = os.path.join(d, f"train-step{req_step}.pth.tar")
+        if os.path.isfile(exact):
+            return os.path.abspath(exact)
+        step_files = glob.glob(os.path.join(d, "train-step*.pth.tar"))
+        if step_files:
+            step_files.sort(key=lambda p: int(re.search(r"train-step(\d+)", p).group(1)))
+            return os.path.abspath(step_files[-1])
+        alias = os.path.join(d, "pretrained.pth.tar")
+        if os.path.isfile(alias):
+            return os.path.abspath(alias)
+    return None
+
+
 def prepare_ckpt_for_demo(
     data_name: str,
     diy_name: str,
     req_step: int,
     log_files: List[str],
+    shots: int = 4,
 ) -> Tuple[int, List[str], List[str]]:
     """確認權重已生成並複製為 pretrained.pth.tar，回傳 (步數, 權重資料夾清單, 權重檔案清單)。"""
-    log_dirs = glob.glob(f"./logs/{data_name}/*{diy_name}*") or glob.glob(f"./logs/{data_name}/*")
+    log_dirs = _get_candidate_log_dirs(data_name, diy_name, shots)
     chosen_step = req_step
     ckpt_dirs = []
     ckpt_files = []
@@ -92,9 +134,13 @@ def prepare_ckpt_for_demo(
                 steps = [int(re.search(r"train-step(\d+)", f).group(1)) for f in step_files]
                 chosen_step = max(steps)
                 target_ckpt = os.path.join(d, f"train-step{chosen_step}.pth.tar")
+            elif os.path.exists(os.path.join(d, "pretrained.pth.tar")):
+                target_ckpt = os.path.join(d, "pretrained.pth.tar")
+
         if os.path.exists(target_ckpt):
             pretrained_alias = os.path.join(d, "pretrained.pth.tar")
-            safe_copy(target_ckpt, pretrained_alias)
+            if os.path.abspath(target_ckpt) != os.path.abspath(pretrained_alias):
+                safe_copy(target_ckpt, pretrained_alias)
             abs_d = os.path.abspath(d)
             abs_target = os.path.abspath(target_ckpt)
             abs_alias = os.path.abspath(pretrained_alias)
@@ -122,12 +168,14 @@ def main():
     parser.add_argument("--shots", type=int, default=4)
 
     # 訓練與 Golden 圖塊控制參數
-    parser.add_argument("--skip_train", action="store_true", help="跳過模型訓練，僅驗證並對接既有訓練權重")
-    parser.add_argument("--rebuild_golden", action="store_true", help="強制呼叫 auto_golden.py 重新挑選並純化 Golden 圖塊")
+    parser.add_argument("--skip_train", action="store_true", help="明確跳過模型訓練，直接對接既有訓練權重")
+    parser.add_argument("--force_train", action="store_true", help="強制重新訓練模型（即使已存在權重檔）")
+    parser.add_argument("--rebuild_golden", action="store_true", help="強制重新挑選並純化 Golden 圖塊")
     parser.add_argument("--mock_from_mvtec", type=str, default="")
     parser.add_argument("--tile_size", type=int, default=512)
     parser.add_argument("--tile_overlap", type=int, default=64)
     parser.add_argument("--max_train_tiles", type=int, default=48)
+    parser.add_argument("--min_tile_trigger", type=int, default=1280)
     parser.add_argument("--train_batch_size", type=int, default=8)
     parser.add_argument("--bg_std_thresh", type=float, default=1.5)
     parser.add_argument("--disable_tiling", action="store_true")
@@ -145,6 +193,14 @@ def main():
     os.makedirs(run_out_dir, exist_ok=True)
     os.makedirs(args.datasets_dir, exist_ok=True)
     abs_datasets_dir = os.path.abspath(args.datasets_dir)
+
+    if not args.rebuild_golden and not os.path.isdir(os.path.join(abs_datasets_dir, args.data_name, "train", args.category)):
+        legacy_data_name = f"mvtec_sim_{args.shots}shot"
+        if os.path.isdir(os.path.join(abs_datasets_dir, legacy_data_name, "train", args.category)):
+            args.data_name = legacy_data_name
+            if os.path.isdir(f"./logs/{legacy_data_name}/dinov3sim_escape"):
+                args.diy_name = "sim_escape"
+
     shot_dir = os.path.join(abs_datasets_dir, args.data_name)
 
     fixed_log_txt = os.path.join(run_out_dir, "train_log.txt")
@@ -161,14 +217,13 @@ def main():
     )
 
     if args.mock_from_mvtec:
-        existing_pool_imgs = scan_pool_images(args.pool_dir) if os.path.isdir(args.pool_dir) else []
-        if existing_pool_imgs and not args.rebuild_golden:
-            log_and_print(
-                f"[⚡ 模擬無GT盲池快取命中] 直接沿用既有 {len(existing_pool_imgs)} 張盲池圖片 -> {os.path.abspath(args.pool_dir)}",
-                log_files,
-            )
-        else:
-            prepare_mock_unlabeled_pool_from_mvtec(args.mock_from_mvtec, args.pool_dir, log_files, defect_limit=8)
+        prepare_mock_unlabeled_pool_from_mvtec(
+            args.mock_from_mvtec,
+            args.pool_dir,
+            log_files,
+            defect_limit=8,
+            rebuild=args.rebuild_golden,
+        )
 
     # 1. 載入或建立 Golden 訓練資料集
     golden_filenames, num_train_samples, used_existing_golden, golden_select_sec, train_tile_sec = (
@@ -186,6 +241,7 @@ def main():
             rebuild_golden=args.rebuild_golden,
             report_dir=run_out_dir,
             log_files=log_files,
+            min_tile_trigger=args.min_tile_trigger,
         )
     )
 
@@ -198,7 +254,43 @@ def main():
     )
     total_grad_updates = effective_epochs * iters_per_epoch
 
-    # 2. 執行 FoundAD 模型訓練
+    # 2. 自動防呆檢查：確認是否已有訓練好的權重，且訓練樣本數未發生「碎片還原為整張圖」的結構變更
+    train_meta_path = os.path.join(shot_dir, f"train_meta_{args.category}.json")
+    prev_trained_samples = None
+    if os.path.isfile(train_meta_path):
+        try:
+            with open(train_meta_path, "r", encoding="utf-8") as f:
+                prev_meta = json.load(f)
+            prev_trained_samples = prev_meta.get("num_train_samples", None)
+        except Exception:
+            pass
+
+    existing_ckpt = find_existing_trained_ckpt(args.data_name, args.diy_name, effective_epochs, shots=args.shots)
+    structure_changed = (prev_trained_samples is not None and int(prev_trained_samples) != int(num_train_samples))
+    if structure_changed and not args.skip_train:
+        log_and_print(
+            f"[🔄 訓練集結構升級] 訓練集由舊版 {prev_trained_samples} 張碎片升級為 {num_train_samples} 張完整對齊影像，"
+            f"將自動重新訓練一次以確保空間對齊精度！",
+            log_files,
+        )
+
+    auto_skipped_train = False
+    if (
+        not args.skip_train
+        and not args.force_train
+        and not args.rebuild_golden
+        and not structure_changed
+        and existing_ckpt is not None
+    ):
+        args.skip_train = True
+        auto_skipped_train = True
+        log_and_print(
+            f"[⚡ 防呆略過模型重訓] 偵測到已存在訓練完成的權重檔: {existing_ckpt}\n"
+            f"                     自動跳過訓練階段！(若欲強制重新訓練請加上 --force_train)",
+            log_files,
+        )
+
+    # 3. 執行 FoundAD 模型訓練
     model_train_sec = 0.0
     if not args.skip_train:
         t_model_train_start = time.perf_counter()
@@ -211,30 +303,30 @@ def main():
             f"diy_name={args.diy_name} app={args.app_train}"
         )
         log_and_print(
-            f"\n[Step 1] 執行 FoundAD 高解析度圖塊訓練 "
-            f"(train_tiles={num_train_samples}, batch_size={effective_batch_size}, "
+            f"\n[Step 1] 執行 FoundAD 高解析度訓練 "
+            f"(train_samples={num_train_samples}, batch_size={effective_batch_size}, "
             f"iters_per_epoch={iters_per_epoch}, epochs={effective_epochs}, total_updates={total_grad_updates}):",
             log_files,
         )
         run_cmd_and_log(train_cmd, log_files)
         model_train_sec = time.perf_counter() - t_model_train_start
-    else:
+    elif not auto_skipped_train:
         log_and_print("[⏱️ 計時] 已設定 --skip_train，跳過 Step 1 模型訓練階段 (0.00 秒)", log_files)
 
     total_train_time = golden_select_sec + train_tile_sec + model_train_sec
 
-    # 3. 驗證並對接訓練權重
+    # 4. 驗證並對接訓練權重
     actual_step, ckpt_dirs, ckpt_files = prepare_ckpt_for_demo(
         args.data_name,
         args.diy_name,
         effective_epochs if not args.skip_train else args.ckpt_step,
         log_files,
+        shots=args.shots,
     )
     train_tiles_dir = os.path.abspath(os.path.join(shot_dir, "train", args.category))
     golden_backup_dir = os.path.abspath(os.path.join(shot_dir, "golden_full_res_backup", args.category))
 
-    # 4. 儲存訓練階段 메타資訊 (供推論腳本自動讀取)
-    train_meta_path = os.path.join(shot_dir, f"train_meta_{args.category}.json")
+    # 5. 儲存訓練階段 Meta 資訊
     train_meta = {
         "data_name": args.data_name,
         "category": args.category,
@@ -258,11 +350,11 @@ def main():
         f"\n{'='*75}",
         f" [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]",
         f"{'-'*75}",
-        f"  ⏱️ Auto-Golden 資料集準備耗時            : {format_duration(golden_select_sec + train_tile_sec)}{' (Loaded from auto_golden)' if used_existing_golden else ''}",
-        f"  ⏱️ Step 1 FoundAD 模型訓練耗時           : {format_duration(model_train_sec)}{' (Skipped)' if args.skip_train else ''}",
+        f"  ⏱️ Auto-Golden 資料集準備耗時            : {format_duration(golden_select_sec + train_tile_sec)}{' (Loaded Existing Golden)' if used_existing_golden else ''}",
+        f"  ⏱️ Step 1 FoundAD 模型訓練耗時           : {format_duration(model_train_sec)}{' (Skipped Existing Ckpt)' if args.skip_train else ''}",
         f"  ⏱️ 整體訓練階段總時間                   : {format_duration(total_train_time)}",
         f"{'-'*75}",
-        f"  📁 Golden 訓練圖塊資料夾                : {train_tiles_dir}",
+        f"  📁 Golden 訓練樣本資料夾                : {train_tiles_dir}",
         f"  📁 Golden 原圖備份資料夾                : {golden_backup_dir}",
         f"  📄 訓練階段 Meta 紀錄檔                 : {os.path.abspath(train_meta_path)}",
         f"  📦 訓練權重檔儲存資料夾                 : {ckpt_dirs[0]}",

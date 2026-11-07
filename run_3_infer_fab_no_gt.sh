@@ -69,7 +69,7 @@ echo " [Step 2b: FoundAD 無GT高解析度推論啟動] DATASET=${DATASET_ID} | 
 echo " [防誤報設定] THRESH_MODE=${THRESH_MODE} (SIGMA_K=${SIGMA_K}, P${AUTO_PERCENTILE}, Min=${MIN_THRESHOLD}) | WAFER_EDGE=${WAFER_EDGE_MODE} (${WAFER_EDGE_MARGIN}) | RAW_MODE=${RAW_SCORE_MODE:-OFF}"
 echo "============================================================"
 
-python 2b_infer_fab_no_gt.py \
+python 3_infer_fab_no_gt.py \
     --pool_dir "${WAFER_POOL_DIR}" \
     --ckpt "${COMPANY_DINO_CKPT}" \
     --out_dir "${FAB_RESULT_DIR}" \

@@ -63,7 +63,7 @@ echo " [Step 2a: FoundAD 無GT模型訓練啟動] DATASET=${DATASET_ID} | LAYER=
 echo " [訓練設定] DATA_NAME=${DATA_NAME} | DIY_NAME=${DIY_NAME} | STEP=${CKPT_STEP}"
 echo "============================================================"
 
-python 2a_train_fab_no_gt.py \
+python 2_train_fab_no_gt.py \
     --pool_dir "${WAFER_POOL_DIR}" \
     --ckpt "${COMPANY_DINO_CKPT}" \
     --out_dir "${FAB_RESULT_DIR}" \

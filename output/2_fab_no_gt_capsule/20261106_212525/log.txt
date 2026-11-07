@@ -1,0 +1,7 @@
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-06 21:25:25
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/20261106_212525
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot/train_meta_capsule.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/train-step500.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/pretrained.pth.tar
