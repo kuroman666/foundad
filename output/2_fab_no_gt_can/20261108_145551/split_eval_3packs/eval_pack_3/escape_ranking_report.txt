@@ -1,0 +1,40 @@
+=== FoundAD Split Eval Report — Pack #3 (eval_pack_3) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Threshold Policy: PACK_LOCAL_RECOMPUTED
+Effective Threshold (Used)  : 0.4546 (Pack_Local_Thresh=0.4546 vs Global_Pool_Thresh=0.4217, Diff=+0.0329)
+Pack Local Thresh Detail    : Pack獨立重算 Hybrid 雙重校準門檻 = 0.4546 [mu_core=0.2726, σ_left=0.0364, LeftBound=0.4546, GoldenBound=0.4546, Core_P95=0.2518]
+Pack Total Images: 26 | Exported Anomaly Images: 16 | Skipped Normal Images: 10
+Normal False Positives (FPR): 11/19 (57.89%) | Escape Caught (Recall): 5/5 (100.00%)
+Non-Golden Normal Score Dist: Max=0.8151 | P99=0.8112 | P95=0.7955 | Median=0.5608 | Mean=0.4961 | Std=0.2007
+Ablation Compare (Normal)   : Raw_Max=0.7939, Raw_Mean=0.4824 vs Filtered_Max=0.8151, Filtered_Mean=0.4961
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.6968 | mean+2*std=0.8974 | mean+3*std=1.0981
+Overfit Diagnostic          : 🟢 良好: 無過擬合現象 (Healthy Generalization — 舊Golden基準與新資料集正常分佈一致) (Golden_Mean=0.2718, BlindNormal_Med=0.2533, Ratio=0.93x, Gap=-0.0196)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Global_Status       | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 1      | clean_007_underexposed.png | ANOMALY             | ANOMALY             | 0.8151    | 0.7939    | 0.8151     | +0.0212  | 8      | Rank001_Score0.8151_Box08_clean_007_underexposed.png
+2      | 2      | clean_007_regular.png      | ANOMALY             | ANOMALY             | 0.7933    | 0.7753    | 0.7933     | +0.0180  | 6      | Rank002_Score0.7933_Box06_clean_007_regular.png
+3      | 6      | clean_010_shift_1.png      | ANOMALY             | ANOMALY             | 0.7080    | 0.6945    | 0.7080     | +0.0135  | 7      | Rank006_Score0.7080_Box07_clean_010_shift_1.png
+4      | 12     | clean_001_underexposed.png | ANOMALY             | ANOMALY             | 0.6660    | 0.6314    | 0.6660     | +0.0345  | 7      | Rank012_Score0.6660_Box07_clean_001_underexposed.png
+5      | 15     | clean_002_underexposed.png | ANOMALY             | ANOMALY             | 0.6538    | 0.6379    | 0.6538     | +0.0159  | 2      | Rank015_Score0.6538_Box02_clean_002_underexposed.png
+6      | 16     | clean_001_regular.png      | ANOMALY             | ANOMALY             | 0.6490    | 0.6117    | 0.6490     | +0.0373  | 2      | Rank016_Score0.6490_Box02_clean_001_regular.png
+7      | 17     | escape_bad_001_overexposed.png | ANOMALY             | ANOMALY             | 0.6440    | 0.6178    | 0.6440     | +0.0262  | 10     | Rank017_Score0.6440_Box10_escape_bad_001_overexposed.png
+8      | 22     | clean_001_shift_3.png      | ANOMALY             | ANOMALY             | 0.6301    | 0.6103    | 0.6301     | +0.0199  | 10     | Rank022_Score0.6301_Box10_clean_001_shift_3.png
+9      | 24     | clean_005_underexposed.png | ANOMALY             | ANOMALY             | 0.6089    | 0.5866    | 0.6089     | +0.0223  | 10     | Rank024_Score0.6089_Box10_clean_005_underexposed.png
+10     | 25     | clean_004_overexposed.png  | ANOMALY             | ANOMALY             | 0.6049    | 0.5834    | 0.6049     | +0.0215  | 2      | Rank025_Score0.6049_Box02_clean_004_overexposed.png
+11     | 31     | clean_002_shift_2.png      | ANOMALY             | ANOMALY             | 0.5608    | 0.5380    | 0.5608     | +0.0228  | 9      | Rank031_Score0.5608_Box09_clean_002_shift_2.png
+12     | 33     | escape_bad_000_regular.png | ANOMALY             | ANOMALY             | 0.5518    | 0.5350    | 0.5518     | +0.0168  | 7      | Rank033_Score0.5518_Box07_escape_bad_000_regular.png
+13     | 37     | escape_bad_000_underexposed.png | ANOMALY             | ANOMALY             | 0.5341    | 0.5101    | 0.5341     | +0.0240  | 8      | Rank037_Score0.5341_Box08_escape_bad_000_underexposed.png
+14     | 39     | escape_bad_000_shift_1.png | ANOMALY             | ANOMALY             | 0.5163    | 0.5092    | 0.5163     | +0.0071  | 5      | Rank039_Score0.5163_Box05_escape_bad_000_shift_1.png
+15     | 41     | escape_bad_000_shift_2.png | ANOMALY             | ANOMALY             | 0.5058    | 0.4895    | 0.5058     | +0.0162  | 8      | Rank041_Score0.5058_Box08_escape_bad_000_shift_2.png
+16     | 44     | clean_003_shift_2.png      | ANOMALY             | ANOMALY             | 0.4761    | 0.4658    | 0.4761     | +0.0103  | 2      | Rank044_Score0.4761_Box02_clean_003_shift_2.png
+17     | 50     | clean_000_shift_3.png      | PASS_SKIPPED        | ANOMALY             | 0.4343    | 0.4358    | 0.4343     | -0.0015  | 1      | (未超過本包獨立動態門檻，不輸出圖片)
+18     | 52     | clean_000_underexposed.png | PASS_SKIPPED        | PASS_SKIPPED        | 0.3695    | 0.3653    | 0.3695     | +0.0043  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+19     | 54     | clean_000_overexposed.png  | GOLDEN_PASS         | GOLDEN_PASS         | 0.2828    | 0.2779    | 0.2828     | +0.0049  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+20     | 63     | clean_008_regular.png      | GOLDEN_PASS         | GOLDEN_PASS         | 0.2624    | 0.2535    | 0.2624     | +0.0089  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+21     | 69     | clean_011_shift_1.png      | PASS_SKIPPED        | PASS_SKIPPED        | 0.2521    | 0.2461    | 0.2521     | +0.0060  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+22     | 70     | clean_006_shift_2.png      | PASS_SKIPPED        | PASS_SKIPPED        | 0.2507    | 0.2459    | 0.2507     | +0.0048  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+23     | 71     | clean_006_shift_3.png      | PASS_SKIPPED        | PASS_SKIPPED        | 0.2498    | 0.2443    | 0.2498     | +0.0055  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+24     | 73     | clean_011_underexposed.png | PASS_SKIPPED        | PASS_SKIPPED        | 0.2464    | 0.2402    | 0.2464     | +0.0061  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+25     | 75     | clean_011_overexposed.png  | PASS_SKIPPED        | PASS_SKIPPED        | 0.2362    | 0.2425    | 0.2362     | -0.0063  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+26     | 80     | clean_009_overexposed.png  | PASS_SKIPPED        | PASS_SKIPPED        | 0.2211    | 0.2177    | 0.2211     | +0.0034  | 0      | (未超過本包獨立動態門檻，不輸出圖片)

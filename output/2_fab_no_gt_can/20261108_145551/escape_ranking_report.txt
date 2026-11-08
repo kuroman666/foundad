@@ -1,0 +1,125 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Effective Threshold: 0.4217 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 50 | Skipped Normal Images: 30
+Blind Normal Core Score Dist: Max=0.4083 | P99=0.3986 | P95=0.3670 | Median=0.2533 | Mean=0.2662 | Std=0.0444
+Ablation Compare (Normal)   : Raw_Max=0.4009, Raw_Mean=0.2637 vs Filtered_Max=0.4083, Filtered_Mean=0.2662
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.3106 | mean+2*std=0.3550 | mean+3*std=0.3994
+Overfit Diagnostic          : 🟢 良好: 無過擬合現象 (Healthy Generalization — 舊Golden基準與新資料集正常分佈一致) (Golden_Mean=0.2718, BlindNormal_Med=0.2533, Ratio=0.93x, Gap=-0.0196)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1     | clean_007_underexposed.png | ANOMALY             | 0.8151    | 0.7939    | 0.8151     | +0.0212  | 8      | Rank001_Score0.8151_Box08_clean_007_underexposed.png
+2     | clean_007_regular.png      | ANOMALY             | 0.7933    | 0.7753    | 0.7933     | +0.0180  | 6      | Rank002_Score0.7933_Box06_clean_007_regular.png
+3     | clean_007_overexposed.png  | ANOMALY             | 0.7701    | 0.7519    | 0.7701     | +0.0183  | 7      | Rank003_Score0.7701_Box07_clean_007_overexposed.png
+4     | clean_010_underexposed.png | ANOMALY             | 0.7395    | 0.7210    | 0.7395     | +0.0184  | 7      | Rank004_Score0.7395_Box07_clean_010_underexposed.png
+5     | clean_007_shift_1.png      | ANOMALY             | 0.7349    | 0.7183    | 0.7349     | +0.0167  | 11     | Rank005_Score0.7349_Box11_clean_007_shift_1.png
+6     | clean_010_shift_1.png      | ANOMALY             | 0.7080    | 0.6945    | 0.7080     | +0.0135  | 7      | Rank006_Score0.7080_Box07_clean_010_shift_1.png
+7     | clean_007_shift_2.png      | ANOMALY             | 0.6987    | 0.6833    | 0.6987     | +0.0155  | 6      | Rank007_Score0.6987_Box06_clean_007_shift_2.png
+8     | clean_001_shift_1.png      | ANOMALY             | 0.6885    | 0.6567    | 0.6885     | +0.0318  | 2      | Rank008_Score0.6885_Box02_clean_001_shift_1.png
+9     | clean_007_shift_3.png      | ANOMALY             | 0.6876    | 0.6749    | 0.6876     | +0.0128  | 7      | Rank009_Score0.6876_Box07_clean_007_shift_3.png
+10    | escape_bad_001_regular.png | ANOMALY             | 0.6782    | 0.6470    | 0.6782     | +0.0311  | 9      | Rank010_Score0.6782_Box09_escape_bad_001_regular.png
+11    | clean_010_regular.png      | ANOMALY             | 0.6734    | 0.6576    | 0.6734     | +0.0158  | 9      | Rank011_Score0.6734_Box09_clean_010_regular.png
+12    | clean_001_underexposed.png | ANOMALY             | 0.6660    | 0.6314    | 0.6660     | +0.0345  | 7      | Rank012_Score0.6660_Box07_clean_001_underexposed.png
+13    | clean_001_overexposed.png  | ANOMALY             | 0.6651    | 0.6399    | 0.6651     | +0.0252  | 10     | Rank013_Score0.6651_Box10_clean_001_overexposed.png
+14    | clean_010_shift_2.png      | ANOMALY             | 0.6647    | 0.6480    | 0.6647     | +0.0168  | 7      | Rank014_Score0.6647_Box07_clean_010_shift_2.png
+15    | clean_002_underexposed.png | ANOMALY             | 0.6538    | 0.6379    | 0.6538     | +0.0159  | 2      | Rank015_Score0.6538_Box02_clean_002_underexposed.png
+16    | clean_001_regular.png      | ANOMALY             | 0.6490    | 0.6117    | 0.6490     | +0.0373  | 2      | Rank016_Score0.6490_Box02_clean_001_regular.png
+17    | escape_bad_001_overexposed.png | ANOMALY             | 0.6440    | 0.6178    | 0.6440     | +0.0262  | 10     | Rank017_Score0.6440_Box10_escape_bad_001_overexposed.png
+18    | clean_002_shift_1.png      | ANOMALY             | 0.6402    | 0.6088    | 0.6402     | +0.0314  | 8      | Rank018_Score0.6402_Box08_clean_002_shift_1.png
+19    | clean_010_shift_3.png      | ANOMALY             | 0.6345    | 0.6187    | 0.6345     | +0.0158  | 7      | Rank019_Score0.6345_Box07_clean_010_shift_3.png
+20    | clean_001_shift_2.png      | ANOMALY             | 0.6327    | 0.6035    | 0.6327     | +0.0292  | 9      | Rank020_Score0.6327_Box09_clean_001_shift_2.png
+21    | clean_002_regular.png      | ANOMALY             | 0.6323    | 0.6254    | 0.6323     | +0.0069  | 2      | Rank021_Score0.6323_Box02_clean_002_regular.png
+22    | clean_001_shift_3.png      | ANOMALY             | 0.6301    | 0.6103    | 0.6301     | +0.0199  | 10     | Rank022_Score0.6301_Box10_clean_001_shift_3.png
+23    | clean_010_overexposed.png  | ANOMALY             | 0.6237    | 0.6098    | 0.6237     | +0.0139  | 9      | Rank023_Score0.6237_Box09_clean_010_overexposed.png
+24    | clean_005_underexposed.png | ANOMALY             | 0.6089    | 0.5866    | 0.6089     | +0.0223  | 10     | Rank024_Score0.6089_Box10_clean_005_underexposed.png
+25    | clean_004_overexposed.png  | ANOMALY             | 0.6049    | 0.5834    | 0.6049     | +0.0215  | 2      | Rank025_Score0.6049_Box02_clean_004_overexposed.png
+26    | clean_004_underexposed.png | ANOMALY             | 0.5949    | 0.5678    | 0.5949     | +0.0271  | 2      | Rank026_Score0.5949_Box02_clean_004_underexposed.png
+27    | clean_002_overexposed.png  | ANOMALY             | 0.5912    | 0.5767    | 0.5912     | +0.0144  | 8      | Rank027_Score0.5912_Box08_clean_002_overexposed.png
+28    | clean_004_regular.png      | ANOMALY             | 0.5865    | 0.5611    | 0.5865     | +0.0254  | 2      | Rank028_Score0.5865_Box02_clean_004_regular.png
+29    | clean_005_shift_1.png      | ANOMALY             | 0.5835    | 0.5616    | 0.5835     | +0.0219  | 7      | Rank029_Score0.5835_Box07_clean_005_shift_1.png
+30    | clean_004_shift_2.png      | ANOMALY             | 0.5625    | 0.5372    | 0.5625     | +0.0253  | 3      | Rank030_Score0.5625_Box03_clean_004_shift_2.png
+31    | clean_002_shift_2.png      | ANOMALY             | 0.5608    | 0.5380    | 0.5608     | +0.0228  | 9      | Rank031_Score0.5608_Box09_clean_002_shift_2.png
+32    | clean_005_regular.png      | ANOMALY             | 0.5590    | 0.5447    | 0.5590     | +0.0143  | 6      | Rank032_Score0.5590_Box06_clean_005_regular.png
+33    | escape_bad_000_regular.png | ANOMALY             | 0.5518    | 0.5350    | 0.5518     | +0.0168  | 7      | Rank033_Score0.5518_Box07_escape_bad_000_regular.png
+34    | clean_002_shift_3.png      | ANOMALY             | 0.5427    | 0.5373    | 0.5427     | +0.0054  | 8      | Rank034_Score0.5427_Box08_clean_002_shift_3.png
+35    | clean_005_overexposed.png  | ANOMALY             | 0.5410    | 0.5279    | 0.5410     | +0.0131  | 7      | Rank035_Score0.5410_Box07_clean_005_overexposed.png
+36    | escape_bad_000_overexposed.png | ANOMALY             | 0.5371    | 0.5295    | 0.5371     | +0.0077  | 5      | Rank036_Score0.5371_Box05_escape_bad_000_overexposed.png
+37    | escape_bad_000_underexposed.png | ANOMALY             | 0.5341    | 0.5101    | 0.5341     | +0.0240  | 8      | Rank037_Score0.5341_Box08_escape_bad_000_underexposed.png
+38    | clean_004_shift_1.png      | ANOMALY             | 0.5223    | 0.5069    | 0.5223     | +0.0154  | 3      | Rank038_Score0.5223_Box03_clean_004_shift_1.png
+39    | escape_bad_000_shift_1.png | ANOMALY             | 0.5163    | 0.5092    | 0.5163     | +0.0071  | 5      | Rank039_Score0.5163_Box05_escape_bad_000_shift_1.png
+40    | clean_004_shift_3.png      | ANOMALY             | 0.5081    | 0.4845    | 0.5081     | +0.0235  | 3      | Rank040_Score0.5081_Box03_clean_004_shift_3.png
+41    | escape_bad_000_shift_2.png | ANOMALY             | 0.5058    | 0.4895    | 0.5058     | +0.0162  | 8      | Rank041_Score0.5058_Box08_escape_bad_000_shift_2.png
+42    | escape_bad_000_shift_3.png | ANOMALY             | 0.4862    | 0.4695    | 0.4862     | +0.0167  | 4      | Rank042_Score0.4862_Box04_escape_bad_000_shift_3.png
+43    | clean_003_underexposed.png | ANOMALY             | 0.4787    | 0.4695    | 0.4787     | +0.0092  | 2      | Rank043_Score0.4787_Box02_clean_003_underexposed.png
+44    | clean_003_shift_2.png      | ANOMALY             | 0.4761    | 0.4658    | 0.4761     | +0.0103  | 2      | Rank044_Score0.4761_Box02_clean_003_shift_2.png
+45    | clean_003_shift_1.png      | ANOMALY             | 0.4621    | 0.4483    | 0.4621     | +0.0138  | 2      | Rank045_Score0.4621_Box02_clean_003_shift_1.png
+46    | clean_003_overexposed.png  | ANOMALY             | 0.4615    | 0.4486    | 0.4615     | +0.0129  | 2      | Rank046_Score0.4615_Box02_clean_003_overexposed.png
+47    | clean_003_shift_3.png      | ANOMALY             | 0.4535    | 0.4471    | 0.4535     | +0.0064  | 1      | Rank047_Score0.4535_Box01_clean_003_shift_3.png
+48    | clean_005_shift_3.png      | ANOMALY             | 0.4493    | 0.4334    | 0.4493     | +0.0159  | 2      | Rank048_Score0.4493_Box02_clean_005_shift_3.png
+49    | clean_005_shift_2.png      | ANOMALY             | 0.4476    | 0.4317    | 0.4476     | +0.0159  | 4      | Rank049_Score0.4476_Box04_clean_005_shift_2.png
+50    | clean_000_shift_3.png      | ANOMALY             | 0.4343    | 0.4358    | 0.4343     | -0.0015  | 1      | Rank050_Score0.4343_Box01_clean_000_shift_3.png
+51    | clean_003_regular.png      | PASS_SKIPPED        | 0.4083    | 0.4009    | 0.4083     | +0.0074  | 0      | (未超過動態門檻，不輸出圖片)
+52    | clean_000_underexposed.png | PASS_SKIPPED        | 0.3695    | 0.3652    | 0.3695     | +0.0043  | 0      | (未超過動態門檻，不輸出圖片)
+53    | clean_000_shift_1.png      | PASS_SKIPPED        | 0.3594    | 0.3612    | 0.3594     | -0.0018  | 0      | (未超過動態門檻，不輸出圖片)
+54    | clean_000_overexposed.png  | GOLDEN_PASS         | 0.2828    | 0.2779    | 0.2828     | +0.0049  | 0      | (未超過動態門檻，不輸出圖片)
+55    | clean_006_shift_1.png      | PASS_SKIPPED        | 0.2817    | 0.2781    | 0.2817     | +0.0035  | 0      | (未超過動態門檻，不輸出圖片)
+56    | clean_000_regular.png      | GOLDEN_PASS         | 0.2795    | 0.2740    | 0.2795     | +0.0055  | 0      | (未超過動態門檻，不輸出圖片)
+57    | clean_000_shift_2.png      | PASS_SKIPPED        | 0.2783    | 0.2842    | 0.2783     | -0.0059  | 0      | (未超過動態門檻，不輸出圖片)
+58    | clean_011_shift_3.png      | PASS_SKIPPED        | 0.2705    | 0.2671    | 0.2705     | +0.0034  | 0      | (未超過動態門檻，不輸出圖片)
+59    | clean_006_underexposed.png | PASS_SKIPPED        | 0.2702    | 0.2639    | 0.2702     | +0.0062  | 0      | (未超過動態門檻，不輸出圖片)
+60    | clean_008_underexposed.png | PASS_SKIPPED        | 0.2676    | 0.2625    | 0.2676     | +0.0051  | 0      | (未超過動態門檻，不輸出圖片)
+61    | clean_006_overexposed.png  | PASS_SKIPPED        | 0.2674    | 0.2651    | 0.2674     | +0.0023  | 0      | (未超過動態門檻，不輸出圖片)
+62    | clean_006_regular.png      | PASS_SKIPPED        | 0.2656    | 0.2653    | 0.2656     | +0.0003  | 0      | (未超過動態門檻，不輸出圖片)
+63    | clean_008_regular.png      | GOLDEN_PASS         | 0.2624    | 0.2535    | 0.2624     | +0.0089  | 0      | (未超過動態門檻，不輸出圖片)
+64    | clean_008_overexposed.png  | GOLDEN_PASS         | 0.2624    | 0.2515    | 0.2624     | +0.0108  | 0      | (未超過動態門檻，不輸出圖片)
+65    | clean_008_shift_3.png      | PASS_SKIPPED        | 0.2590    | 0.2595    | 0.2590     | -0.0005  | 0      | (未超過動態門檻，不輸出圖片)
+66    | clean_008_shift_1.png      | PASS_SKIPPED        | 0.2579    | 0.2508    | 0.2579     | +0.0071  | 0      | (未超過動態門檻，不輸出圖片)
+67    | clean_011_regular.png      | PASS_SKIPPED        | 0.2538    | 0.2508    | 0.2538     | +0.0031  | 0      | (未超過動態門檻，不輸出圖片)
+68    | clean_008_shift_2.png      | PASS_SKIPPED        | 0.2527    | 0.2527    | 0.2527     | -0.0000  | 0      | (未超過動態門檻，不輸出圖片)
+69    | clean_011_shift_1.png      | PASS_SKIPPED        | 0.2521    | 0.2461    | 0.2521     | +0.0060  | 0      | (未超過動態門檻，不輸出圖片)
+70    | clean_006_shift_2.png      | PASS_SKIPPED        | 0.2507    | 0.2459    | 0.2507     | +0.0048  | 0      | (未超過動態門檻，不輸出圖片)
+71    | clean_006_shift_3.png      | PASS_SKIPPED        | 0.2498    | 0.2443    | 0.2498     | +0.0055  | 0      | (未超過動態門檻，不輸出圖片)
+72    | clean_011_shift_2.png      | PASS_SKIPPED        | 0.2488    | 0.2470    | 0.2488     | +0.0018  | 0      | (未超過動態門檻，不輸出圖片)
+73    | clean_011_underexposed.png | PASS_SKIPPED        | 0.2464    | 0.2402    | 0.2464     | +0.0061  | 0      | (未超過動態門檻，不輸出圖片)
+74    | clean_009_regular.png      | PASS_SKIPPED        | 0.2443    | 0.2423    | 0.2443     | +0.0020  | 0      | (未超過動態門檻，不輸出圖片)
+75    | clean_011_overexposed.png  | PASS_SKIPPED        | 0.2362    | 0.2425    | 0.2362     | -0.0063  | 0      | (未超過動態門檻，不輸出圖片)
+76    | clean_009_shift_2.png      | PASS_SKIPPED        | 0.2325    | 0.2313    | 0.2325     | +0.0012  | 0      | (未超過動態門檻，不輸出圖片)
+77    | clean_009_underexposed.png | PASS_SKIPPED        | 0.2297    | 0.2285    | 0.2297     | +0.0012  | 0      | (未超過動態門檻，不輸出圖片)
+78    | clean_009_shift_3.png      | PASS_SKIPPED        | 0.2244    | 0.2213    | 0.2244     | +0.0031  | 0      | (未超過動態門檻，不輸出圖片)
+79    | clean_009_shift_1.png      | PASS_SKIPPED        | 0.2234    | 0.2209    | 0.2234     | +0.0025  | 0      | (未超過動態門檻，不輸出圖片)
+80    | clean_009_overexposed.png  | PASS_SKIPPED        | 0.2211    | 0.2177    | 0.2211     | +0.0034  | 0      | (未超過動態門檻，不輸出圖片)
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:32:26.39 (1946.39 秒) (ckpt_step=400)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:01:59.22 (119.22 秒)
+      ├─ Step 2.1 測試池圖塊準備 (1200 塊, trigger=1280px) : 00:01:17.72 (77.72 秒)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:21.64 (21.64 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與MICRO_DEFECT畫框 : 00:00:19.87 (19.87 秒)
+      └─ 平均每張原圖推論耗時 (80 張原圖)         : 1.49 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:01:59.24 (119.24 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=MICRO_DEFECT, Mode=hybrid, Eff_Thresh=0.4217):
+      🚨 超過門檻判定異常並畫框輸出 : 50 張
+      ✅ 未達門檻或微塵濾除直接略過 : 30 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (MICRO_DEFECT_SENSITIVE) : Max=0.4083 | P99=0.3986 | P95=0.3670 | Median=0.2533 | Mean=0.2662 | Std=0.0444
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.3106 | mean+2*std=0.3550 | mean+3*std=0.3994
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.4009, Mean=0.2637, Std=0.0441  vs  [當前模式] Max=0.4083, Mean=0.2662, Std=0.0444
+      🩺 模型過擬合自檢 (Overfit)    : 🟢 良好: 無過擬合現象 (Healthy Generalization — 舊Golden基準與新資料集正常分佈一致)
+                                       [Golden平均=0.2718 vs 盲池正常中位數=0.2533 | Overfit_Ratio=0.93x | Gap=-0.0196]
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_can
+      🏆 指定之 Golden 來源         : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_145551/log.txt
+===========================================================================

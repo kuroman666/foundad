@@ -1,0 +1,77 @@
+=== FoundAD High-Res Anomaly Detection Report ===
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Effective Threshold: 0.1371 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 16 | Skipped Normal Images: 13
+Blind Normal Core Score Dist: Max=0.1323 | P99=0.1320 | P95=0.1312 | Median=0.1207 | Mean=0.1199 | Std=0.0098
+Ablation Compare (Normal)   : Raw_Max=0.1480, Raw_Mean=0.1246 vs Filtered_Max=0.1323, Filtered_Mean=0.1199
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1297 | mean+2*std=0.1396 | mean+3*std=0.1494
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning) (Golden_Mean=0.0168, BlindNormal_Med=0.1207, Ratio=7.60x, Gap=+0.1111)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1     | escape_bent_002.png        | ANOMALY             | 0.9158    | 0.8869    | 0.9158     | +0.0289  | 3      | Rank001_Score0.9158_Box03_escape_bent_002.png
+2     | escape_bent_003.png        | ANOMALY             | 0.7958    | 0.7770    | 0.7958     | +0.0188  | 3      | Rank002_Score0.7958_Box03_escape_bent_003.png
+3     | escape_bent_005.png        | ANOMALY             | 0.7811    | 0.7544    | 0.7811     | +0.0267  | 2      | Rank003_Score0.7811_Box02_escape_bent_005.png
+4     | escape_bent_006.png        | ANOMALY             | 0.7804    | 0.7543    | 0.7804     | +0.0261  | 3      | Rank004_Score0.7804_Box03_escape_bent_006.png
+5     | escape_bent_001.png        | ANOMALY             | 0.6565    | 0.6328    | 0.6565     | +0.0236  | 2      | Rank005_Score0.6565_Box02_escape_bent_001.png
+6     | escape_bent_000.png        | ANOMALY             | 0.6230    | 0.6093    | 0.6230     | +0.0137  | 3      | Rank006_Score0.6230_Box03_escape_bent_000.png
+7     | escape_bent_004.png        | ANOMALY             | 0.5333    | 0.5184    | 0.5333     | +0.0149  | 2      | Rank007_Score0.5333_Box02_escape_bent_004.png
+8     | escape_bent_007.png        | ANOMALY             | 0.5297    | 0.5119    | 0.5297     | +0.0178  | 3      | Rank008_Score0.5297_Box03_escape_bent_007.png
+9     | clean_020.png              | ANOMALY             | 0.2075    | 0.2091    | 0.2075     | -0.0016  | 18     | Rank009_Score0.2075_Box18_clean_020.png
+10    | clean_010.png              | ANOMALY             | 0.1576    | 0.1674    | 0.1576     | -0.0098  | 3      | Rank010_Score0.1576_Box03_clean_010.png
+11    | clean_004.png              | ANOMALY             | 0.1570    | 0.1513    | 0.1570     | +0.0057  | 1      | Rank011_Score0.1570_Box01_clean_004.png
+12    | clean_014.png              | ANOMALY             | 0.1539    | 0.1487    | 0.1539     | +0.0052  | 1      | Rank012_Score0.1539_Box01_clean_014.png
+13    | clean_018.png              | ANOMALY             | 0.1514    | 0.1477    | 0.1514     | +0.0036  | 6      | Rank013_Score0.1514_Box06_clean_018.png
+14    | clean_008.png              | ANOMALY             | 0.1464    | 0.1473    | 0.1464     | -0.0009  | 3      | Rank014_Score0.1464_Box03_clean_008.png
+15    | clean_019.png              | ANOMALY             | 0.1430    | 0.1516    | 0.1430     | -0.0087  | 3      | Rank015_Score0.1430_Box03_clean_019.png
+16    | clean_017.png              | ANOMALY             | 0.1416    | 0.1361    | 0.1416     | +0.0055  | 1      | Rank016_Score0.1416_Box01_clean_017.png
+17    | clean_006.png              | PASS_SKIPPED        | 0.1323    | 0.1480    | 0.1323     | -0.0157  | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_003.png              | PASS_SKIPPED        | 0.1295    | 0.1258    | 0.1295     | +0.0038  | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_007.png              | PASS_SKIPPED        | 0.1279    | 0.1244    | 0.1279     | +0.0035  | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_011.png              | PASS_SKIPPED        | 0.1238    | 0.1313    | 0.1238     | -0.0075  | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_005.png              | PASS_SKIPPED        | 0.1207    | 0.1363    | 0.1207     | -0.0156  | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_016.png              | PASS_SKIPPED        | 0.1173    | 0.1145    | 0.1173     | +0.0028  | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_012.png              | PASS_SKIPPED        | 0.1173    | 0.1132    | 0.1173     | +0.0041  | 0      | (未超過動態門檻，不輸出圖片)
+24    | clean_013.png              | PASS_SKIPPED        | 0.1117    | 0.1189    | 0.1117     | -0.0071  | 0      | (未超過動態門檻，不輸出圖片)
+25    | clean_000.png              | PASS_SKIPPED        | 0.0983    | 0.1087    | 0.0983     | -0.0104  | 0      | (未超過動態門檻，不輸出圖片)
+26    | clean_002.png              | GOLDEN_PASS         | 0.0184    | 0.0180    | 0.0184     | +0.0005  | 0      | (未超過動態門檻，不輸出圖片)
+27    | clean_009.png              | GOLDEN_PASS         | 0.0165    | 0.0160    | 0.0165     | +0.0005  | 0      | (未超過動態門檻，不輸出圖片)
+28    | clean_001.png              | GOLDEN_PASS         | 0.0164    | 0.0158    | 0.0164     | +0.0006  | 0      | (未超過動態門檻，不輸出圖片)
+29    | clean_015.png              | GOLDEN_PASS         | 0.0160    | 0.0157    | 0.0160     | +0.0003  | 0      | (未超過動態門檻，不輸出圖片)
+
+===========================================================================
+ [✅ 推論階段完成 (mvtec_sim_grid_4shot / grid) — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:09.54 (9.54 秒)
+      ├─ Step 2.1 測試池圖塊準備 (29 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:06.26 (6.26 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與MICRO_DEFECT畫框 : 00:00:03.28 (3.28 秒)
+      └─ 平均每張原圖推論耗時 (29 張原圖)         : 0.33 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:09.56 (9.56 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=MICRO_DEFECT, Mode=hybrid, Eff_Thresh=0.1371):
+      🚨 超過門檻判定異常並畫框輸出 : 16 張
+      ✅ 未達門檻或微塵濾除直接略過 : 13 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (MICRO_DEFECT_SENSITIVE) : Max=0.1323 | P99=0.1320 | P95=0.1312 | Median=0.1207 | Mean=0.1199 | Std=0.0098
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1297 | mean+2*std=0.1396 | mean+3*std=0.1494
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1480, Mean=0.1246, Std=0.0118  vs  [當前模式] Max=0.1323, Mean=0.1199, Std=0.0098
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning)
+                                       [Golden平均=0.0168 vs 盲池正常中位數=0.1207 | Overfit_Ratio=7.60x | Gap=+0.1111]
+  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 (0.1279) 顯著高於 Golden 基準圖平均 (0.0168) [Overfit_Ratio=7.60x, Gap=+0.1111]！
+                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，
+                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot/dinov3sim_escape_grid
+      🏆 指定之 Golden 來源         : /home/kenny/project/FoundAD/datasets/mvtec_sim_grid_4shot
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_170941_462/log.txt
+===========================================================================

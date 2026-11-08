@@ -977,3 +977,287 @@ Normed features: False
           ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/escape_ranking_report.csv
           └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261107_232043/log.txt
 ===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-08 16:27:22 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722
+[指定 Golden 來源 (--golden_src)] (預設沿用 shot_dir)
+[指定訓練權重 (--trained_ckpt)] (預設搜尋 ./logs/mvtec_sim_transistor_4shot)
+[微瑕疵高靈敏模式狀態] ON (已啟動白頂帽增強與防稀釋局部尖峰計分)
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot/train_meta_transistor.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/pretrained.pth.tar
+[Tiling-Test] 已遞迴將 68 張新測試圖準備為 68 張推論圖塊 (1:1整張推論=68張 [<= 1280px], 大圖切塊=0張, 自動跳過 0 張純背景角落塊) -> /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool
+
+[Step 2] 執行 FoundAD 批次推論 (共 68 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_transistor_4shot diy_name=sim_escape_transistor data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=50617)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=129037439646080>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_transistor_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_transistor_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 50617},
+  'diy_name': 'sim_escape_transistor',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 68 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [68/68] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 68 張測試原圖) | 計分模式: MICRO_DEFECT_SENSITIVE (微瑕疵白頂帽增強 [boost=0.35] + Top-24px 防稀釋局部尖峰 + 5x5閉運算微框保護)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.1300 [左半核心上界(mu+5*σ_left)=0.1117 (mu=0.0508, σ_left=0.0122), Golden基準上界=0.0844, Core_P95=0.1493, MinFloor=0.0000]
+           (計分模式=MICRO_DEFECT_SENSITIVE, 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning) [Golden平均=0.0234 | 盲池正常核心中位數=0.1366 | Overfit_Ratio=5.83x (Gap=+0.1132)]
+  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 (0.1366) 顯著高於 Golden 基準圖平均 (0.0234) [Overfit_Ratio=5.83x, Gap=+0.1132]！
+                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，
+                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。
+[Step 3.3] 篩選與畫框完成：共 53 張超過有效門檻 (0.1300) 已畫框並將整張 Wafer .npy 存於 output；其餘 15 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:21:33.42 (1293.42 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:50.59 (50.59 秒)
+      ├─ Step 2.1 測試池圖塊準備 (68 塊, trigger=1280px) : 00:00:29.48 (29.48 秒)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:09.96 (9.96 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與MICRO_DEFECT畫框 : 00:00:11.16 (11.16 秒)
+      └─ 平均每張原圖推論耗時 (68 張原圖)         : 0.74 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:50.61 (50.61 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=MICRO_DEFECT, Mode=hybrid, Eff_Thresh=0.1300):
+      🚨 超過門檻判定異常並畫框輸出 : 53 張
+      ✅ 未達門檻或微塵濾除直接略過 : 15 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (MICRO_DEFECT_SENSITIVE) : Max=0.1276 | P99=0.1274 | P95=0.1266 | Median=0.1225 | Mean=0.1190 | Std=0.0078
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1269 | mean+2*std=0.1347 | mean+3*std=0.1425
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1449, Mean=0.1190, Std=0.0114  vs  [當前模式] Max=0.1276, Mean=0.1190, Std=0.0078
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning)
+                                       [Golden平均=0.0234 vs 盲池正常中位數=0.1225 | Overfit_Ratio=5.83x | Gap=+0.1132]
+  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 (0.1366) 顯著高於 Golden 基準圖平均 (0.0234) [Overfit_Ratio=5.83x, Gap=+0.1132]！
+                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，
+                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor
+      🏆 指定之 Golden 來源         : /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/20261108_162722/log.txt
+===========================================================================
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-08 17:10:07 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012
+[指定 Golden 來源 (--golden_src)] (預設沿用 shot_dir)
+[指定訓練權重 (--trained_ckpt)] (預設搜尋 ./logs/mvtec_sim_transistor_4shot)
+[微瑕疵高靈敏模式狀態] ON (已啟動白頂帽增強與防稀釋局部尖峰計分)
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot/train_meta_transistor.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池、Golden 基準與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 68 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 68 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_transistor_4shot diy_name=sim_escape_transistor data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=56875)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=129388561617152>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_transistor_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_transistor_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 56875},
+  'diy_name': 'sim_escape_transistor',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/pretrained.pth.tar...
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 68 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [68/68] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 68 張測試原圖) | 計分模式: MICRO_DEFECT_SENSITIVE (微瑕疵白頂帽增強 [boost=0.35] + Top-24px 防稀釋局部尖峰 + 5x5閉運算微框保護)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.1300 [左半核心上界(mu+5*σ_left)=0.1117 (mu=0.0508, σ_left=0.0122), Golden基準上界=0.0844, Core_P95=0.1493, MinFloor=0.0000]
+           (計分模式=MICRO_DEFECT_SENSITIVE, 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning) [Golden平均=0.0234 | 盲池正常核心中位數=0.1366 | Overfit_Ratio=5.83x (Gap=+0.1132)]
+  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 (0.1366) 顯著高於 Golden 基準圖平均 (0.0234) [Overfit_Ratio=5.83x, Gap=+0.1132]！
+                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，
+                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。
+[Step 3.3] 篩選與畫框完成：共 53 張超過有效門檻 (0.1300) 已畫框並將整張 Wafer .npy 存於 output；其餘 15 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 (mvtec_sim_transistor_4shot / transistor) — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:19.48 (19.48 秒)
+      ├─ Step 2.1 測試池圖塊準備 (68 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:07.92 (7.92 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與MICRO_DEFECT畫框 : 00:00:11.55 (11.55 秒)
+      └─ 平均每張原圖推論耗時 (68 張原圖)         : 0.29 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:19.49 (19.49 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=MICRO_DEFECT, Mode=hybrid, Eff_Thresh=0.1300):
+      🚨 超過門檻判定異常並畫框輸出 : 53 張
+      ✅ 未達門檻或微塵濾除直接略過 : 15 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (MICRO_DEFECT_SENSITIVE) : Max=0.1276 | P99=0.1274 | P95=0.1266 | Median=0.1225 | Mean=0.1190 | Std=0.0078
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.1269 | mean+2*std=0.1347 | mean+3*std=0.1425
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1449, Mean=0.1190, Std=0.0114  vs  [當前模式] Max=0.1276, Mean=0.1190, Std=0.0078
+      🩺 模型過擬合自檢 (Overfit)    : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning)
+                                       [Golden平均=0.0234 vs 盲池正常中位數=0.1225 | Overfit_Ratio=5.83x | Gap=+0.1132]
+  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 (0.1366) 顯著高於 Golden 基準圖平均 (0.0234) [Overfit_Ratio=5.83x, Gap=+0.1132]！
+                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，
+                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor
+      🏆 指定之 Golden 來源         : /home/kenny/project/FoundAD/datasets/mvtec_sim_transistor_4shot
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_171007_012/log.txt
+===========================================================================

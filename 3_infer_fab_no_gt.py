@@ -1,5 +1,5 @@
 # 檔案位置: FoundAD/3_infer_fab_no_gt.py
-# (全選覆蓋此檔：支援 --golden_src 與 --trained_ckpt 直接指定舊資料集 Golden Image 與訓練權重推論新資料集)
+# (全選覆蓋此檔：升級自適應未見過正常核心門檻估計、支援跨資料集 Golden/權重與離線防 504 保護)
 import shlex
 import os
 import re
@@ -45,8 +45,56 @@ def get_free_port() -> int:
         return int(s.getsockname()[1])
 
 
+def _ensure_offline_hub_patch_dir() -> str:
+    """
+    建立 sitecustomize.py 自動攔截 torch.hub.load(source='github')：
+    優先從本地 ~/.cache/torch/hub 離線載入 DINOv3/DINOv2，徹底杜絕 GitHub HTTP 504 Gateway Time-out！
+    """
+    patch_dir = os.path.abspath("./.offline_hub_patch")
+    os.makedirs(patch_dir, exist_ok=True)
+    sc_path = os.path.join(patch_dir, "sitecustomize.py")
+    code = '''import os
+import glob
+try:
+    import torch.hub
+    _orig_hub_load = torch.hub.load
+
+    def _safe_hub_load(repo_or_dir, model, *args, **kwargs):
+        if kwargs.get("source", "github") == "github" and isinstance(repo_or_dir, str) and "/" in repo_or_dir:
+            hub_dir = torch.hub.get_dir()
+            owner, repo = repo_or_dir.split("/")[:2]
+            cands = sorted(glob.glob(os.path.join(hub_dir, f"{owner}_{repo}_*")))
+            for c in cands:
+                if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
+                    try:
+                        kw_local = dict(kwargs)
+                        kw_local["source"] = "local"
+                        return _orig_hub_load(c, model, *args, **kw_local)
+                    except Exception:
+                        pass
+        try:
+            return _orig_hub_load(repo_or_dir, model, *args, **kwargs)
+        except Exception:
+            hub_dir = torch.hub.get_dir()
+            for c in sorted(glob.glob(os.path.join(hub_dir, "*dino*"))):
+                if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
+                    kw_local = dict(kwargs)
+                    kw_local["source"] = "local"
+                    return _orig_hub_load(c, model, *args, **kw_local)
+            raise
+
+    torch.hub.load = _safe_hub_load
+except Exception:
+    pass
+'''
+    if not os.path.isfile(sc_path):
+        with open(sc_path, "w", encoding="utf-8") as f:
+            f.write(code)
+    return patch_dir
+
+
 def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) -> str:
-    """執行子程序指令，自動注入空閒 FAB_MASTER_PORT，即時在 Terminal 顯示並同步寫入 log.txt。"""
+    """執行子程序指令，自動注入空閒 FAB_MASTER_PORT 與離線 Hub Patch，即時顯示並同步寫入 log.txt。"""
     header = f"\n[EXEC] {cmd}\n" + "-" * 60
     print(header, flush=True)
     output_lines = []
@@ -54,6 +102,10 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
     run_env["PYTHONUNBUFFERED"] = "1"
     if "FAB_MASTER_PORT" not in run_env:
         run_env["FAB_MASTER_PORT"] = str(get_free_port())
+
+    patch_dir = _ensure_offline_hub_patch_dir()
+    old_pp = run_env.get("PYTHONPATH", "")
+    run_env["PYTHONPATH"] = f"{patch_dir}:{old_pp}" if old_pp else patch_dir
 
     files_to_write = [open(lf, "a", encoding="utf-8") for lf in log_files if lf]
     try:
@@ -92,14 +144,7 @@ def load_image_bgr_uint8(img_path: str) -> np.ndarray:
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
 
-# =====================================================================
-# [新增] 跨資料集推論：解析與對接指定的訓練權重檔 (--trained_ckpt)
-# =====================================================================
 def _resolve_custom_trained_ckpt_file(trained_ckpt: str, req_step: int) -> Tuple[str, int, str]:
-    """
-    解析使用者指定的 --trained_ckpt (可為 .pth.tar 檔案或權重目錄)，
-    回傳 (權重檔絕對路徑, 對應步數 chosen_step, 模型前綴 model_prefix)。
-    """
     ckpt_path = os.path.abspath(os.path.expanduser(trained_ckpt.strip()))
     if not os.path.exists(ckpt_path):
         raise FileNotFoundError(f"找不到指定的訓練權重路徑 (--trained_ckpt): {ckpt_path}")
@@ -161,10 +206,6 @@ def prepare_ckpt_for_demo(
     log_files: List[str],
     trained_ckpt: str = "",
 ) -> Tuple[int, List[str], List[str]]:
-    """
-    確認權重已生成並複製為 pretrained.pth.tar 與 train-step{chosen_step}.pth.tar。
-    若指定了 trained_ckpt，則自動將該權重檔對接至當前 data_name / diy_name 的推論目錄。
-    """
     if trained_ckpt and trained_ckpt.strip():
         src_ckpt_file, chosen_step, model_prefix = _resolve_custom_trained_ckpt_file(trained_ckpt, req_step)
         existing_dirs = [
@@ -233,27 +274,15 @@ def prepare_ckpt_for_demo(
     return chosen_step, ckpt_dirs, ckpt_files
 
 
-# =====================================================================
-# [新增] 跨資料集推論：解析與載入指定的 Golden Image (--golden_src)
-# =====================================================================
 def resolve_custom_golden_source(
     golden_src: str,
     category: str,
     fallback_pool_dir: str = "",
 ) -> Tuple[List[str], Optional[str]]:
-    """
-    解析使用者指定的 --golden_src，回傳 (Golden 全解析度原圖絕對路徑清單, 既有訓練圖塊目錄或 None)。
-    支援 4 種輸入格式：
-    1. 舊資料集的 shot_dir 根目錄 (如 ./datasets/wafer_TMQB28_4shot)
-    2. 含有 Golden 圖片的任意資料夾路徑 (如 .../golden_full_res_backup/wafer 或自訂資料夾)
-    3. selected_4_golden_images.txt 紀錄檔或純文字路徑清單 (.txt)
-    4. 以逗號 (,) 分隔的多張圖片路徑字串
-    """
     raw_spec = golden_src.strip()
     if not raw_spec:
         raise ValueError("--golden_src 不可為空字串！")
 
-    # 格式 4：以逗號分隔的多張圖片路徑，或單一圖片檔案
     if "," in raw_spec or (os.path.isfile(raw_spec) and raw_spec.lower().endswith(IMG_EXTENSIONS)):
         parts = [p.strip() for p in raw_spec.split(",") if p.strip()]
         resolved = []
@@ -272,7 +301,6 @@ def resolve_custom_golden_source(
     if not os.path.exists(src_path):
         raise FileNotFoundError(f"找不到指定的 Golden 來源路徑 (--golden_src): {src_path}")
 
-    # 格式 3：.txt 紀錄檔 (例如 selected_4_golden_images.txt 或每行一個路徑的清單)
     if os.path.isfile(src_path) and src_path.lower().endswith(".txt"):
         txt_dir = os.path.dirname(src_path)
         parsed_rel_names = []
@@ -297,11 +325,8 @@ def resolve_custom_golden_source(
                     break
         if resolved:
             return resolved, None
-
-        # 若 .txt 內記載的是舊盲池相對路徑，退回檢查同目錄下的 golden_full_res_backup
         src_path = txt_dir
 
-    # 格式 1 & 2：資料夾路徑 (可為舊 shot_dir 或任意圖片資料夾)
     if os.path.isdir(src_path):
         existing_train_tiles_dir = None
         train_cat_dir = os.path.join(src_path, "train", category)
@@ -316,7 +341,6 @@ def resolve_custom_golden_source(
         if os.path.isdir(train_cat_dir) and scan_pool_images(train_cat_dir):
             existing_train_tiles_dir = train_cat_dir
 
-        # 優先尋找 golden_full_res_backup/<category> 內的完整解析度 Golden 原圖
         backup_cat_dir = os.path.join(src_path, "golden_full_res_backup", category)
         if not os.path.isdir(backup_cat_dir) and os.path.isdir(os.path.join(src_path, "golden_full_res_backup")):
             sub_backups = [
@@ -331,7 +355,6 @@ def resolve_custom_golden_source(
             if backup_imgs:
                 return backup_imgs, existing_train_tiles_dir
 
-        # 若使用者直接傳入 train/<category> 目錄，嘗試往上找其對應的 golden_full_res_backup
         parent_dir = os.path.dirname(src_path)
         grandparent_dir = os.path.dirname(parent_dir)
         if os.path.basename(parent_dir) == "train":
@@ -341,7 +364,6 @@ def resolve_custom_golden_source(
                 if backup_imgs:
                     return backup_imgs, src_path
 
-        # 直接掃描指定資料夾內的圖片 (優先取非碎片 _tile_y 的原圖)
         all_found = scan_pool_images(src_path)
         if all_found:
             non_tile_imgs = [p for p in all_found if "_tile_y" not in os.path.basename(p)]
@@ -367,12 +389,6 @@ def setup_custom_golden_for_infer(
     run_out_dir: str,
     log_files: List[str],
 ) -> Tuple[List[str], List[str]]:
-    """
-    將使用者指定的 Golden Image 同步配置到當前 shot_dir，並檢查這些 Golden Image 是否屬於外部舊資料集：
-    - 回傳 (golden_filenames, external_golden_paths)
-    - 若 Golden Image 來自外部舊資料集 (不在本次 --pool_dir 內)，將透過 external_golden_paths
-      注入推論圖塊池以計算 Golden 空間容差遮罩與動態門檻基準，但不混入新資料集的測試排名報表中。
-    """
     custom_golden_paths, existing_train_tiles_dir = resolve_custom_golden_source(
         golden_src=golden_src,
         category=category,
@@ -384,7 +400,6 @@ def setup_custom_golden_for_infer(
     os.makedirs(cat_train_dir, exist_ok=True)
     os.makedirs(full_backup_dir, exist_ok=True)
 
-    # 1. 將指定的 Golden 全解析度原圖同步至 golden_full_res_backup/<category>
     if os.path.abspath(os.path.dirname(custom_golden_paths[0])) != os.path.abspath(full_backup_dir):
         safe_rmtree(full_backup_dir)
         os.makedirs(full_backup_dir, exist_ok=True)
@@ -393,7 +408,6 @@ def setup_custom_golden_for_infer(
             dst_p = os.path.join(full_backup_dir, f"{i:03d}_{os.path.basename(src_p)}" if not re.match(r"^\d{3}", os.path.basename(src_p)) else os.path.basename(src_p))
             safe_copy(src_p, dst_p)
 
-    # 2. 確保 shot_dir/train/<category> 具備對應的訓練圖塊或原圖
     if existing_train_tiles_dir and os.path.abspath(existing_train_tiles_dir) != os.path.abspath(cat_train_dir):
         safe_rmtree(cat_train_dir)
         os.makedirs(cat_train_dir, exist_ok=True)
@@ -428,7 +442,6 @@ def setup_custom_golden_for_infer(
             except Exception as e:
                 log_and_print(f"[Custom-Golden] 備註：略過訓練圖塊重建，直接沿用原圖 ({e})", log_files)
 
-    # 3. 判斷指定的 Golden Image 是否已在新的 --pool_dir 內，或屬於跨資料集外部 Golden
     pool_imgs = scan_pool_images(pool_dir)
     pool_abs_map = {os.path.abspath(p): os.path.relpath(p, pool_dir).replace("\\", "/") for p in pool_imgs}
     pool_base_map = {os.path.basename(p): os.path.relpath(p, pool_dir).replace("\\", "/") for p in pool_imgs}
@@ -478,11 +491,6 @@ def load_golden_filenames_for_infer(
     log_files: List[str],
     golden_src: str = "",
 ) -> Tuple[List[str], List[str], Optional[int], float]:
-    """
-    1. 若有指定 --golden_src，直接載入指定的 Golden Image (絕不對新資料集重跑 Auto-Golden)。
-    2. 否則優先從 2_train_fab_no_gt.py 產生的 train_meta_{category}.json 讀取 golden_filenames；
-       若連舊紀錄也無，才從 auto_golden 快取或備份資料夾載入。
-    """
     if golden_src and golden_src.strip():
         golden_filenames, external_golden_paths = setup_custom_golden_for_infer(
             golden_src=golden_src,
@@ -515,8 +523,6 @@ def load_golden_filenames_for_infer(
                 if os.path.isfile(purity_src):
                     safe_copy(purity_src, os.path.join(run_out_dir, "golden_tile_purity_report.txt"))
 
-                # 若使用者未傳 --golden_src，但把舊的 shot_dir 直接拿來推論新 pool_dir，
-                # 自動檢查 backup 內的 Golden 原圖是否不在新 pool_dir 中並自動補入外部基準
                 external_golden_paths = []
                 pool_rel_set = {
                     os.path.relpath(p, pool_dir).replace("\\", "/") for p in scan_pool_images(pool_dir)
@@ -565,9 +571,6 @@ def load_golden_filenames_for_infer(
     return golden_filenames, [], None, (golden_select_sec + train_tile_sec)
 
 
-# =====================================================================
-# 測試池高解析度切塊 (Tiling) 與無縫縫合 (Feathering Stitching) 模組
-# =====================================================================
 def _tile_single_image_to_pool(
     fpath: str,
     rel_fname: str,
@@ -580,7 +583,6 @@ def _tile_single_image_to_pool(
     disable_tiling: bool,
     is_external_golden: bool = False,
 ) -> Tuple[Dict, int, int, bool]:
-    """將單張原圖切分為推論圖塊並存入 tiled_pool_dir。"""
     img = load_image_rgb_uint8(fpath)
     h, w = img.shape[:2]
 
@@ -665,10 +667,6 @@ def prepare_tiled_test_pool(
     log_files: List[str],
     external_golden_paths: Optional[List[str]] = None,
 ) -> Dict:
-    """
-    遞迴搜尋測試盲池 (含所有子資料夾) 中的所有圖片，並切塊供模型推論。
-    若存在跨資料集指定的外部 Golden 原圖 (external_golden_paths)，自動一併切塊注入推論池以供基準校準。
-    """
     safe_rmtree(tiled_pool_dir)
     os.makedirs(tiled_pool_dir, exist_ok=True)
     stride = max(1, tile_size - tile_overlap)
@@ -764,7 +762,6 @@ def prepare_tiled_test_pool(
 
 
 def build_2d_feather_weight(h: int, w: int, overlap: int) -> np.ndarray:
-    """建立 2D 餘弦平滑權重遮罩 (Raised-Cosine Window)，消除重疊切塊拼接時的邊界接縫。"""
     def _1d_ramp(length: int, ov: int) -> np.ndarray:
         w1d = np.ones(length, dtype=np.float32)
         ramp = min(max(ov, 16), length // 3)
@@ -781,7 +778,6 @@ def build_2d_feather_weight(h: int, w: int, overlap: int) -> np.ndarray:
 
 
 def find_tile_npy(tile_amap_dir: str, tile_stem: str, tile_fname: str) -> str:
-    """容錯尋找 AD.py 輸出的子圖塊 .npy 熱力圖檔案。"""
     candidates = [
         os.path.join(tile_amap_dir, f"{tile_stem}.npy"),
         os.path.join(tile_amap_dir, f"{tile_fname}.npy"),
@@ -799,7 +795,6 @@ def is_tiled_png_pool_valid(
     pool_signature: str,
     tile_config_key: str,
 ) -> Optional[Dict]:
-    """檢查既有測試池切塊 PNG 與 cached_tile_manifest.json 是否完整且指紋相符。"""
     if not os.path.isdir(tiled_pool_dir) or not os.path.isfile(cached_manifest_path):
         return None
     try:
@@ -828,10 +823,6 @@ def stitch_single_image_amap(
     tile_overlap: int,
     delete_tiles: bool = True,
 ) -> np.ndarray:
-    """
-    將單張大圖的所有子圖塊 .npy 直接於記憶體 (RAM) 內無縫縫合回原圖完整解析度 (H, W)，
-    並在拼回整張圖後立刻自動銷毀該圖所有切成碎片的 Tile .npy 檔案。
-    """
     h, w = img_meta["height"], img_meta["width"]
     tiles = img_meta["tiles"]
     canvas_sum = np.zeros((h, w), dtype=np.float32)
@@ -884,9 +875,6 @@ def stitch_single_image_amap(
     return full_amap
 
 
-# =====================================================================
-# 防誤報核心演算法：晶圓圓周邊緣抑制 + 微瑕疵白頂帽增強 + 動態門檻對齊
-# =====================================================================
 def detect_circular_wafer_geometry(
     img_path: str,
     h: int,
@@ -894,9 +882,6 @@ def detect_circular_wafer_geometry(
     wafer_edge_mode: str,
     category: str,
 ) -> Tuple[bool, float, float, float]:
-    """
-    偵測影像是否為圓形晶圓/圓形工件，並回傳 (是否啟用圓周抑制, 圓心 cy, 圓心 cx, 半徑 R)。
-    """
     mode = wafer_edge_mode.lower().strip()
     if mode == "off":
         return False, h * 0.5, w * 0.5, min(h, w) * 0.5
@@ -985,9 +970,6 @@ def refine_amap_for_wafer_and_noise(
     micro_defect_mode: bool = False,
     micro_boost_weight: float = 0.35,
 ) -> np.ndarray:
-    """
-    四合一防誤報熱力圖純化器 (支援 --micro_defect_mode 微瑕疵白頂帽局部峰值增強)。
-    """
     h, w = full_amap.shape[:2]
     work_map = full_amap.astype(np.float32).copy()
     img_median = float(np.median(work_map))
@@ -1051,7 +1033,6 @@ def merge_nearby_bboxes(
     bboxes: List[Tuple[int, int, int, int, float, int]],
     merge_gap: int,
 ) -> List[Tuple[int, int, int, int, float, int]]:
-    """自動合併重疊或距離極近的碎片紅框，避免單一瑕疵碎成多個小框。"""
     if len(bboxes) <= 1:
         return bboxes
 
@@ -1099,7 +1080,6 @@ def extract_tight_bboxes_for_anomaly_image(
     raw_score_mode: bool = False,
     micro_defect_mode: bool = False,
 ) -> Tuple[List[Tuple[int, int, int, int, float, int]], float]:
-    """峰值自適應核心收斂 (Peak-Adaptive Core Thresholding) 演算法。"""
     h, w = refined_amap.shape[:2]
     work_map = refined_amap.copy()
     img_median = float(np.median(work_map))
@@ -1166,11 +1146,22 @@ def extract_tight_bboxes_for_anomaly_image(
     return merged_bboxes, pixel_box_thresh
 
 
+# =====================================================================
+# [升級] 自適應未見過正常核心估計器 (Adaptive Unseen-Normal Core Estimator)
+# 同時完美支援：
+# 1. 公司大圖切塊晶圓池 (Golden 與 Unseen Normal 同分佈，並自動補償跨批號機台微偏移)
+# 2. 整張原圖訓練模式 (自動排除 4-shot Golden 記憶壓低效應，鎖定真正的 Unseen Normal 核心)
+# =====================================================================
 def estimate_blind_normal_core_stats(
     non_golden_scores: List[float],
     golden_scores: List[float],
 ) -> Tuple[float, float, float, np.ndarray]:
-    """真無 GT 盲池左半部正常核心估計器 (Left-Half Normal Core Estimator, sigma_left)。"""
+    """
+    真無 GT 盲池左半部正常核心估計器 (Adaptive Unseen-Normal Left-Core Estimator)：
+    - 直接針對已排除 Golden 訓練圖的 non_golden_scores 估計未見過正常樣本的核心位置 mu_core 與左半標準差 sigma_left。
+    - 避免當 Golden 整張原圖被模型記憶 (如 Golden=0.02, Unseen Normal=0.12) 或跨 Lot 光照微偏移時，
+      將 mu_core 錯誤往下鎖死在 g_max，導致正常晶圓大量誤報。
+    """
     pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
     if pool_arr.size == 0:
@@ -1179,43 +1170,45 @@ def estimate_blind_normal_core_stats(
     sorted_pool = np.sort(pool_arr)
     n = sorted_pool.size
 
-    half_n = max(1, (n + 1) // 2)
+    # 取非 Golden 盲池左半部 (前 55% 低分群，保證排除右尾端潛在 Escape 瑕疵)
+    half_n = max(1, int(np.ceil(n * 0.55)))
     lower_half = sorted_pool[:half_n]
     med_pool = float(np.median(sorted_pool))
+    g_med = float(np.median(g_arr)) if g_arr.size > 0 else float(np.median(lower_half))
 
-    if g_arr.size > 0:
-        g_med = float(np.median(g_arr))
-        g_max = float(np.max(g_arr))
-        g_std = float(np.std(g_arr)) if g_arr.size > 1 else 0.015
-        core_anchor = min(med_pool, max(g_med * 1.25, g_max + 2.0 * max(g_std, 0.012)))
+    # 以非 Golden 左半群的 P75 (約全池 P40) 作為未見過正常樣本的核心基準 mu_unseen
+    mu_unseen = float(np.percentile(lower_half, 75.0)) if lower_half.size >= 4 else float(np.median(lower_half))
+
+    # 若 Golden 分數高於 mu_unseen (例如部分切塊晶圓)，適度參考 Golden；
+    # 若 Golden 因整張記憶效應遠低於 mu_unseen，則以 mu_unseen 為主，絕不向下硬拉！
+    if g_arr.size > 0 and g_med > mu_unseen:
+        mu_core = float(min(med_pool, 0.5 * mu_unseen + 0.5 * g_med))
     else:
-        g_med = float(np.median(lower_half))
-        core_anchor = med_pool
+        mu_core = mu_unseen
 
-    left_samples = sorted_pool[sorted_pool <= core_anchor]
-    if left_samples.size < max(3, n // 5):
-        left_samples = lower_half
-
-    mu_core = float(np.percentile(left_samples, 75.0)) if left_samples.size >= 4 else float(np.median(left_samples))
-    if g_arr.size > 0:
-        mu_core = float(np.clip(mu_core, g_med, core_anchor))
-
-    left_diffs = mu_core - sorted_pool[sorted_pool <= mu_core]
+    # 計算相對於 mu_core 的左半部單邊離散度 sigma_left (不受右側高分瑕疵污染)
+    left_of_mu = sorted_pool[sorted_pool <= mu_core]
+    left_diffs = mu_core - left_of_mu
     if left_diffs.size >= 2:
         sigma_left_rms = float(np.sqrt(np.mean(np.square(left_diffs))))
-        sigma_left_mad = float(1.4826 * np.median(np.abs(left_diffs)))
+        sigma_left_mad = float(1.4826 * np.median(np.abs(left_of_mu - np.median(left_of_mu))))
         sigma_left = max(sigma_left_rms, sigma_left_mad)
     else:
-        sigma_left = float(np.std(left_samples)) if left_samples.size > 1 else 0.015
+        sigma_left = float(np.std(lower_half)) if lower_half.size > 1 else 0.015
+
+    # 結合下半部 IQR 穩健標準差，防止小樣本低估正常波動
+    if lower_half.size >= 4:
+        lower_iqr_std = float((np.percentile(lower_half, 75.0) - np.percentile(lower_half, 25.0)) / 1.349)
+        sigma_left = max(sigma_left, lower_iqr_std * 0.85)
 
     if g_arr.size > 1:
         g_iqr = float((np.percentile(g_arr, 75.0) - np.percentile(g_arr, 25.0)) / 1.349)
         sigma_left = max(sigma_left, float(np.std(g_arr)), g_iqr)
 
-    sigma_left = float(np.clip(sigma_left, 0.010, 0.065))
+    sigma_left = float(np.clip(sigma_left, 0.012, 0.075))
 
-    est_normal_mask = sorted_pool <= (mu_core + 2.5 * sigma_left)
-    est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else left_samples
+    est_normal_mask = sorted_pool <= (mu_core + 3.0 * sigma_left)
+    est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else lower_half
     return mu_core, sigma_left, g_med, est_normal_arr
 
 
@@ -1229,7 +1222,7 @@ def compute_dynamic_effective_threshold(
     sigma_k: float,
     top_k: int,
 ) -> Tuple[float, str]:
-    """計算真無 GT 盲池最終異常判定門檻。"""
+    """計算真無 GT 盲池最終異常判定門檻 (支援跨批號微偏移與排除 Golden 記憶效應)。"""
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
@@ -1248,9 +1241,11 @@ def compute_dynamic_effective_threshold(
         g_max = float(np.max(g_arr))
         g_std = max(float(np.std(g_arr)) if g_arr.size > 1 else 0.012, 0.012)
         golden_ref_bound = max(g_mean + sigma_k * max(g_std, sigma_left), g_max * 1.08 + 0.015)
+        # 安全上限以 mu_core (未見過正常核心) 與 g_max 的較大者為基準，避免 4-shot 記憶效應壓低上限
+        effective_base = max(mu_core, g_max)
         golden_safety_cap = max(
-            g_max * 1.35 + 0.05,
-            mu_core + (sigma_k + 1.5) * sigma_left,
+            effective_base * 1.35 + 0.05,
+            mu_core + (sigma_k + 2.0) * sigma_left,
             float(min_threshold) + 0.06,
         )
     else:
@@ -1296,7 +1291,7 @@ def compute_dynamic_effective_threshold(
         eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
         desc = (
             f"Hybrid 真無GT雙重校準動態門檻 = {eff:.4f} "
-            f"[左半核心上界(mu+{sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
+            f"[未見過正常核心上界(mu+{sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
             f"Golden基準上界={golden_ref_bound:.4f}, Core_P{auto_percentile:g}={p_val_core:.4f}, "
             f"MinFloor={floor_val:.4f}"
             f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
@@ -1308,7 +1303,6 @@ def evaluate_overfitting_diagnostics(
     golden_scores: List[float],
     non_golden_normal_scores: List[float],
 ) -> Tuple[float, float, float, str, str]:
-    """無監督過擬合 / 跨資料集偏移自檢指標 (Unsupervised Overfitting & Domain-Shift Self-Diagnostic)。"""
     if not golden_scores or not non_golden_normal_scores:
         return 0.0, 1.0, 0.0, "🟢 正常 (無對照組)", ""
 
@@ -1318,18 +1312,17 @@ def evaluate_overfitting_diagnostics(
     golden_gap = ng_med - g_mean
 
     if overfit_ratio >= 1.45 and golden_gap >= 0.040:
-        status_badge = "🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning)"
+        status_badge = "🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償)"
         advice_msg = (
-            f"  [⚠️ 過擬合/分佈偏移自檢建議] 新測試池正常核心中位數 ({ng_med:.4f}) 顯著高於 Golden 基準圖平均 ({g_mean:.4f}) "
-            f"[Overfit_Ratio={overfit_ratio:.2f}x, Gap=+{golden_gap:.4f}]！\n"
-            f"                               代表舊權重可能過度記憶舊 Golden 微結構或新舊批號有光照偏移。若正常晶圓誤報偏多，\n"
-            f"                               建議調高門檻倍數 (例如設定 --thresh_mode mean_std --sigma_k 4.0)。"
+            f"  [ℹ️ 記憶效應/批次偏移自動補償] 未見過正常核心中位數 ({ng_med:.4f}) 高於 Golden 訓練圖平均 ({g_mean:.4f}) "
+            f"[Ratio={overfit_ratio:.2f}x, Gap=+{golden_gap:.4f}]。\n"
+            f"                                系統已自動將動態門檻錨點切換至「未見過正常核心 (Unseen-Normal Core)」，避免誤殺正常樣本。"
         )
     elif overfit_ratio >= 1.25 and golden_gap >= 0.025:
-        status_badge = "🟡 注意: 輕微過擬合/批次偏移傾向 (Mild Shift — 已由左半核心動態門檻自動補償)"
+        status_badge = "🟢 穩定: 輕微批次偏移傾向 (已由左半核心動態門檻自動補償)"
         advice_msg = ""
     else:
-        status_badge = "🟢 良好: 無過擬合現象 (Healthy Generalization — 舊Golden基準與新資料集正常分佈一致)"
+        status_badge = "🟢 良好: 無過擬合現象 (Healthy Generalization — Golden基準與未見過正常分佈一致)"
         advice_msg = ""
 
     return g_mean, overfit_ratio, golden_gap, status_badge, advice_msg
@@ -1360,7 +1353,6 @@ def stitch_and_filter_anomalies(
     micro_peak_pixels: int,
     log_files: List[str],
 ) -> Tuple[int, int, float, str, str, str]:
-    """三階段 RAM 串流縫合、碎片即時銷毀與異常紅框篩選輸出 (支援跨資料集外部 Golden 基準校準)。"""
     os.makedirs(final_amap_dir, exist_ok=True)
     anomaly_dir = os.path.join(out_dir, "anomaly_images")
     anomaly_fullres_bbox_dir = os.path.join(anomaly_dir, "full_res_bbox_only")
@@ -1485,7 +1477,6 @@ def stitch_and_filter_anomalies(
         else:
             non_golden_all_scores.append(active_max_score)
 
-        # 若為跨資料集外部指定的 Golden Image，僅做空間容差與門檻基準校準，不混入新測試集的排名與紅框輸出
         if is_ext_golden:
             ext_golden_score_logs.append(f"{os.path.basename(meta['path'])}={active_max_score:.4f}")
             del raw_amap, refined_amap, active_amap
@@ -1865,11 +1856,6 @@ def main():
         dest="golden_src",
         type=str,
         default="",
-        help=(
-            "直接指定舊資料集挑過的 Golden Image 來源（支援：1. Golden 圖片資料夾路徑、"
-            "2. 舊資料集的 shot_dir 如 ./datasets/wafer_TMQB28_4shot、"
-            "3. selected_4_golden_images.txt、4. 逗號分隔的多張圖片路徑）"
-        ),
     )
     parser.add_argument(
         "--trained_ckpt",
@@ -1877,10 +1863,6 @@ def main():
         dest="trained_ckpt",
         type=str,
         default="",
-        help=(
-            "直接指定舊資料集訓練過的 FoundAD 權重檔路徑（支援直接傳入 .pth.tar 檔案路徑 "
-            "如 ./logs/.../train-step2000.pth.tar 或 pretrained.pth.tar，或傳入權重所在資料夾路徑）"
-        ),
     )
     parser.add_argument("--out_dir", type=str, default="./output/2_fab_no_gt")
     parser.add_argument("--datasets_dir", type=str, default="./datasets")
@@ -1891,7 +1873,6 @@ def main():
     parser.add_argument("--ckpt_step", type=int, default=2000)
     parser.add_argument("--shots", type=int, default=4)
 
-    # 門檻與動態對齊參數
     parser.add_argument(
         "--thresh_mode",
         type=str,
@@ -1904,25 +1885,10 @@ def main():
     parser.add_argument("--top_k", type=int, default=0)
     parser.add_argument("--sigma_k", type=float, default=3.5)
 
-    # 晶圓圓周邊緣抑制、微塵濾波與「微瑕疵高靈敏模式 (--micro_defect_mode)」開關
-    parser.add_argument("--raw_score_mode", action="store_true", help="完全不經過濾波之原始最大值模式 (消融實驗對照組)")
-    parser.add_argument(
-        "--micro_defect_mode",
-        action="store_true",
-        help="一鍵啟動微瑕疵高靈敏模式：形態學白頂帽局部對比度增強 + Top-24px 防稀釋峰值計分 + 5x5閉運算微框保護",
-    )
-    parser.add_argument(
-        "--micro_boost_weight",
-        type=float,
-        default=0.35,
-        help="micro_defect_mode 下白頂帽局部尖峰增強權重 (預設 0.35)",
-    )
-    parser.add_argument(
-        "--micro_peak_pixels",
-        type=int,
-        default=24,
-        help="micro_defect_mode 下計算全圖異常分數的局部尖峰像素數上限 (預設 24，防止微瑕疵被背景稀釋)",
-    )
+    parser.add_argument("--raw_score_mode", action="store_true")
+    parser.add_argument("--micro_defect_mode", action="store_true")
+    parser.add_argument("--micro_boost_weight", type=float, default=0.35)
+    parser.add_argument("--micro_peak_pixels", type=int, default=24)
     parser.add_argument("--core_ratio", type=float, default=0.55)
     parser.add_argument("--border_ratio", type=float, default=0.02)
     parser.add_argument("--wafer_edge_mode", type=str, default="auto", choices=["auto", "on", "off"])
@@ -1930,17 +1896,11 @@ def main():
     parser.add_argument("--speckle_filter_ratio", type=float, default=0.008)
     parser.add_argument("--min_area_ratio", type=float, default=0.00012)
 
-    # 推論與切塊控制參數 (同步 min_tile_trigger=1280)
-    parser.add_argument("--force_infer", action="store_true", help="強制重新切塊測試池並重跑 GPU 推論")
+    parser.add_argument("--force_infer", action="store_true")
     parser.add_argument("--mock_from_mvtec", type=str, default="")
     parser.add_argument("--tile_size", type=int, default=512)
     parser.add_argument("--tile_overlap", type=int, default=64)
-    parser.add_argument(
-        "--min_tile_trigger",
-        type=int,
-        default=1280,
-        help="影像最大邊 <= min_tile_trigger (預設 1280px) 時直接 1:1 整張推論，> 1280px 才啟動重疊切塊與無縫縫合",
-    )
+    parser.add_argument("--min_tile_trigger", type=int, default=1280)
     parser.add_argument("--max_train_tiles", type=int, default=48)
     parser.add_argument("--infer_batch_size", type=int, default=16)
     parser.add_argument("--bg_std_thresh", type=float, default=1.5)
@@ -1953,18 +1913,25 @@ def main():
         else:
             args.category = os.path.basename(os.path.normpath(args.pool_dir))
 
+    if args.data_name == "mvtec_sim_4shot" and args.category:
+        args.data_name = f"mvtec_sim_{args.category}_{args.shots}shot"
+    if args.diy_name == "sim_escape" and args.category:
+        args.diy_name = f"sim_escape_{args.category}"
+
     now_tpe = datetime.now(TZ_TAIPEI)
-    timestamp = now_tpe.strftime("%Y%m%d_%H%M%S")
+    timestamp = now_tpe.strftime("%Y%m%d_%H%M%S_%f")[:19]
     base_out_dir = os.path.abspath(args.out_dir)
-    run_out_dir = os.path.join(base_out_dir, timestamp)
+    safe_cat_tag = re.sub(r"[^a-zA-Z0-9_\-]", "_", f"{args.data_name}_{args.category}")
+    run_out_dir = os.path.join(base_out_dir, f"infer_{safe_cat_tag}_{timestamp}")
     os.makedirs(run_out_dir, exist_ok=True)
     os.makedirs(args.datasets_dir, exist_ok=True)
     abs_datasets_dir = os.path.abspath(args.datasets_dir)
     shot_dir = os.path.join(abs_datasets_dir, args.data_name)
 
     fixed_log_txt = os.path.join(run_out_dir, "log.txt")
+    cat_latest_log = os.path.join(base_out_dir, f"latest_infer_log_{args.category}.txt")
     parent_latest_log = os.path.join(base_out_dir, "latest_log.txt")
-    log_files = [fixed_log_txt, parent_latest_log]
+    log_files = [fixed_log_txt, cat_latest_log, parent_latest_log]
 
     pipeline_start_t = time.perf_counter()
     start_dt_str = now_tpe.strftime("%Y-%m-%d %H:%M:%S (UTC+8)")
@@ -1979,7 +1946,6 @@ def main():
         log_files,
     )
 
-    # 1. 載入 Golden 檔案清單與對接訓練權重
     golden_filenames, external_golden_paths, meta_step, recorded_train_time = load_golden_filenames_for_infer(
         pool_dir=args.pool_dir,
         shot_dir=shot_dir,
@@ -2006,7 +1972,6 @@ def main():
         trained_ckpt=args.trained_ckpt,
     )
 
-    # 2. 測試池高解析度切塊與快取檢查 (將外部 Golden 清單納入快取指紋，確保更換 Golden 時自動更新)
     pool_signature = compute_pool_signature(args.pool_dir)
     ext_golden_sig = ""
     if external_golden_paths:
@@ -2083,7 +2048,6 @@ def main():
     safe_rmtree(tile_amap_tmp_dir)
     os.makedirs(tile_amap_tmp_dir, exist_ok=True)
 
-    # 3. 執行 FoundAD 子圖塊批次推論
     env = os.environ.copy()
     env["PYTHONUNBUFFERED"] = "1"
     env["FAB_AMAP_DUMP_DIR"] = os.path.abspath(tile_amap_tmp_dir)
@@ -2113,7 +2077,6 @@ def main():
     for old_hm in glob.glob(f"./logs/{args.data_name}/**/demo/heatmaps", recursive=True):
         safe_rmtree(old_hm)
 
-    # 4. RAM 即時縫合、碎片銷毀與四合一防誤報篩選
     t_stitch_start = time.perf_counter()
     anomaly_count, skipped_count, eff_thresh, anomaly_dir, anomaly_fullres_bbox_dir, dist_summary_lines = (
         stitch_and_filter_anomalies(
@@ -2151,7 +2114,7 @@ def main():
     mode_summary_str = "RAW" if args.raw_score_mode else ("MICRO_DEFECT" if args.micro_defect_mode else "FILTERED")
     infer_done_summary = (
         f"\n{'='*75}\n"
-        f" [✅ 推論階段完成 — 整體時間與所有檔案儲存位置總覽]\n"
+        f" [✅ 推論階段完成 ({args.data_name} / {args.category}) — 整體時間與所有檔案儲存位置總覽]\n"
         f"{'-'*75}\n"
         f"  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : {format_duration(recorded_train_time)} (ckpt_step={actual_step})\n"
         f"{'-'*75}\n"

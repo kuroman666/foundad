@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/4_split_eval_results.py (相容 3_split_eval_results.py)
+# 檔案位置: FoundAD/4_split_eval_results.py (相容 3_split_eval_results.py — 同步升級自適應未見過正常核心門檻估計)
 import os
 import re
 import csv
@@ -106,7 +106,7 @@ def estimate_blind_normal_core_stats(
     non_golden_scores: List[float],
     golden_scores: List[float],
 ) -> Tuple[float, float, float, np.ndarray]:
-    """真無 GT 盲池左半部正常核心估計器 (Left-Half Normal Core Estimator, sigma_left)。"""
+    """真無 GT 盲池左半部正常核心估計器 (Adaptive Unseen-Normal Left-Core Estimator)。"""
     pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
     if pool_arr.size == 0:
@@ -115,43 +115,39 @@ def estimate_blind_normal_core_stats(
     sorted_pool = np.sort(pool_arr)
     n = sorted_pool.size
 
-    half_n = max(1, (n + 1) // 2)
+    half_n = max(1, int(np.ceil(n * 0.55)))
     lower_half = sorted_pool[:half_n]
     med_pool = float(np.median(sorted_pool))
+    g_med = float(np.median(g_arr)) if g_arr.size > 0 else float(np.median(lower_half))
 
-    if g_arr.size > 0:
-        g_med = float(np.median(g_arr))
-        g_max = float(np.max(g_arr))
-        g_std = float(np.std(g_arr)) if g_arr.size > 1 else 0.015
-        core_anchor = min(med_pool, max(g_med * 1.25, g_max + 2.0 * max(g_std, 0.012)))
+    mu_unseen = float(np.percentile(lower_half, 75.0)) if lower_half.size >= 4 else float(np.median(lower_half))
+
+    if g_arr.size > 0 and g_med > mu_unseen:
+        mu_core = float(min(med_pool, 0.5 * mu_unseen + 0.5 * g_med))
     else:
-        g_med = float(np.median(lower_half))
-        core_anchor = med_pool
+        mu_core = mu_unseen
 
-    left_samples = sorted_pool[sorted_pool <= core_anchor]
-    if left_samples.size < max(3, n // 5):
-        left_samples = lower_half
-
-    mu_core = float(np.percentile(left_samples, 75.0)) if left_samples.size >= 4 else float(np.median(left_samples))
-    if g_arr.size > 0:
-        mu_core = float(np.clip(mu_core, g_med, core_anchor))
-
-    left_diffs = mu_core - sorted_pool[sorted_pool <= mu_core]
+    left_of_mu = sorted_pool[sorted_pool <= mu_core]
+    left_diffs = mu_core - left_of_mu
     if left_diffs.size >= 2:
         sigma_left_rms = float(np.sqrt(np.mean(np.square(left_diffs))))
-        sigma_left_mad = float(1.4826 * np.median(np.abs(left_diffs)))
+        sigma_left_mad = float(1.4826 * np.median(np.abs(left_of_mu - np.median(left_of_mu))))
         sigma_left = max(sigma_left_rms, sigma_left_mad)
     else:
-        sigma_left = float(np.std(left_samples)) if left_samples.size > 1 else 0.015
+        sigma_left = float(np.std(lower_half)) if lower_half.size > 1 else 0.015
+
+    if lower_half.size >= 4:
+        lower_iqr_std = float((np.percentile(lower_half, 75.0) - np.percentile(lower_half, 25.0)) / 1.349)
+        sigma_left = max(sigma_left, lower_iqr_std * 0.85)
 
     if g_arr.size > 1:
         g_iqr = float((np.percentile(g_arr, 75.0) - np.percentile(g_arr, 25.0)) / 1.349)
         sigma_left = max(sigma_left, float(np.std(g_arr)), g_iqr)
 
-    sigma_left = float(np.clip(sigma_left, 0.010, 0.065))
+    sigma_left = float(np.clip(sigma_left, 0.012, 0.075))
 
-    est_normal_mask = sorted_pool <= (mu_core + 2.5 * sigma_left)
-    est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else left_samples
+    est_normal_mask = sorted_pool <= (mu_core + 3.0 * sigma_left)
+    est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else lower_half
     return mu_core, sigma_left, g_med, est_normal_arr
 
 
@@ -184,9 +180,10 @@ def compute_dynamic_effective_threshold(
         g_max = float(np.max(g_arr))
         g_std = max(float(np.std(g_arr)) if g_arr.size > 1 else 0.012, 0.012)
         golden_ref_bound = max(g_mean + sigma_k * max(g_std, sigma_left), g_max * 1.08 + 0.015)
+        effective_base = max(mu_core, g_max)
         golden_safety_cap = max(
-            g_max * 1.35 + 0.05,
-            mu_core + (sigma_k + 1.5) * sigma_left,
+            effective_base * 1.35 + 0.05,
+            mu_core + (sigma_k + 2.0) * sigma_left,
             float(min_threshold) + 0.06,
         )
     else:
@@ -239,29 +236,18 @@ def compute_dynamic_effective_threshold(
     return eff, desc
 
 
-# =====================================================================
-# 拆分張數計算與嚴格總數防呆檢查 (Strict Count Mismatch Guard)
-# =====================================================================
 def compute_pack_sizes(
     total_items: int,
     num_packs: int,
     counts_str: str,
     ratios_str: str,
 ) -> List[int]:
-    """
-    根據使用者設定的「每包張數 (--counts)」或「比例 (--ratios)」計算每一包應分配的張數。
-    【嚴格防呆】：
-    1. 當使用 --counts 指定每包張數時，若「各包設定張數加總」與「目前可拆分資料集總張數 (total_items)」不相等，
-       立即拋出 ValueError 報錯，並明確列出設定加總、各包清單與資料集實際總張數！
-    2. 若指定了多筆逗號分隔的 --counts (如 "400,400,200")，但包數與 --num_packs 不一致，亦明確報錯。
-    """
     if num_packs <= 0:
         raise ValueError(f"[設定錯誤] 拆分包數 (--num_packs={num_packs}) 必須大於 0！")
 
     if counts_str and ratios_str:
         raise ValueError("[設定錯誤] 請勿同時指定 --counts 與 --ratios，請擇一使用！")
 
-    # 模式 A：指定每包張數 (--counts) —— 啟動嚴格總數相等防呆檢查
     if counts_str:
         parts = [int(x.strip()) for x in re.split(r"[,:/\s]+", counts_str.strip()) if x.strip()]
         if not parts or any(p <= 0 for p in parts):
@@ -294,7 +280,6 @@ def compute_pack_sizes(
             )
         return sizes
 
-    # 模式 B：指定比例 (--ratios)，或預設均分 num_packs 份 (1:1:...:1)
     if not ratios_str:
         ratios_str = ":".join(["1"] * num_packs)
 
@@ -317,7 +302,6 @@ def compute_pack_sizes(
     base_counts = [int(np.floor(c)) for c in exact_counts]
     remainder = total_items - sum(base_counts)
 
-    # 依小數點餘數由大到小補足剩餘張數，確保總和 100% 等於 total_items
     frac_with_idx = sorted(
         enumerate([exact_counts[i] - base_counts[i] for i in range(len(raw_ratios))]),
         key=lambda x: x[1],
@@ -335,13 +319,6 @@ def split_records(
     split_order: str,
     seed: int,
 ) -> List[List[Dict]]:
-    """
-    支援 4 種排序/抽樣拆分策略：
-    - stratified : 分層抽樣 (確保每一包裡面的 ANOMALY / GOLDEN / PASS 比例一致)
-    - random     : 固定隨機種子打亂後依張數/比例切分
-    - rank       : 依照異常分數排名由高到低依序切分
-    - filename   : 依照原始檔名字母順序排列後切分
-    """
     n_packs = len(pack_sizes)
     work_records = list(records)
 
@@ -419,14 +396,6 @@ def generate_pack_eval_report(
     top_k: int = 0,
     use_symlink: bool = False,
 ) -> Dict:
-    """
-    為單一拆分包建立完整的 Eval 資料夾、複製對應的紅框圖/熱力圖並產出獨立的 TXT/CSV 評估報表。
-    支援兩種門檻評估模式：
-    1. 預設模式 (recompute_pack_thresh=False)：沿用全池統一動態門檻 (global_eff_thresh)。
-    2. 各包獨立重算模式 (recompute_pack_thresh=True)：僅使用本包內的樣本分數與 Golden 基準，
-       獨立重算本包專屬的 local_eff_thresh，並動態更新本包內每張圖的判定狀態 (Status)，
-       同时在報表中並列對照「本包獨立門檻」與「全池統一門檻」的結果！
-    """
     os.makedirs(pack_out_dir, exist_ok=True)
     anom_vis_dir = os.path.join(pack_out_dir, "anomaly_images")
     anom_full_dir = os.path.join(anom_vis_dir, "full_res_bbox_only")
@@ -450,7 +419,6 @@ def generate_pack_eval_report(
     ]
     eff_golden_scores = pack_golden_scores if pack_golden_scores else global_golden_scores
 
-    # 無論是否啟用覆寫，皆計算出本包獨立動態門檻 (local_eff_thresh) 供報表並列比較
     local_eff_thresh, local_thresh_desc = compute_dynamic_effective_threshold(
         non_golden_scores=pack_non_golden_scores,
         golden_scores=eff_golden_scores,
@@ -461,6 +429,14 @@ def generate_pack_eval_report(
         sigma_k=sigma_k,
         top_k=top_k,
     )
+
+    # 小樣本平滑穩定機制：當公司大池 (單包 >= 25 張) 時 100% 使用本包獨立門檻；
+    # 若為公開小資料集 (單包 < 25 張)，自動與全池基準門檻依樣本數比例平滑融合，防止 9 張小包受單張極端值拉扯
+    n_ng = len(pack_non_golden_scores)
+    if n_ng < 25 and n_ng > 0:
+        alpha = float(np.clip(n_ng / 25.0, 0.35, 1.0))
+        local_eff_thresh = float(alpha * local_eff_thresh + (1.0 - alpha) * global_eff_thresh)
+        local_thresh_desc += f" [小樣本平滑融合 α={alpha:.2f} with Global={global_eff_thresh:.4f}]"
 
     eff_thresh = local_eff_thresh if recompute_pack_thresh else global_eff_thresh
     thresh_source_tag = "PACK_LOCAL_RECOMPUTED" if recompute_pack_thresh else "GLOBAL_POOL_UNIFIED"
@@ -481,14 +457,12 @@ def generate_pack_eval_report(
         is_golden = orig_status.startswith("GOLDEN")
 
         if recompute_pack_thresh:
-            # 依本包獨立重算的 local_eff_thresh 重新判定該圖在本包的異常狀態
             if score_val >= eff_thresh:
                 if orig_status == "PASS_NOISE_FILTERED":
                     new_status = "GOLDEN_PASS" if is_golden else "PASS_NOISE_FILTERED"
                 elif num_bboxes > 0:
                     new_status = "GOLDEN_ANOMALY" if is_golden else "ANOMALY"
                 else:
-                    # 原先因微幅低於 Global 門檻未畫框，但高於本包獨立門檻
                     new_status = "GOLDEN_ANOMALY" if is_golden else "ANOMALY_LOCAL_TH"
             else:
                 new_status = "GOLDEN_PASS" if is_golden else "PASS_SKIPPED"
@@ -521,7 +495,6 @@ def generate_pack_eval_report(
 
         updated_records.append(row)
 
-    # 計算本包專屬的統計指標
     total = len(updated_records)
     non_golden = [r for r in updated_records if not str(r["Status"]).startswith("GOLDEN")]
     non_golden_normal = [
@@ -558,7 +531,6 @@ def generate_pack_eval_report(
     fpr_normal = (len(fp_normal) / len(target_normal) * 100.0) if target_normal else 0.0
     escape_recall = (len(caught_escape) / len(escape_defects) * 100.0) if escape_defects else 0.0
 
-    # 輸出本包的 escape_ranking_report.txt
     report_txt = os.path.join(pack_out_dir, "escape_ranking_report.txt")
     with open(report_txt, "w", encoding="utf-8") as f:
         f.write(f"=== FoundAD Split Eval Report — Pack #{pack_idx} ({os.path.basename(pack_out_dir)}) ===\n")
@@ -599,7 +571,6 @@ def generate_pack_eval_report(
                 f"{r['Saved_Anomaly_Filename']}\n"
             )
 
-    # 輸出本包的 escape_ranking_report.csv
     report_csv = os.path.join(pack_out_dir, "escape_ranking_report.csv")
     with open(report_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
@@ -697,7 +668,7 @@ def main():
     )
     parser.add_argument(
         "--recompute_pack_thresh", action="store_true",
-        help="【關鍵新增】啟用各包獨立重算動態門檻：每一包僅根據該包內部的樣本分數獨立重算 local_eff_thresh 並判定異常，完全消除跨包統計洩漏疑慮"
+        help="啟用各包獨立重算動態門檻：每一包僅根據該包內部的樣本分數獨立重算 local_eff_thresh 並判定異常"
     )
     parser.add_argument(
         "--thresh_mode", type=str, default="",
@@ -738,7 +709,6 @@ def main():
 
     total_avail = len(records)
 
-    # 計算各包大小（內含嚴格的總數防呆檢查，若加總 != total_avail 會直接拋出明確錯誤訊息）
     pack_sizes = compute_pack_sizes(
         total_items=total_avail,
         num_packs=args.num_packs,
@@ -809,7 +779,6 @@ def main():
         )
         summaries.append(s)
 
-    # 輸出多份 Eval 的並列總表 (同時保留動態名稱與向下相容的 all_3_evals_comparison 名稱)
     overview_txt = os.path.join(out_root, "all_3_evals_comparison.txt")
     overview_csv = os.path.join(out_root, "all_3_evals_comparison.csv")
     dynamic_txt = os.path.join(out_root, f"all_{len(summaries)}_evals_comparison.txt")

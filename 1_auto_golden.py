@@ -750,8 +750,9 @@ def select_golden_images(
 
     photo_penalty = 0.015 * np.maximum(0.0, photo_z - 1.0) + 0.045 * np.maximum(0.0, photo_z - 1.8)
     shift_penalty = 0.012 * np.maximum(0.0, shift_z - 0.8) + 0.035 * np.maximum(0.0, shift_z - 1.6)
-    patch_penalty = 0.008 * np.clip(patch_anom_z, 0.0, 6.0)
-    spike_penalty = 0.003 * np.clip(spike_z, 0.0, 6.0)
+    # [強化] 提高跨片局部異常 (patch_anom_z) 與單點尖峰 (spike_z) 的懲罰權重，嚴格攔截細微裂痕或微粒混入 Golden
+    patch_penalty = 0.025 * np.clip(patch_anom_z, 0.0, 6.0) + 0.040 * np.maximum(0.0, patch_anom_z - 1.2)
+    spike_penalty = 0.012 * np.clip(spike_z, 0.0, 6.0) + 0.025 * np.maximum(0.0, spike_z - 1.2)
 
     hybrid_centrality = (
         0.55 * raw_centrality

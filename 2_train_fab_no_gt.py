@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/2_train_fab_no_gt.py (負責 Golden 資料準備與模型訓練)
+# 檔案位置: FoundAD/2_train_fab_no_gt.py (全選覆蓋此檔：含多資料集獨立命名與 Torch Hub 離線防 504 保護)
 import shlex
 import os
 import re
@@ -32,8 +32,56 @@ def get_free_port() -> int:
         return int(s.getsockname()[1])
 
 
+def _ensure_offline_hub_patch_dir() -> str:
+    """
+    建立 sitecustomize.py 自動攔截 torch.hub.load(source='github')：
+    優先從本地 ~/.cache/torch/hub 離線載入 DINOv3/DINOv2，徹底杜絕 GitHub HTTP 504 Gateway Time-out！
+    """
+    patch_dir = os.path.abspath("./.offline_hub_patch")
+    os.makedirs(patch_dir, exist_ok=True)
+    sc_path = os.path.join(patch_dir, "sitecustomize.py")
+    code = '''import os
+import glob
+try:
+    import torch.hub
+    _orig_hub_load = torch.hub.load
+
+    def _safe_hub_load(repo_or_dir, model, *args, **kwargs):
+        if kwargs.get("source", "github") == "github" and isinstance(repo_or_dir, str) and "/" in repo_or_dir:
+            hub_dir = torch.hub.get_dir()
+            owner, repo = repo_or_dir.split("/")[:2]
+            cands = sorted(glob.glob(os.path.join(hub_dir, f"{owner}_{repo}_*")))
+            for c in cands:
+                if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
+                    try:
+                        kw_local = dict(kwargs)
+                        kw_local["source"] = "local"
+                        return _orig_hub_load(c, model, *args, **kw_local)
+                    except Exception:
+                        pass
+        try:
+            return _orig_hub_load(repo_or_dir, model, *args, **kwargs)
+        except Exception:
+            hub_dir = torch.hub.get_dir()
+            for c in sorted(glob.glob(os.path.join(hub_dir, "*dino*"))):
+                if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
+                    kw_local = dict(kwargs)
+                    kw_local["source"] = "local"
+                    return _orig_hub_load(c, model, *args, **kw_local)
+            raise
+
+    torch.hub.load = _safe_hub_load
+except Exception:
+    pass
+'''
+    if not os.path.isfile(sc_path):
+        with open(sc_path, "w", encoding="utf-8") as f:
+            f.write(code)
+    return patch_dir
+
+
 def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) -> str:
-    """執行子程序指令，自動注入空閒 FAB_MASTER_PORT，即時在 Terminal 顯示並同步寫入 log.txt。"""
+    """執行子程序指令，自動注入空閒 FAB_MASTER_PORT 與離線 Hub Patch，同步寫入 log.txt。"""
     header = f"\n[EXEC] {cmd}\n" + "-" * 60
     print(header, flush=True)
     output_lines = []
@@ -41,6 +89,10 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
     run_env["PYTHONUNBUFFERED"] = "1"
     if "FAB_MASTER_PORT" not in run_env:
         run_env["FAB_MASTER_PORT"] = str(get_free_port())
+
+    patch_dir = _ensure_offline_hub_patch_dir()
+    old_pp = run_env.get("PYTHONPATH", "")
+    run_env["PYTHONPATH"] = f"{patch_dir}:{old_pp}" if old_pp else patch_dir
 
     files_to_write = [open(lf, "a", encoding="utf-8") for lf in log_files if lf]
     try:
@@ -74,15 +126,11 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
 
 
 def _get_candidate_log_dirs(data_name: str, diy_name: str, shots: int = 4) -> List[str]:
-    """
-    嚴格搜尋當前 data_name 專屬的權重目錄。
-    避免誤抓舊版 mvtec_sim_4shot 共用目錄或其他類別的權重，導致新類別未訓練就被跳過！
-    """
+    """嚴格搜尋當前 data_name 專屬的權重目錄。"""
     patterns = [
         f"./logs/{data_name}/*{diy_name}*",
         f"./logs/{data_name}/*",
     ]
-    # 僅當 data_name 本身就是舊版通用名稱時，才搜尋舊版目錄
     if data_name in (f"mvtec_sim_{shots}shot", f"mvtec_fab_{shots}shot"):
         patterns.extend([
             f"./logs/mvtec_sim_{shots}shot/*{diy_name}*",
@@ -176,13 +224,12 @@ def main():
     parser.add_argument("--diy_name", type=str, default="sim_escape")
     parser.add_argument("--ckpt_step", type=int, default=2000)
     parser.add_argument("--shots", type=int, default=4)
-    parser.add_argument("--candidate_pool_size", type=int, default=16, help="Stage 1 初篩進入 RAM 切塊投票的候選晶圓張數 (預設 16 張)")
-    parser.add_argument("--max_coarse_scan", type=int, default=250, help="面對上千張大資料集時，Stage 1 抽樣評估的最大圖片上限 (預設 250 張)")
+    parser.add_argument("--candidate_pool_size", type=int, default=16)
+    parser.add_argument("--max_coarse_scan", type=int, default=250)
 
-    # 訓練與 Golden 圖塊控制參數
-    parser.add_argument("--skip_train", action="store_true", help="明確跳過模型訓練，直接對接既有訓練權重")
-    parser.add_argument("--force_train", action="store_true", help="強制重新訓練模型（即使已存在權重檔）")
-    parser.add_argument("--rebuild_golden", action="store_true", help="強制重新挑選並純化 Golden 圖塊")
+    parser.add_argument("--skip_train", action="store_true")
+    parser.add_argument("--force_train", action="store_true")
+    parser.add_argument("--rebuild_golden", action="store_true")
     parser.add_argument("--mock_from_mvtec", type=str, default="")
     parser.add_argument("--tile_size", type=int, default=512)
     parser.add_argument("--tile_overlap", type=int, default=64)
@@ -199,33 +246,32 @@ def main():
         else:
             args.category = os.path.basename(os.path.normpath(args.pool_dir))
 
+    if args.data_name == "mvtec_sim_4shot" and args.category:
+        args.data_name = f"mvtec_sim_{args.category}_{args.shots}shot"
+    if args.diy_name == "sim_escape" and args.category:
+        args.diy_name = f"sim_escape_{args.category}"
+
     now_tpe = datetime.now(TZ_TAIPEI)
-    timestamp = now_tpe.strftime("%Y%m%d_%H%M%S")
+    timestamp = now_tpe.strftime("%Y%m%d_%H%M%S_%f")[:19]
     base_out_dir = os.path.abspath(args.out_dir)
-    run_out_dir = os.path.join(base_out_dir, f"train_{timestamp}")
+    safe_cat_tag = re.sub(r"[^a-zA-Z0-9_\-]", "_", f"{args.data_name}_{args.category}")
+    run_out_dir = os.path.join(base_out_dir, f"train_{safe_cat_tag}_{timestamp}")
     os.makedirs(run_out_dir, exist_ok=True)
     os.makedirs(args.datasets_dir, exist_ok=True)
     abs_datasets_dir = os.path.abspath(args.datasets_dir)
 
-    if not args.rebuild_golden and not os.path.isdir(os.path.join(abs_datasets_dir, args.data_name, "train", args.category)):
-        legacy_data_name = f"mvtec_sim_{args.shots}shot"
-        if (
-            os.path.isdir(os.path.join(abs_datasets_dir, legacy_data_name, "train", args.category))
-            and os.path.isdir(f"./logs/{legacy_data_name}/dinov3sim_escape")
-        ):
-            args.data_name = legacy_data_name
-            args.diy_name = "sim_escape"
-
     shot_dir = os.path.join(abs_datasets_dir, args.data_name)
 
     fixed_log_txt = os.path.join(run_out_dir, "train_log.txt")
+    cat_latest_log = os.path.join(base_out_dir, f"latest_train_log_{args.category}.txt")
     parent_latest_log = os.path.join(base_out_dir, "latest_train_log.txt")
-    log_files = [fixed_log_txt, parent_latest_log]
+    log_files = [fixed_log_txt, cat_latest_log, parent_latest_log]
 
     start_dt_str = now_tpe.strftime("%Y-%m-%d %H:%M:%S (UTC+8)")
     log_and_print(
         f"\n{'='*75}\n"
         f"[Task 2 無GT訓練階段啟動時間] {start_dt_str}\n"
+        f"[資料集與類別識別] DATA_NAME={args.data_name} | CATEGORY={args.category}\n"
         f"[本次訓練輸出與日誌目錄] {run_out_dir}\n"
         f"{'='*75}",
         log_files,
@@ -240,7 +286,6 @@ def main():
             rebuild=args.rebuild_golden,
         )
 
-    # 1. 載入或建立 Golden 訓練資料集 (支援大資料集抽樣 + 16 張候選池切塊投票)
     golden_filenames, num_train_samples, used_existing_golden, golden_select_sec, train_tile_sec = (
         load_or_prepare_golden_dataset(
             pool_dir=args.pool_dir,
@@ -271,7 +316,6 @@ def main():
     )
     total_grad_updates = effective_epochs * iters_per_epoch
 
-    # 2. 自動防呆檢查：確認是否已有訓練好的權重，若找不到權重檔則強制自動開始訓練
     train_meta_path = os.path.join(shot_dir, f"train_meta_{args.category}.json")
     prev_trained_samples = None
     if os.path.isfile(train_meta_path):
@@ -320,7 +364,6 @@ def main():
             log_files,
         )
 
-    # 3. 執行 FoundAD 模型訓練
     model_train_sec = 0.0
     if not args.skip_train:
         t_model_train_start = time.perf_counter()
@@ -345,7 +388,6 @@ def main():
 
     total_train_time = golden_select_sec + train_tile_sec + model_train_sec
 
-    # 4. 驗證並對接訓練權重
     actual_step, ckpt_dirs, ckpt_files = prepare_ckpt_for_demo(
         args.data_name,
         args.diy_name,
@@ -356,7 +398,6 @@ def main():
     train_tiles_dir = os.path.abspath(os.path.join(shot_dir, "train", args.category))
     golden_backup_dir = os.path.abspath(os.path.join(shot_dir, "golden_full_res_backup", args.category))
 
-    # 5. 儲存訓練階段 Meta 資訊
     train_meta = {
         "data_name": args.data_name,
         "category": args.category,
@@ -372,16 +413,18 @@ def main():
         "total_train_time": total_train_time,
         "ckpt_dirs": ckpt_dirs,
         "ckpt_files": ckpt_files,
+        "run_out_dir": run_out_dir,
         "timestamp": timestamp,
         "timezone": "Asia/Taipei (UTC+8)",
     }
     os.makedirs(shot_dir, exist_ok=True)
     with open(train_meta_path, "w", encoding="utf-8") as f:
         json.dump(train_meta, f, indent=2, ensure_ascii=False)
+    safe_copy(train_meta_path, os.path.join(run_out_dir, f"train_meta_{args.category}.json"))
 
     train_done_lines = [
         f"\n{'='*75}",
-        f" [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]",
+        f" [✅ 訓練階段完成 ({args.data_name} / {args.category}) — 時間統計與權重檔儲存位置]",
         f"{'-'*75}",
         f"  ⏱️ Auto-Golden 候選池切塊投票耗時        : {format_duration(golden_select_sec + train_tile_sec)}{' (Loaded Existing Golden)' if used_existing_golden else ''}",
         f"  ⏱️ Step 1 FoundAD 模型訓練耗時           : {format_duration(model_train_sec)}{' (Skipped Existing Ckpt)' if args.skip_train else ''}",
@@ -390,6 +433,7 @@ def main():
         f"  🏆 最終勝出 Golden 原圖名單              : {', '.join(golden_filenames)}",
         f"  📁 Golden 訓練樣本資料夾                : {train_tiles_dir}",
         f"  📁 Golden 原圖備份資料夾                : {golden_backup_dir}",
+        f"  📄 本次訓練專屬輸出資料夾               : {run_out_dir}",
         f"  📄 訓練階段 Meta 紀錄檔                 : {os.path.abspath(train_meta_path)}",
         f"  📦 訓練權重檔儲存資料夾                 : {ckpt_dirs[0]}",
     ]

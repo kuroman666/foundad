@@ -1,0 +1,185 @@
+{
+  "pool_dir": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool",
+  "total_pool_images": 31,
+  "scanned_images": 31,
+  "candidate_pool_size": 16,
+  "shots": 4,
+  "candidates": [
+    {
+      "cand_rank": 1,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_001.png",
+      "rel_path": "clean_001.png",
+      "hybrid_score": 0.9995194673538208,
+      "raw_centrality": 0.9996235370635986,
+      "spatial_align": 0.9993923902511597,
+      "photo_z": 0.049204271286726,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.197228193283081
+    },
+    {
+      "cand_rank": 2,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_017.png",
+      "rel_path": "clean_017.png",
+      "hybrid_score": 0.9995183944702148,
+      "raw_centrality": 0.999610185623169,
+      "spatial_align": 0.9994061589241028,
+      "photo_z": 0.3502010405063629,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.269610643386841
+    },
+    {
+      "cand_rank": 3,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_016.png",
+      "rel_path": "clean_016.png",
+      "hybrid_score": 0.9995049834251404,
+      "raw_centrality": 0.9996561408042908,
+      "spatial_align": 0.9993202090263367,
+      "photo_z": 0.20556998252868652,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.2415785789489746
+    },
+    {
+      "cand_rank": 4,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_003.png",
+      "rel_path": "clean_003.png",
+      "hybrid_score": 0.9994785785675049,
+      "raw_centrality": 0.9995982050895691,
+      "spatial_align": 0.9993324279785156,
+      "photo_z": 0.1997935026884079,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.2078120708465576
+    },
+    {
+      "cand_rank": 5,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/escape_crack_000.png",
+      "rel_path": "escape_crack_000.png",
+      "hybrid_score": 0.9994544982910156,
+      "raw_centrality": 0.9996049404144287,
+      "spatial_align": 0.9992705583572388,
+      "photo_z": 0.09123203158378601,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.217801332473755
+    },
+    {
+      "cand_rank": 6,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/escape_crack_005.png",
+      "rel_path": "escape_crack_005.png",
+      "hybrid_score": 0.9994376301765442,
+      "raw_centrality": 0.9995618462562561,
+      "spatial_align": 0.9992858171463013,
+      "photo_z": 0.37506502866744995,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.217092990875244
+    },
+    {
+      "cand_rank": 7,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_018.png",
+      "rel_path": "clean_018.png",
+      "hybrid_score": 0.9994359016418457,
+      "raw_centrality": 0.9996047616004944,
+      "spatial_align": 0.9992295503616333,
+      "photo_z": 0.11994877457618713,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.2778966426849365
+    },
+    {
+      "cand_rank": 8,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/escape_crack_003.png",
+      "rel_path": "escape_crack_003.png",
+      "hybrid_score": 0.9991980791091919,
+      "raw_centrality": 0.9995014667510986,
+      "spatial_align": 0.998827338218689,
+      "photo_z": 0.17142409086227417,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.16585111618042
+    },
+    {
+      "cand_rank": 9,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_015.png",
+      "rel_path": "clean_015.png",
+      "hybrid_score": 0.9991048574447632,
+      "raw_centrality": 0.9993953704833984,
+      "spatial_align": 0.9987497329711914,
+      "photo_z": 0.41411101818084717,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.1646175384521484
+    },
+    {
+      "cand_rank": 10,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/escape_crack_007.png",
+      "rel_path": "escape_crack_007.png",
+      "hybrid_score": 0.9987308382987976,
+      "raw_centrality": 0.9994891285896301,
+      "spatial_align": 0.9992485046386719,
+      "photo_z": 0.8285800814628601,
+      "patch_anom_z": 0.025999227538704872,
+      "token_spike": 3.2704312801361084
+    },
+    {
+      "cand_rank": 11,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_000.png",
+      "rel_path": "clean_000.png",
+      "hybrid_score": 0.9967600703239441,
+      "raw_centrality": 0.9996117353439331,
+      "spatial_align": 0.9992905259132385,
+      "photo_z": 0.48205065727233887,
+      "patch_anom_z": 0.10828258097171783,
+      "token_spike": 3.2459890842437744
+    },
+    {
+      "cand_rank": 12,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_010.png",
+      "rel_path": "clean_010.png",
+      "hybrid_score": 0.9928503632545471,
+      "raw_centrality": 0.9994961619377136,
+      "spatial_align": 0.9990018010139465,
+      "photo_z": 1.0077425241470337,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.3259382247924805
+    },
+    {
+      "cand_rank": 13,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_008.png",
+      "rel_path": "clean_008.png",
+      "hybrid_score": 0.9744927287101746,
+      "raw_centrality": 0.9992542266845703,
+      "spatial_align": 0.99840247631073,
+      "photo_z": 2.006303071975708,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.2173056602478027
+    },
+    {
+      "cand_rank": 14,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_011.png",
+      "rel_path": "clean_011.png",
+      "hybrid_score": 0.9743103384971619,
+      "raw_centrality": 0.9994773864746094,
+      "spatial_align": 0.999131441116333,
+      "photo_z": 1.891120433807373,
+      "patch_anom_z": 0.0,
+      "token_spike": 3.3320868015289307
+    },
+    {
+      "cand_rank": 15,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_021.png",
+      "rel_path": "clean_021.png",
+      "hybrid_score": 0.9735319018363953,
+      "raw_centrality": 0.9994264245033264,
+      "spatial_align": 0.9988335967063904,
+      "photo_z": 0.053352855145931244,
+      "patch_anom_z": 0.7710084915161133,
+      "token_spike": 3.3261635303497314
+    },
+    {
+      "cand_rank": 16,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool/clean_020.png",
+      "rel_path": "clean_020.png",
+      "hybrid_score": 0.9726718664169312,
+      "raw_centrality": 0.9994133710861206,
+      "spatial_align": 0.9989049434661865,
+      "photo_z": 0.14565931260585785,
+      "patch_anom_z": 0.7367528676986694,
+      "token_spike": 3.3348193168640137
+    }
+  ]
+}

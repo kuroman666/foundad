@@ -1,34 +1,3 @@
-=== Stage 2: Golden Tile-Level Hybrid Purification Report ===
-Total Evaluated Candidate Tiles : 36
-Valid Non-Background Coords     : 9
-Rejected Outlier Tiles (Stage2) : 9
-Radial Bin Purity Swaps         : 0
-DINO Feature Guidance Active    : YES
-------------------------------------------------------------------------
-Tile #01: 000_g3_tile_y0448_x0448.png | Source=Golden#4 | Coord=(y=0448, x=0448) | Hybrid_Residual=6.9246
-Tile #02: 001_g3_tile_y0000_x0448.png | Source=Golden#4 | Coord=(y=0000, x=0448) | Hybrid_Residual=5.9417
-Tile #03: 002_g1_tile_y0448_x0000.png | Source=Golden#2 | Coord=(y=0448, x=0000) | Hybrid_Residual=1.4704
-Tile #04: 003_g3_tile_y0448_x0488.png | Source=Golden#4 | Coord=(y=0448, x=0488) | Hybrid_Residual=6.2561
-Tile #05: 004_g2_tile_y0488_x0448.png | Source=Golden#3 | Coord=(y=0488, x=0448) | Hybrid_Residual=5.0697
-Tile #06: 005_g1_tile_y0000_x0000.png | Source=Golden#2 | Coord=(y=0000, x=0000) | Hybrid_Residual=1.1274
-Tile #07: 006_g3_tile_y0000_x0488.png | Source=Golden#4 | Coord=(y=0000, x=0488) | Hybrid_Residual=5.2958
-Tile #08: 007_g1_tile_y0488_x0000.png | Source=Golden#2 | Coord=(y=0488, x=0000) | Hybrid_Residual=1.4438
-Tile #09: 008_g2_tile_y0488_x0488.png | Source=Golden#3 | Coord=(y=0488, x=0488) | Hybrid_Residual=5.3945
-Tile #10: 009_g0_tile_y0000_x0000.png | Source=Golden#1 | Coord=(y=0000, x=0000) | Hybrid_Residual=1.2139
-Tile #11: 010_g3_tile_y0488_x0000.png | Source=Golden#4 | Coord=(y=0488, x=0000) | Hybrid_Residual=1.7718
-Tile #12: 011_g3_tile_y0448_x0000.png | Source=Golden#4 | Coord=(y=0448, x=0000) | Hybrid_Residual=1.9910
-Tile #13: 012_g3_tile_y0000_x0000.png | Source=Golden#4 | Coord=(y=0000, x=0000) | Hybrid_Residual=1.9924
-Tile #14: 013_g2_tile_y0488_x0000.png | Source=Golden#3 | Coord=(y=0488, x=0000) | Hybrid_Residual=4.2367
-Tile #15: 014_g2_tile_y0448_x0000.png | Source=Golden#3 | Coord=(y=0448, x=0000) | Hybrid_Residual=4.8682
-Tile #16: 015_g1_tile_y0488_x0448.png | Source=Golden#2 | Coord=(y=0488, x=0448) | Hybrid_Residual=5.0045
-Tile #17: 016_g1_tile_y0488_x0488.png | Source=Golden#2 | Coord=(y=0488, x=0488) | Hybrid_Residual=5.0675
-Tile #18: 017_g0_tile_y0488_x0488.png | Source=Golden#1 | Coord=(y=0488, x=0488) | Hybrid_Residual=6.4241
-Tile #19: 018_g0_tile_y0000_x0488.png | Source=Golden#1 | Coord=(y=0000, x=0488) | Hybrid_Residual=6.4407
-Tile #20: 019_g1_tile_y0000_x0488.png | Source=Golden#2 | Coord=(y=0000, x=0488) | Hybrid_Residual=6.5490
-Tile #21: 020_g1_tile_y0448_x0488.png | Source=Golden#2 | Coord=(y=0448, x=0488) | Hybrid_Residual=6.6310
-Tile #22: 021_g1_tile_y0448_x0448.png | Source=Golden#2 | Coord=(y=0448, x=0448) | Hybrid_Residual=6.6662
-Tile #23: 022_g0_tile_y0448_x0488.png | Source=Golden#1 | Coord=(y=0448, x=0488) | Hybrid_Residual=6.7489
-Tile #24: 023_g1_tile_y0000_x0448.png | Source=Golden#2 | Coord=(y=0000, x=0448) | Hybrid_Residual=6.9361
-Tile #25: 024_g3_tile_y0488_x0448.png | Source=Golden#4 | Coord=(y=0488, x=0448) | Hybrid_Residual=7.1383
-Tile #26: 025_g0_tile_y0000_x0448.png | Source=Golden#1 | Coord=(y=0000, x=0448) | Hybrid_Residual=7.5386
-Tile #27: 026_g0_tile_y0448_x0448.png | Source=Golden#1 | Coord=(y=0448, x=0448) | Hybrid_Residual=7.5554
+=== Stage 2: Full-Image Spatial Alignment Mode (No Sub-Tile Fragmentation) ===
+Original Image Resolution : 1000x1000 (<= 1280px trigger)
+Retained Full Golden Imgs : 4

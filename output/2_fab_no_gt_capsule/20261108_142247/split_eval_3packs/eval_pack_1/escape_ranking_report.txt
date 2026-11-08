@@ -1,0 +1,25 @@
+=== FoundAD Split Eval Report — Pack #1 (eval_pack_1) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/20261108_142247
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Threshold Policy: PACK_LOCAL_RECOMPUTED
+Effective Threshold (Used)  : 0.1551 (Pack_Local_Thresh=0.1551 vs Global_Pool_Thresh=0.3730, Diff=-0.2179)
+Pack Local Thresh Detail    : Pack獨立重算 Hybrid 雙重校準門檻 = 0.1551 [mu_core=0.0487, σ_left=0.0164, LeftBound=0.1305, GoldenBound=0.1005, Core_P95=0.1702]
+Pack Total Images: 11 | Exported Anomaly Images: 4 | Skipped Normal Images: 7
+Normal False Positives (FPR): 6/9 (66.67%) | Escape Caught (Recall): 1/1 (100.00%)
+Non-Golden Normal Score Dist: Max=1.0015 | P99=0.9931 | P95=0.9596 | Median=0.1706 | Mean=0.4208 | Std=0.3599
+Ablation Compare (Normal)   : Raw_Max=0.9757, Raw_Mean=0.4095 vs Filtered_Max=1.0015, Filtered_Mean=0.4208
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.7807 | mean+2*std=1.1406 | mean+3*std=1.5005
+Overfit Diagnostic          : 🔴 警告: 偵測到明顯過擬合或跨資料集分佈偏移 (Overfit / Domain-Shift Warning) (Golden_Mean=0.0205, BlindNormal_Med=0.1669, Ratio=7.16x, Gap=+0.1260)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Global_Status       | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 2      | clean_012.png              | ANOMALY             | ANOMALY             | 1.0015    | 0.9757    | 1.0015     | +0.0258  | 1      | Rank002_Score1.0015_Box01_clean_012.png
+2      | 11     | clean_002.png              | ANOMALY             | ANOMALY             | 0.8967    | 0.8719    | 0.8967     | +0.0248  | 1      | Rank011_Score0.8967_Box01_clean_002.png
+3      | 12     | clean_020.png              | ANOMALY             | ANOMALY             | 0.8782    | 0.8552    | 0.8782     | +0.0231  | 1      | Rank012_Score0.8782_Box01_clean_020.png
+4      | 14     | escape_crack_007.png       | ANOMALY             | ANOMALY             | 0.6542    | 0.6370    | 0.6542     | +0.0172  | 1      | Rank014_Score0.6542_Box01_escape_crack_007.png
+5      | 18     | clean_013.png              | ANOMALY_LOCAL_TH    | PASS_SKIPPED        | 0.2584    | 0.2528    | 0.2584     | +0.0056  | 0      | (未超過動態門檻，不輸出圖片)
+6      | 20     | clean_009.png              | ANOMALY_LOCAL_TH    | PASS_SKIPPED        | 0.1706    | 0.1651    | 0.1706     | +0.0055  | 0      | (未超過動態門檻，不輸出圖片)
+7      | 21     | clean_008.png              | ANOMALY_LOCAL_TH    | PASS_SKIPPED        | 0.1688    | 0.1632    | 0.1688     | +0.0056  | 0      | (未超過動態門檻，不輸出圖片)
+8      | 23     | clean_005.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1465    | 0.1407    | 0.1465     | +0.0058  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+9      | 25     | clean_015.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1345    | 0.1319    | 0.1345     | +0.0027  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+10     | 26     | clean_011.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1323    | 0.1291    | 0.1323     | +0.0032  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+11     | 31     | clean_001.png              | GOLDEN_PASS         | GOLDEN_PASS         | 0.0187    | 0.0183    | 0.0187     | +0.0004  | 0      | (未超過本包獨立動態門檻，不輸出圖片)

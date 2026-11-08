@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_outside.sh (全選覆蓋並存檔)
-# 用途: 廠外公開資料集 (MVTec AD / MVTec AD 2) 四階段無 GT 模擬抓漏與拆分評估一鍵測試腳本
+# 用途: 廠外公開資料集 (MVTec AD / MVTec AD 2) 四階段無 GT 模擬抓漏與拆分評估一鍵測試腳本 (支援多資料集獨立保存與總表彙整)
 set -e
 
 # ===================== [可自由修改的參數區] =====================
@@ -12,13 +12,13 @@ if [ $# -ge 1 ]; then
     TARGET_CAT_DIRS=("$@")
 else
     TARGET_CAT_DIRS=(
-        # "${DATASETS_DIR}/mvtec/capsule"
+        "${DATASETS_DIR}/mvtec/capsule"
         "${DATASETS_DIR}/mvtec-2/can"
-        # "${DATASETS_DIR}/mvtec/bottle"
-        # "${DATASETS_DIR}/mvtec/cable"
-        # "${DATASETS_DIR}/mvtec/grid"
-        # "${DATASETS_DIR}/mvtec/tile"
-        # "${DATASETS_DIR}/mvtec/transistor"
+        "${DATASETS_DIR}/mvtec/bottle"
+        "${DATASETS_DIR}/mvtec/cable"
+        "${DATASETS_DIR}/mvtec/grid"
+        "${DATASETS_DIR}/mvtec/tile"
+        "${DATASETS_DIR}/mvtec/transistor"
     )
 fi
 
@@ -64,15 +64,26 @@ INFER_BATCH_SIZE=16
 BG_STD_THRESH=1.5
 DISABLE_TILING=""
 
-# --- Step 4 評估結果拆分參數 (支援指定幾包、每包張數、總數防呆報錯與各包獨立重算門檻) ---
-NUM_PACKS=3                           # [功能 1] 設定要將資料集切成幾包 Eval (預設 3 包)
-SPLIT_COUNTS=""                       # [功能 2] 設定每包 Eval 的圖片數量：例如填 "15" 或 "15,15,10" (加總若不等於盲池總張數會立即報錯！留空 "" 則依比例拆分)
-SPLIT_RATIOS="1:1:1"                  # 若 SPLIT_COUNTS 留空，依此比例拆分
+# --- Step 4 評估結果拆分參數 ---
+NUM_PACKS=3
+SPLIT_COUNTS=""
+SPLIT_RATIOS="1:1:1"
 SPLIT_ORDER="stratified"
-RECOMPUTE_PACK_THRESH="--recompute_pack_thresh"  # [新增] 設為 "--recompute_pack_thresh" 讓每一包獨立重算動態門檻；設為 "" 則沿用全池統一門檻
+RECOMPUTE_PACK_THRESH="--recompute_pack_thresh"
 EXCLUDE_GOLDEN=""
 USE_SYMLINK="--symlink"
 # ===============================================================
+
+BATCH_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+mkdir -p "${OUTPUT_ROOT}"
+BATCH_SUMMARY_TXT="${OUTPUT_ROOT}/multi_dataset_batch_summary_${BATCH_TIMESTAMP}.txt"
+BATCH_SUMMARY_LATEST="${OUTPUT_ROOT}/latest_multi_dataset_summary.txt"
+BATCH_SUMMARY_CSV="${OUTPUT_ROOT}/latest_multi_dataset_summary.csv"
+
+echo "==========================================================================================================" > "${BATCH_SUMMARY_TXT}"
+echo " 📊 [FoundAD 多資料集批次訓練與推論總覽報表] 啟動時間: ${BATCH_TIMESTAMP}" >> "${BATCH_SUMMARY_TXT}"
+echo "==========================================================================================================" >> "${BATCH_SUMMARY_TXT}"
+echo "Dataset_Key,Category,Total_Imgs,Golden_Imgs,Normal_Imgs,Escape_Imgs,Eff_Threshold,Recall_Pct,FPR_Pct,Normal_Mean,Normal_Std,Train_Dir,Infer_Dir,Report_CSV" > "${BATCH_SUMMARY_CSV}"
 
 prepare_public_sim_pool() {
     local SRC_CAT_DIR="$1"
@@ -181,32 +192,37 @@ run_single_public_category() {
     local PARENT_DATASET
     PARENT_DATASET=$(basename "$(dirname "${CAT_DIR}")")
     local DS_PREFIX="${PARENT_DATASET//-/_}"
+    local UNIQUE_TAG="${DS_PREFIX}_${CAT_NAME}"
 
     local SIM_POOL_DIR=""
     local DATA_NAME=""
     local DIY_NAME=""
     local SAVE_BASE_DIR=""
 
+    # 嚴格將每個資料集的 DATA_NAME、DIY_NAME 與 SAVE_BASE_DIR 獨立隔離，防止互相覆蓋
     if [ "${POOL_MODE}" = "pure_normal" ]; then
-        SIM_POOL_DIR="${DATASETS_DIR}/sim_pure_normal_${CAT_NAME}_pool"
+        SIM_POOL_DIR="${DATASETS_DIR}/sim_pure_normal_${UNIQUE_TAG}_pool"
+        if [ ! -d "${SIM_POOL_DIR}" ] && [ -d "${DATASETS_DIR}/sim_pure_normal_${CAT_NAME}_pool" ]; then
+            SIM_POOL_DIR="${DATASETS_DIR}/sim_pure_normal_${CAT_NAME}_pool"
+        fi
         DATA_NAME="${DS_PREFIX}_pure_${CAT_NAME}_${SHOTS}shot"
-        DIY_NAME="pure_fpr_${CAT_NAME}"
-        SAVE_BASE_DIR="${OUTPUT_ROOT}/3_pure_normal_${CAT_NAME}"
-        if [ ! -d "./logs/${DATA_NAME}" ] && [ -d "./logs/mvtec_pure_${CAT_NAME}_${SHOTS}shot/dinov3pure_fpr" ]; then
-            DATA_NAME="mvtec_pure_${CAT_NAME}_${SHOTS}shot"
-            DIY_NAME="pure_fpr"
+        DIY_NAME="pure_fpr_${UNIQUE_TAG}"
+        SAVE_BASE_DIR="${OUTPUT_ROOT}/3_pure_normal_${UNIQUE_TAG}"
+        if [ ! -d "${SAVE_BASE_DIR}" ] && [ -d "${OUTPUT_ROOT}/3_pure_normal_${CAT_NAME}" ]; then
+            SAVE_BASE_DIR="${OUTPUT_ROOT}/3_pure_normal_${CAT_NAME}"
         fi
     else
-        SIM_POOL_DIR="${DATASETS_DIR}/sim_fab_${CAT_NAME}_pool"
+        SIM_POOL_DIR="${DATASETS_DIR}/sim_fab_${UNIQUE_TAG}_pool"
+        if [ ! -d "${SIM_POOL_DIR}" ] && [ -d "${DATASETS_DIR}/sim_fab_${CAT_NAME}_pool" ]; then
+            SIM_POOL_DIR="${DATASETS_DIR}/sim_fab_${CAT_NAME}_pool"
+        fi
         DATA_NAME="${DS_PREFIX}_sim_${CAT_NAME}_${SHOTS}shot"
         DIY_NAME="sim_escape_${CAT_NAME}"
         SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${CAT_NAME}"
-        if [ ! -d "${DATASETS_DIR}/${DATA_NAME}/train/${CAT_NAME}" ] && [ -d "${DATASETS_DIR}/mvtec_sim_${SHOTS}shot/train/${CAT_NAME}" ]; then
-            echo " [🔄 命名相容防護] 偵測到舊版 Golden 目錄 mvtec_sim_${SHOTS}shot/train/${CAT_NAME}，自動沿用避免重挑！"
-            DATA_NAME="mvtec_sim_${SHOTS}shot"
-            if [ -d "./logs/mvtec_sim_${SHOTS}shot/dinov3sim_escape" ]; then
-                DIY_NAME="sim_escape"
-            fi
+        # 若跨資料集有同名類別，自動加上資料集前綴避免覆蓋
+        if [ "${DS_PREFIX}" != "mvtec" ] && [ -d "${OUTPUT_ROOT}/2_fab_no_gt_${CAT_NAME}" ] && [ ! -d "${DATASETS_DIR}/${DATA_NAME}" ]; then
+            SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${UNIQUE_TAG}"
+            DIY_NAME="sim_escape_${UNIQUE_TAG}"
         fi
     fi
 
@@ -214,7 +230,7 @@ run_single_public_category() {
     echo "==========================================================================="
     echo " 🚀 [廠外公開資料集無 GT 測試啟動] 資料集: ${PARENT_DATASET} | 類別: ${CAT_NAME}"
     echo "    DATA_NAME: ${DATA_NAME} | DIY_NAME: ${DIY_NAME}"
-    echo "    模式: ${POOL_MODE} | 門檻: ${THRESH_MODE} (SIGMA_K=${SIGMA_K}) | 切塊: ${TILE_SIZE}"
+    echo "    獨立輸出目錄: ${SAVE_BASE_DIR}"
     echo "==========================================================================="
 
     # Step 0: 建立或沿用模擬盲池
@@ -243,7 +259,7 @@ run_single_public_category() {
             --tile_overlap "${TILE_OVERLAP}" \
             --max_train_tiles "${MAX_TRAIN_TILES}" \
             --bg_std_thresh "${BG_STD_THRESH}" \
-            --report_dir "${SAVE_BASE_DIR}/golden_reports" \
+            --report_dir "${SAVE_BASE_DIR}/golden_reports_${CAT_NAME}" \
             ${REBUILD_POOL} ${DISABLE_TILING}
     fi
 
@@ -303,7 +319,7 @@ run_single_public_category() {
         --bg_std_thresh "${BG_STD_THRESH}" \
         ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
 
-    # Step 4: 執行評估結果拆分 (支援指定 NUM_PACKS、SPLIT_COUNTS 嚴格總數檢查與 RECOMPUTE_PACK_THRESH 各包獨立重算門檻)
+    # Step 4: 執行評估結果拆分
     if [ "${RUN_SPLIT_EVAL}" -eq 1 ]; then
         local SPLIT_SCRIPT=""
         if [ -f "4_split_eval_results.py" ]; then
@@ -345,8 +361,8 @@ run_single_public_category() {
         fi
     fi
 
-    # 終端機列印該類別抓漏率與誤報率統計總結
-    python - "${SAVE_BASE_DIR}" "${CAT_NAME}" << 'EOF'
+    # 終端機列印該類別統計總結，並同步 Append 寫入多資料集總表 (絕不覆蓋前一個資料集)
+    python - "${SAVE_BASE_DIR}" "${CAT_NAME}" "${UNIQUE_TAG}" "${BATCH_SUMMARY_TXT}" "${BATCH_SUMMARY_CSV}" << 'EOF'
 import os
 import sys
 import re
@@ -354,8 +370,13 @@ import csv
 import glob
 import numpy as np
 
-save_base = sys.argv[1]
-cat_name = sys.argv[2]
+save_base, cat_name, unique_tag, batch_txt, batch_csv = (
+    sys.argv[1],
+    sys.argv[2],
+    sys.argv[3],
+    sys.argv[4],
+    sys.argv[5],
+)
 
 all_csvs = sorted(glob.glob(os.path.join(save_base, "*", "escape_ranking_report.csv")))
 csv_files = [p for p in all_csvs if not os.path.basename(os.path.dirname(p)).startswith("eval_pack_")]
@@ -363,6 +384,10 @@ if not csv_files:
     sys.exit(0)
 
 latest_csv = csv_files[-1]
+infer_dir = os.path.dirname(latest_csv)
+train_dirs = sorted(glob.glob(os.path.join(save_base, "train_*")))
+latest_train_dir = train_dirs[-1] if train_dirs else save_base
+
 latest_txt = latest_csv.replace(".csv", ".txt")
 eff_thresh = 0.25
 overfit_line = ""
@@ -416,32 +441,74 @@ caught_escape = [r for r in escape_defects if "ANOMALY" in r["Status"]]
 fpr_pct = (len(fp_normal) / len(target_normal) * 100.0) if target_normal else 0.0
 recall_pct = (len(caught_escape) / len(escape_defects) * 100.0) if escape_defects else 0.0
 
-print("\n" + "=" * 85)
-print(f" 🎯 [{cat_name.upper()} 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 ({score_mode_str})]")
-print("-" * 85)
-print(f"  📂 最新報表位置               : {latest_csv}")
-print(f"  🖼️ 盲池圖片結構               : 總計 {total} 張 (Golden: {total - len(non_golden)} 張 | 非Golden正常圖: {len(target_normal)} 張 | 隱藏Escape瑕疵: {len(escape_defects)} 張)")
-print(f"  🎚️ 本次動態對齊後有效門檻      : {eff_thresh:.4f}")
+summary_block = [
+    "=" * 85,
+    f" 🎯 [{unique_tag.upper()} 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 ({score_mode_str})]",
+    "-" * 85,
+    f"  📂 訓練紀錄資料夾             : {os.path.abspath(latest_train_dir)}",
+    f"  📂 推論紀錄資料夾             : {os.path.abspath(infer_dir)}",
+    f"  📄 最新排名報表位置           : {os.path.abspath(latest_csv)}",
+    f"  🖼️ 盲池圖片結構               : 總計 {total} 張 (Golden: {total - len(non_golden)} 張 | 非Golden正常圖: {len(target_normal)} 張 | 隱藏Escape瑕疵: {len(escape_defects)} 張)",
+    f"  🎚️ 本次動態對齊後有效門檻      : {eff_thresh:.4f}",
+]
 if escape_defects:
-    print(f"  🎯 抓漏與誤報表現             : 成功抓出瑕疵 {len(caught_escape)}/{len(escape_defects)} 張 (Recall={recall_pct:.1f}%) | 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張 (FPR={fpr_pct:.1f}%)")
+    summary_block.append(
+        f"  🎯 抓漏與誤報表現             : 成功抓出瑕疵 {len(caught_escape)}/{len(escape_defects)} 張 (Recall={recall_pct:.1f}%) | 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張 (FPR={fpr_pct:.1f}%)"
+    )
 else:
-    print(f"  🎯 純正常池誤報表現 (FPR)     : 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張 (扣除Golden後 FPR={fpr_pct:.2f}%)")
+    summary_block.append(
+        f"  🎯 純正常池誤報表現 (FPR)     : 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張 (扣除Golden後 FPR={fpr_pct:.2f}%)"
+    )
 if overfit_line:
-    print(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")
-print("-" * 85)
-print(f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}")
-print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}")
-if "Raw_Max_Score" in target_normal[0] and "Filtered_Max_Score" in target_normal[0]:
-    raw_arr = [float(r["Raw_Max_Score"]) for r in target_normal]
-    flt_arr = [float(r["Filtered_Max_Score"]) for r in target_normal]
-    print(f"  🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max={float(np.max(raw_arr)):.4f}, Mean={float(np.mean(raw_arr)):.4f}  vs  [四合一濾波] Max={float(np.mean(flt_arr)):.4f}")
+    summary_block.append(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")
+summary_block.extend([
+    "-" * 85,
+    f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}",
+    f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}",
+])
 if escape_defects:
     esc_scores = [float(r["Max_Score"]) for r in escape_defects]
-    print(f"  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min={float(np.min(esc_scores)):.4f} | Median={float(np.median(esc_scores)):.4f} | Max={float(np.max(esc_scores)):.4f}")
-print("=" * 85 + "\n")
+    summary_block.append(
+        f"  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min={float(np.min(esc_scores)):.4f} | Median={float(np.median(esc_scores)):.4f} | Max={float(np.max(esc_scores)):.4f}"
+    )
+summary_block.append("=" * 85 + "\n")
+
+full_text = "\n".join(summary_block)
+print("\n" + full_text)
+
+with open(batch_txt, "a", encoding="utf-8") as bf:
+    bf.write(full_text + "\n")
+
+with open(batch_csv, "a", newline="", encoding="utf-8") as cf:
+    writer = csv.writer(cf)
+    writer.writerow([
+        unique_tag,
+        cat_name,
+        total,
+        total - len(non_golden),
+        len(target_normal),
+        len(escape_defects),
+        f"{eff_thresh:.4f}",
+        f"{recall_pct:.2f}",
+        f"{fpr_pct:.2f}",
+        f"{mean_s:.4f}",
+        f"{std_s:.4f}",
+        os.path.abspath(latest_train_dir),
+        os.path.abspath(infer_dir),
+        os.path.abspath(latest_csv),
+    ])
 EOF
 }
 
 for cat_path in "${TARGET_CAT_DIRS[@]}"; do
     run_single_public_category "${cat_path}"
 done
+
+cp -f "${BATCH_SUMMARY_TXT}" "${BATCH_SUMMARY_LATEST}"
+echo ""
+echo "=========================================================================================================="
+echo " ✅ 全部 ${#TARGET_CAT_DIRS[@]} 個資料集執行完畢！所有資料集的訓練與推論紀錄皆已獨立保存："
+echo "    📄 本次多資料集完整彙整報表 (TXT) : ${BATCH_SUMMARY_TXT}"
+echo "    📄 最新多資料集完整彙整報表 (TXT) : ${BATCH_SUMMARY_LATEST}"
+echo "    📊 最新多資料集完整彙整報表 (CSV) : ${BATCH_SUMMARY_CSV}"
+echo "=========================================================================================================="
