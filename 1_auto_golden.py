@@ -153,6 +153,273 @@ def is_background_tile(tile_rgb: np.ndarray, bg_std_thresh: float) -> bool:
     return float(np.std(tile_rgb)) < bg_std_thresh
 
 
+# =====================================================================
+# 48 個代表性訓練圖塊與同心圓環帶視覺化輸出模組 (供報告與簡報使用)
+# =====================================================================
+def _draw_dashed_circle(
+    canvas: np.ndarray,
+    center: Tuple[int, int],
+    radius: int,
+    color: Tuple[int, int, int],
+    thickness: int = 1,
+    dash_deg: int = 6,
+):
+    """在 OpenCV 畫布上繪製虛線同心圓，用於標示徑向分層環帶 (Radial Bins)。"""
+    if radius <= 4:
+        return
+    for angle in range(0, 360, dash_deg * 2):
+        cv2.ellipse(canvas, center, (radius, radius), 0, angle, angle + dash_deg, color, thickness, cv2.LINE_AA)
+
+
+def save_golden_tile_layout_visualization(
+    base_img_rgb: np.ndarray,
+    all_valid_coords: List[Tuple[int, int]],
+    selected_tile_records: List[Tuple[int, int, str, float]],
+    tile_size: int,
+    tile_overlap: int,
+    num_cands: int,
+    out_vis_path: str,
+    report_dir: Optional[str] = None,
+    log_files: Optional[List[str]] = None,
+):
+    """
+    將挑出的 48 個代表性訓練圖塊座標、候選切塊網格與同心圓環帶繪製於晶圓縮圖上並輸出高解析度 PNG：
+    - 左圖：顯示所有非背景有效切塊網格 (灰色細框) + 4 道同心圓徑向分層環帶 (青色虛線圓)。
+    - 右圖：顯示最終挑出的 48 個訓練圖塊 (依圓心->外環 #01~#48 以彩虹漸層上色，並標註編號與來源)。
+    """
+    h0, w0 = base_img_rgb.shape[:2]
+    panel_h = 840
+    scale = panel_h / float(h0)
+    panel_w = max(320, int(round(w0 * scale)))
+
+    base_bgr = cv2.cvtColor(base_img_rgb, cv2.COLOR_RGB2BGR)
+    resized_bgr = cv2.resize(base_bgr, (panel_w, panel_h), interpolation=cv2.INTER_AREA)
+
+    # 稍微壓暗底圖 25%，讓彩色切塊框、同心圓與編號文字清晰突顯
+    dark_bg = (resized_bgr.astype(np.float32) * 0.72).astype(np.uint8)
+    left_panel = dark_bg.copy()
+    right_panel = dark_bg.copy()
+    right_fill_layer = dark_bg.copy()
+
+    cy_s, cx_s = int(round(h0 * 0.5 * scale)), int(round(w0 * 0.5 * scale))
+    ts_y = max(4, int(round(tile_size * scale)))
+    ts_x = max(4, int(round(tile_size * scale)))
+
+    # 1. 左面板：繪製所有有效非背景候選切塊網格 + 同心圓半徑環帶
+    max_radius = 0.0
+    for (y, x) in all_valid_coords:
+        y1, x1 = int(round(y * scale)), int(round(x * scale))
+        y2, x2 = min(panel_h - 1, y1 + ts_y), min(panel_w - 1, x1 + ts_x)
+        cv2.rectangle(left_panel, (x1, y1), (x2, y2), (115, 115, 115), 1, cv2.LINE_AA)
+        r = float(np.hypot((y + tile_size * 0.5) - h0 * 0.5, (x + tile_size * 0.5) - w0 * 0.5))
+        if r > max_radius:
+            max_radius = r
+
+    if max_radius < 1.0:
+        max_radius = min(h0, w0) * 0.45
+
+    # 繪製 25%, 50%, 75%, 100% 四道同心圓虛線環帶與圓心十字
+    for frac, label_str in [(0.25, "R25% (Center)"), (0.50, "R50% (Mid-Inner)"), (0.75, "R75% (Mid-Outer)"), (1.00, "R100% (Edge)")]:
+        r_px = int(round(max_radius * frac * scale))
+        _draw_dashed_circle(left_panel, (cx_s, cy_s), r_px, (255, 230, 0), thickness=1, dash_deg=5)
+        ly = max(18, cy_s - r_px - 4)
+        cv2.putText(
+            left_panel,
+            label_str,
+            (max(8, cx_s - 45), ly),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.42,
+            (255, 240, 120),
+            1,
+            cv2.LINE_AA,
+        )
+    cv2.drawMarker(left_panel, (cx_s, cy_s), (0, 255, 255), cv2.MARKER_CROSS, 14, 2, cv2.LINE_AA)
+
+    # 2. 右面板：繪製最終挑出的 48 個代表性訓練圖塊 (依半徑 #01 -> #48 彩虹漸層上色)
+    n_sel = max(1, len(selected_tile_records))
+    for idx, (y, x, g_tag, _) in enumerate(selected_tile_records):
+        # 計算 HSV 彩虹色 (Hue: 115 藍青色 [圓心] -> 60 綠色 [中環] -> 0 紅色 [外環])
+        ratio = idx / float(max(1, n_sel - 1))
+        hue = int(round(115 * (1.0 - ratio)))
+        hsv_pixel = np.uint8([[[hue, 235, 255]]])
+        bgr_color = tuple(int(c) for c in cv2.cvtColor(hsv_pixel, cv2.COLOR_HSV2BGR)[0, 0])
+
+        y1, x1 = int(round(y * scale)), int(round(x * scale))
+        y2, x2 = min(panel_h - 1, y1 + ts_y), min(panel_w - 1, x1 + ts_x)
+        cv2.rectangle(right_fill_layer, (x1, y1), (x2, y2), bgr_color, -1)
+
+    # 半透明色塊疊加，讓重疊區 (64px overlap) 自然呈現交集加深效果
+    cv2.addWeighted(right_fill_layer, 0.22, right_panel, 0.78, 0, right_panel)
+
+    # 同步在右面板畫上淡虛線同心圓作為參考，再畫出 48 個圖塊的銳利邊框與編號標籤
+    for frac in (0.25, 0.50, 0.75, 1.00):
+        r_px = int(round(max_radius * frac * scale))
+        _draw_dashed_circle(right_panel, (cx_s, cy_s), r_px, (180, 180, 180), thickness=1, dash_deg=4)
+
+    for idx, (y, x, g_tag, _) in enumerate(selected_tile_records):
+        ratio = idx / float(max(1, n_sel - 1))
+        hue = int(round(115 * (1.0 - ratio)))
+        hsv_pixel = np.uint8([[[hue, 235, 255]]])
+        bgr_color = tuple(int(c) for c in cv2.cvtColor(hsv_pixel, cv2.COLOR_HSV2BGR)[0, 0])
+
+        y1, x1 = int(round(y * scale)), int(round(x * scale))
+        y2, x2 = min(panel_h - 1, y1 + ts_y), min(panel_w - 1, x1 + ts_x)
+        cv2.rectangle(right_panel, (x1, y1), (x2, y2), bgr_color, 2, cv2.LINE_AA)
+
+        # 在圖塊中心繪製黑底白字編號標籤 (例如 #01 g0)
+        cx_box = (x1 + x2) // 2
+        cy_box = (y1 + y2) // 2
+        label = f"#{idx + 1:02d}"
+        (tw, th_txt), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.38, 1)
+        bx1 = max(0, cx_box - tw // 2 - 3)
+        by1 = max(0, cy_box - th_txt // 2 - 3)
+        bx2 = min(panel_w - 1, cx_box + tw // 2 + 3)
+        by2 = min(panel_h - 1, cy_box + th_txt // 2 + 3)
+        cv2.rectangle(right_panel, (bx1, by1), (bx2, by2), (18, 18, 18), -1)
+        cv2.rectangle(right_panel, (bx1, by1), (bx2, by2), bgr_color, 1)
+        cv2.putText(
+            right_panel,
+            label,
+            (bx1 + 3, by2 - 3),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            0.38,
+            (255, 255, 255),
+            1,
+            cv2.LINE_AA,
+        )
+
+    # 3. 組合左右雙面板與頂部/底部圖例資訊列
+    sep = np.full((panel_h, 8, 3), 40, dtype=np.uint8)
+    body = np.hstack([left_panel, sep, right_panel])
+    total_w = body.shape[1]
+
+    header_h = 82
+    footer_h = 46
+    header = np.full((header_h, total_w, 3), 24, dtype=np.uint8)
+    footer = np.full((footer_h, total_w, 3), 30, dtype=np.uint8)
+
+    title_main = (
+        f"Stage 2 Radial Stratified Golden Tile Selection | "
+        f"Orig: {w0}x{h0} | Tile: {tile_size}x{tile_size} (Overlap={tile_overlap}px, Stride={max(1, tile_size - tile_overlap)}px)"
+    )
+    sub_left = f"[Left] All {len(all_valid_coords)} Non-Background Grid Coords & Concentric Radial Rings (Pool={num_cands} Wafers)"
+    sub_right = f"[Right] Final {len(selected_tile_records)} Purified Training Tiles (#01 Center [Blue] -> #{len(selected_tile_records):02d} Edge [Red])"
+
+    cv2.putText(header, title_main, (16, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 230, 255), 2, cv2.LINE_AA)
+    cv2.putText(header, sub_left, (16, 64), cv2.FONT_HERSHEY_SIMPLEX, 0.48, (210, 210, 210), 1, cv2.LINE_AA)
+    cv2.putText(
+        header,
+        sub_right,
+        (panel_w + 20, 64),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.48,
+        (120, 255, 160),
+        1,
+        cv2.LINE_AA,
+    )
+
+    footer_txt = (
+        "Legend:  #01~#12 Center Die (Blue/Cyan)   |   #13~#32 Mid-Ring (Green/Yellow)   |   "
+        "#33~#48 Wafer Edge/Bevel (Orange/Red)   |   Semi-transparent shading shows 64px tile overlap"
+    )
+    cv2.putText(footer, footer_txt, (16, 29), cv2.FONT_HERSHEY_SIMPLEX, 0.46, (235, 235, 235), 1, cv2.LINE_AA)
+
+    final_canvas = np.vstack([header, body, footer])
+    os.makedirs(os.path.dirname(os.path.abspath(out_vis_path)), exist_ok=True)
+    cv2.imwrite(out_vis_path, final_canvas)
+
+    if report_dir:
+        os.makedirs(report_dir, exist_ok=True)
+        safe_copy(out_vis_path, os.path.join(report_dir, os.path.basename(out_vis_path)))
+
+    log_and_print(
+        f"[🎨 切塊空間分佈視覺化已輸出] 已將 {len(selected_tile_records)} 個代表性訓練圖塊與同心圓環帶繪製於 -> {os.path.abspath(out_vis_path)}",
+        log_files,
+    )
+
+
+def _ensure_layout_vis_from_existing_dataset(
+    shot_dir: str,
+    category: str,
+    tile_size: int,
+    tile_overlap: int,
+    bg_std_thresh: float,
+    report_dir: Optional[str] = None,
+    log_files: Optional[List[str]] = None,
+):
+    """
+    若觸發防呆直接沿用既有 Golden 資料集，但目錄下尚無 golden_tile_layout_vis.png，
+    自動從 backup 原圖與 train/<category> 檔名解析座標並補畫視覺化分佈圖 (不重挑 Golden)。
+    """
+    vis_path = os.path.join(shot_dir, "golden_tile_layout_vis.png")
+    if os.path.isfile(vis_path):
+        if report_dir:
+            os.makedirs(report_dir, exist_ok=True)
+            safe_copy(vis_path, os.path.join(report_dir, "golden_tile_layout_vis.png"))
+        return
+
+    backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
+    cat_train_dir = os.path.join(shot_dir, "train", category)
+    if not os.path.isdir(cat_train_dir):
+        return
+
+    base_candidates = []
+    if os.path.isdir(backup_dir):
+        base_candidates = sorted(
+            [os.path.join(backup_dir, f) for f in os.listdir(backup_dir) if f.lower().endswith(IMG_EXTENSIONS)]
+        )
+    if not base_candidates:
+        base_candidates = sorted(
+            [os.path.join(cat_train_dir, f) for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)]
+        )
+    if not base_candidates:
+        return
+
+    try:
+        base_rgb = load_image_rgb_uint8(base_candidates[0])
+        h0, w0 = base_rgb.shape[:2]
+        train_files = sorted([f for f in os.listdir(cat_train_dir) if f.lower().endswith(IMG_EXTENSIONS)])
+
+        selected_records: List[Tuple[int, int, str, float]] = []
+        for f in train_files:
+            m = re.search(r"_([gc]\d+)_tile_y(\d+)_x(\d+)", f)
+            if m:
+                selected_records.append((int(m.group(2)), int(m.group(3)), m.group(1), 0.0))
+
+        if not selected_records:
+            # 整張原圖模式 (未切塊)
+            selected_records = [(0, 0, "full", 0.0)]
+            valid_coords = [(0, 0)]
+            eff_ts = max(h0, w0)
+        else:
+            eff_ts = tile_size
+            stride = max(1, tile_size - tile_overlap)
+            ys = get_axis_positions(h0, tile_size, stride)
+            xs = get_axis_positions(w0, tile_size, stride)
+            valid_coords = []
+            for y in ys:
+                for x in xs:
+                    crop = base_rgb[y:min(h0, y + tile_size), x:min(w0, x + tile_size)]
+                    if not is_background_tile(crop, bg_std_thresh):
+                        valid_coords.append((y, x))
+            if not valid_coords:
+                valid_coords = [(r[0], r[1]) for r in selected_records]
+
+        save_golden_tile_layout_visualization(
+            base_img_rgb=base_rgb,
+            all_valid_coords=valid_coords,
+            selected_tile_records=selected_records,
+            tile_size=eff_ts,
+            tile_overlap=tile_overlap,
+            num_cands=len(base_candidates),
+            out_vis_path=vis_path,
+            report_dir=report_dir,
+            log_files=log_files,
+        )
+    except Exception:
+        pass
+
+
 def prepare_mock_unlabeled_pool_from_mvtec(
     mvtec_cat_dir: str,
     mock_pool_dir: str,
@@ -300,8 +567,7 @@ def _select_diverse_top_indices(
 ) -> List[int]:
     """
     多樣性非極大值抑制 (Near-Duplicate Diversity NMS)：
-    防止同一顆工件的多重曝光/微位移變體 (如 bad_000_regular, bad_000_underexposed, bad_000_shift_1)
-    同時霸佔 Top-16 候選池並在 Stage 2 切塊投票中串通得票。
+    防止同一顆工件的多重曝光/微位移變體同時霸佔 Top-16 候選池並在 Stage 2 切塊投票中串通得票。
     """
     order = [int(i) for i in np.argsort(scores)[::-1]]
     if len(order) <= target_k:
@@ -320,7 +586,6 @@ def _select_diverse_top_indices(
         g_sims = np.dot(global_feats[selected], global_feats[idx])
         s_sims = np.dot(spatial_feats[selected], spatial_feats[idx])
 
-        # 若全域特徵與空間網格特徵皆極度相似，或單一特徵幾乎完全重疊，視為同源重複拍攝樣本，暫緩排入
         is_near_dup = bool(
             np.any((g_sims >= sim_thresh_global) & (s_sims >= sim_thresh_spatial))
             or np.any(s_sims >= 0.985)
@@ -333,7 +598,6 @@ def _select_diverse_top_indices(
             if len(selected) >= target_k:
                 break
 
-    # 若嚴格去重後不足 target_k 張，再依分數由高至低補齊
     for idx in deferred:
         if len(selected) >= target_k:
             break
@@ -359,11 +623,7 @@ def select_golden_images(
     sample_seed: int = 42,
 ) -> List[str]:
     """
-    Stage 1 候選池初篩 (支援上千張大資料集快速抽樣 + 光度/空間位移/跨片局部異常/去重四合一過濾)：
-    1. 光度與對比度穩健過濾 (Photometric Gate)：自動攔截曝光不足 (underexposed) 與過曝 (overexposed) 樣本。
-    2. 空間網格對齊中心度 (Spatial Grid Alignment)：攔截平移或旋轉偏移 (shift_1 / shift_2) 樣本。
-    3. 跨片同座標局部 Patch 異常峰值懲罰 (Cross-Image Spatial Patch Anomaly)：攔截曝光與位置正常但帶有局部瑕疵的樣本。
-    4. 近鄰多樣性去重 (Diversity NMS)：防止同一工件的多重拍攝分身壟斷候選池。
+    Stage 1 候選池初篩 (支援上千張大資料集快速抽樣 + 光度/空間位移/跨片局部異常/去重四合一過濾)。
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     all_imgs = scan_pool_images(pool_dir)
@@ -373,7 +633,6 @@ def select_golden_images(
 
     eff_cand_size = min(total_pool_count, max(shots, int(candidate_pool_size)))
 
-    # 若母體為上千張大資料集，自動啟動固定亂數種子抽樣，避免全池 I/O 與矩陣計算瓶頸
     if max_coarse_scan > 0 and total_pool_count > max(max_coarse_scan, eff_cand_size):
         rng = np.random.RandomState(sample_seed)
         sampled_indices = np.sort(rng.choice(total_pool_count, size=max_coarse_scan, replace=False))
@@ -409,7 +668,6 @@ def select_golden_images(
     for path in scan_imgs:
         try:
             rgb_u8 = load_image_rgb_uint8(path)
-            # 1. 提取光度與對比度統計量 (攔截 underexposed / overexposed)
             small_rgb = cv2.resize(rgb_u8, (256, 256), interpolation=cv2.INTER_AREA).astype(np.float32)
             gray = 0.299 * small_rgb[:, :, 0] + 0.587 * small_rgb[:, :, 1] + 0.114 * small_rgb[:, :, 2]
             luma_medians.append(float(np.median(gray)))
@@ -419,10 +677,9 @@ def select_golden_images(
 
             pil_img = Image.fromarray(rgb_u8, mode="RGB")
             x = transform(pil_img).unsqueeze(0).to(device)
-            tokens_raw = proj_conv(x).flatten(2).transpose(1, 2)  # (1, N, D)
+            tokens_raw = proj_conv(x).flatten(2).transpose(1, 2)
             tokens = F.layer_norm(tokens_raw, (tokens_raw.shape[-1],))
 
-            # 單圖內部 Token Spike
             token_mean = tokens.mean(dim=1, keepdim=True)
             token_dev = torch.norm(tokens - token_mean, dim=-1).squeeze(0)
             top_k_tok = max(1, int(token_dev.numel() * 0.02))
@@ -431,17 +688,15 @@ def select_golden_images(
             spike_ratio = float((top_vals.mean() / med_val).item())
             token_spike_scores.append(spike_ratio)
 
-            # 2. 空間網格特徵：8x8 用於檢驗位置對齊 (攔截 shift_1/shift_2)，16x16 用於跨片局部異常檢驗
             tok_2d = tokens.transpose(1, 2).reshape(1, -1, grid_side, grid_side)
             sp8 = F.adaptive_avg_pool2d(tok_2d, (8, 8)).flatten(1)
             sp8 = F.normalize(sp8, dim=-1)
             spatial_align_vecs.append(sp8.cpu())
 
-            sp16 = F.adaptive_avg_pool2d(tok_2d, (16, 16)).squeeze(0).flatten(1).transpose(0, 1)  # (256, D)
+            sp16 = F.adaptive_avg_pool2d(tok_2d, (16, 16)).squeeze(0).flatten(1).transpose(0, 1)
             sp16 = F.normalize(sp16, dim=-1)
             grid16_maps.append(sp16.cpu())
 
-            # 全域統計特徵
             feat_list = [tokens.mean(dim=1), tokens.std(dim=1)]
             for w in qkv_weights[:3]:
                 qkv = F.linear(tokens, w)
@@ -463,47 +718,36 @@ def select_golden_images(
 
     eff_cand_size = min(num_valid, max(shots, int(candidate_pool_size)))
 
-    # (A) 全域特徵中心度 (Global Centrality)
     feats_tensor = torch.cat(features, dim=0)
     sim_matrix = torch.mm(feats_tensor, feats_tensor.t()).numpy()
     np.fill_diagonal(sim_matrix, 0.0)
-    # 取前 60% 最相似鄰居計算 Trimmed Centrality，避免被池內少數離群樣本拉偏
     k_trim = max(1, int(round((num_valid - 1) * 0.60)))
     sorted_sims = np.sort(sim_matrix, axis=1)[:, ::-1]
     raw_centrality = sorted_sims[:, :k_trim].mean(axis=1)
 
-    # (B) 空間網格對齊中心度 (Spatial Alignment Centrality — 攔截 shift 位移)
-    sp8_tensor = torch.cat(spatial_align_vecs, dim=0).numpy()  # (M, 8*8*D)
+    sp8_tensor = torch.cat(spatial_align_vecs, dim=0).numpy()
     sp8_med = np.median(sp8_tensor, axis=0, keepdims=True)
     sp8_med = sp8_med / (np.linalg.norm(sp8_med, axis=-1, keepdims=True) + 1e-8)
-    spatial_alignment = np.sum(sp8_tensor * sp8_med, axis=-1)  # [-1, 1]
+    spatial_alignment = np.sum(sp8_tensor * sp8_med, axis=-1)
     shift_z = _robust_mad_z(spatial_alignment, directional="low")
 
-    # (C) 跨片同座標 16x16 局部異常峰值 (Cross-Image Patch Anomaly — 攔截 regular 局部瑕疵)
-    sp16_stack = torch.stack(grid16_maps, dim=0).numpy()  # (M, 256, D)
+    sp16_stack = torch.stack(grid16_maps, dim=0).numpy()
     sp16_med = np.median(sp16_stack, axis=0, keepdims=True)
     sp16_med = sp16_med / (np.linalg.norm(sp16_med, axis=-1, keepdims=True) + 1e-8)
-    patch_cos_dist = np.maximum(0.0, 1.0 - np.sum(sp16_stack * sp16_med, axis=-1))  # (M, 256)
-    # 正規化每個座標位置的基準變異，聚焦於突發的局部瑕疵區塊 (Top-3 patches)
+    patch_cos_dist = np.maximum(0.0, 1.0 - np.sum(sp16_stack * sp16_med, axis=-1))
     coord_med_dist = np.median(patch_cos_dist, axis=0, keepdims=True) + 1e-4
     rel_patch_dist = patch_cos_dist / coord_med_dist
     top3_patch_anomaly = np.sort(rel_patch_dist, axis=1)[:, -3:].mean(axis=1)
     patch_anom_z = _robust_mad_z(top3_patch_anomaly, directional="high")
 
-    # (D) 單圖內部 Token Spike Z-score
     spike_arr = np.array(token_spike_scores, dtype=np.float32)
     spike_z = _robust_mad_z(spike_arr, directional="high")
 
-    # (E) 光度與對比度穩健過濾 (Photometric Gate — 攔截 underexposed / overexposed)
     luma_med_z = _robust_mad_z(np.array(luma_medians, dtype=np.float32), directional="both")
     luma_std_z = _robust_mad_z(np.array(luma_stds, dtype=np.float32), directional="low")
     luma_span_z = _robust_mad_z(np.array(luma_spans, dtype=np.float32), directional="low")
     photo_z = np.maximum(luma_med_z, 0.75 * np.maximum(luma_std_z, luma_span_z))
 
-    # 計算綜合純淨度懲罰：
-    # - 光度偏離 > 1.25 MAD 時快速加重懲罰 (淘汰 underexposed/overexposed)
-    # - 空間對齊偏低時加重懲罰 (淘汰 shift_1/shift_2)
-    # - 跨片局部 Patch 異常過高時加重懲罰 (淘汰局部瑕疵圖)
     photo_penalty = 0.015 * np.maximum(0.0, photo_z - 1.0) + 0.045 * np.maximum(0.0, photo_z - 1.8)
     shift_penalty = 0.012 * np.maximum(0.0, shift_z - 0.8) + 0.035 * np.maximum(0.0, shift_z - 1.6)
     patch_penalty = 0.008 * np.clip(patch_anom_z, 0.0, 6.0)
@@ -518,7 +762,6 @@ def select_golden_images(
         - spike_penalty
     )
 
-    # 執行多樣性非極大值抑制 (Near-Duplicate NMS)，選取不重複的 Top-16 候選池與 Top-4 初始 Golden
     feats_np = feats_tensor.numpy()
     cand_indices = _select_diverse_top_indices(
         scores=hybrid_centrality,
@@ -529,7 +772,6 @@ def select_golden_images(
     selected_indices = cand_indices[:shots]
     selected_paths = [valid_paths[idx] for idx in selected_indices]
 
-    # 儲存 Top-M (例如 16 張) 候選池資訊供 Stage 2 切塊後投票選 Golden 使用
     cand_records = []
     for rank_i, idx in enumerate(cand_indices):
         src_p = valid_paths[idx]
@@ -660,11 +902,6 @@ def _compute_local_patch_peak_residuals(
     eval_res: int = 256,
     patch_grid: int = 16,
 ) -> np.ndarray:
-    """
-    計算同座標跨片切塊殘差：
-    除了原始像素差異外，加入零均值標準化結構殘差 (Zero-Mean Normalized Structural Residual)
-    與圖塊光度偏離懲罰，防止暗部無細節的曝光不足 (underexposed) 切塊因像素值低而假性勝出。
-    """
     n = len(crops)
     if n <= 1:
         return np.zeros(n, dtype=np.float32)
@@ -685,12 +922,10 @@ def _compute_local_patch_peak_residuals(
         tile_stds.append(s_val)
         norm_stack.append((blur - m_val) / max(s_val, 4.0))
 
-    # 1. 原始像素中位數殘差
     arr = np.stack(blurred_stack, axis=0)
     med_tile = np.median(arr, axis=0, keepdims=True)
     abs_diff = np.mean(np.abs(arr - med_tile), axis=-1)
 
-    # 2. 對比度正規化結構殘差 (讓暗圖上的微弱刮痕/凹痕與正常亮度圖站在同一基準對決)
     norm_arr = np.stack(norm_stack, axis=0)
     med_norm_tile = np.median(norm_arr, axis=0, keepdims=True)
     struct_diff = np.mean(np.abs(norm_arr - med_norm_tile), axis=-1) * 18.0
@@ -704,7 +939,6 @@ def _compute_local_patch_peak_residuals(
     top2_patch_peak = np.sort(patched, axis=1)[:, -2:].mean(axis=1)
     global_l1 = combined_diff.mean(axis=(1, 2))
 
-    # 3. 切塊亮度與對比度偏離懲罰 (懲罰相較於同座標其他候選圖明顯過暗或失去紋理的切塊)
     means_arr = np.array(tile_means, dtype=np.float32)
     stds_arr = np.array(tile_stds, dtype=np.float32)
     mean_z = _robust_mad_z(means_arr, directional="both")
@@ -722,13 +956,6 @@ def purify_golden_tiles_two_stage(
     shots: int = 4,
     stage1_priors: Optional[List[float]] = None,
 ) -> Tuple[List[Tuple[int, int, int, float]], Dict]:
-    """
-    Stage 2 先切塊後投票選 Golden 演算法：
-    1. 在每個網格座標 (y, x) 對來自 num_candidates (例如 16 張) 候選圖的子圖塊計算：
-       「16x16 局部區塊結構+像素殘差峰值」+「輕量 DINO 圖塊特徵距離」。
-    2. 統計每張候選原圖在所有非背景座標中獲得「最純淨前 2 名」的勝出票數 (Win Votes) 與累積殘差，
-       並結合 Stage 1 的全域純淨度排名解決平手，選出最終 Top-`shots` (4) 張作為 Golden 原圖！
-    """
     flat_tiles: List[np.ndarray] = []
     coord_slices: List[Tuple[int, int]] = []
     for (_, _, _, non_bg_items) in coord_Execution_items:
@@ -747,7 +974,6 @@ def purify_golden_tiles_two_stage(
     cand_cost_sums = np.zeros(max(1, num_candidates), dtype=np.float64)
     cand_eval_counts = np.zeros(max(1, num_candidates), dtype=np.int32)
 
-    # 若 Stage 1 分數明顯較低 (例如排在候選池後段)，給予輕微先驗正則化，避免邊緣圖片靠背景塊僥倖高票
     prior_arr = np.zeros(max(1, num_candidates), dtype=np.float32)
     if stage1_priors and len(stage1_priors) == num_candidates:
         s1_arr = np.array(stage1_priors, dtype=np.float32)
@@ -791,7 +1017,6 @@ def purify_golden_tiles_two_stage(
             hybrid_cost = norm_peak
             raw_abs_cost = peak_res
 
-        # 加入 Stage 1 光度/對齊先驗微調
         for loc_i, (c_idx, _) in enumerate(non_bg_items):
             if int(c_idx) < len(prior_arr):
                 hybrid_cost[loc_i] += float(prior_arr[int(c_idx)])
@@ -801,7 +1026,6 @@ def purify_golden_tiles_two_stage(
         best_g_idx = int(non_bg_items[best_local_i][0])
         best_abs_cost = float(raw_abs_cost[best_local_i])
 
-        # 記錄各候選圖在該座標 (y, x) 的表現與投票積分 (第 1 名得 2 票，第 2 名得 1 票)
         for rank_pos, loc_i in enumerate(sorted_order):
             c_idx = int(non_bg_items[int(loc_i)][0])
             if c_idx < len(cand_win_votes):
@@ -842,7 +1066,6 @@ def purify_golden_tiles_two_stage(
             }
         )
 
-    # 統計各候選晶圓原圖的切塊投票結果，選出最終 Top-shots (4) 張 Golden 原圖
     cand_mean_costs = cand_cost_sums / np.maximum(1, cand_eval_counts)
     valid_cands = [i for i in range(len(cand_win_votes)) if cand_eval_counts[i] > 0]
     if not valid_cands:
@@ -911,11 +1134,7 @@ def prepare_tiled_golden_trainset(
     shots: int = 4,
 ) -> int:
     """
-    Stage 2 先切塊再投票選 Golden 流程：
-    1. 當原圖尺寸 <= max(tile_size, min_tile_trigger) 時（如 MVTec 1000x1000），自動保持整張原圖訓練。
-    2. 當晶圓廠大圖 > 1280px 時，自動讀取 Stage 1 鎖定的 16 張候選圖 (`stage1_candidates_<category>.json`)，
-       於 RAM 內切塊進行跨片同座標 PK 投票，選出最終 Top-4 張最純淨的 Golden 原圖更新至 `golden_full_res_backup` 與報表，
-       並輸出 48 張跨片最純淨的代表性訓練圖塊至 `train/<category>`！
+    Stage 2 先切塊再投票選 Golden 流程 + 自動輸出 48 個訓練圖塊空間分佈視覺化圖 (`golden_tile_layout_vis.png`)。
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
     initial_files = sorted(
@@ -928,7 +1147,6 @@ def prepare_tiled_golden_trainset(
     if not initial_files:
         raise FileNotFoundError(f"在 {cat_train_dir} 中找不到初始 Golden 圖片！")
 
-    # 檢查是否有 Stage 1 產生的 16 張候選池清單
     cand_json_path = os.path.join(shot_dir, f"stage1_candidates_{category}.json")
     cand_records = []
     if os.path.isfile(cand_json_path):
@@ -944,7 +1162,6 @@ def prepare_tiled_golden_trainset(
     sample_check_path = cand_records[0]["abs_path"] if cand_records else initial_files[0]
     sample_img = load_image_rgb_uint8(sample_check_path)
     h0, w0 = sample_img.shape[:2]
-    del sample_img
 
     full_backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
     safe_rmtree(full_backup_dir)
@@ -970,9 +1187,23 @@ def prepare_tiled_golden_trainset(
         if report_dir:
             os.makedirs(report_dir, exist_ok=True)
             safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
+
+        save_golden_tile_layout_visualization(
+            base_img_rgb=sample_img,
+            all_valid_coords=[(0, 0)],
+            selected_tile_records=[(0, 0, "full", 0.0)],
+            tile_size=max(h0, w0),
+            tile_overlap=0,
+            num_cands=len(initial_files),
+            out_vis_path=os.path.join(shot_dir, "golden_tile_layout_vis.png"),
+            report_dir=report_dir,
+            log_files=log_files,
+        )
+        del sample_img
         return len(initial_files)
 
-    # 載入 16 張候選晶圓大圖至 RAM 進行切塊同座標 PK
+    del sample_img
+
     if not cand_records:
         cand_records = [
             {
@@ -1047,7 +1278,6 @@ def prepare_tiled_golden_trainset(
         stage1_priors=s1_priors,
     )
 
-    # 根據切塊投票結果，正式選出 Top-shots (4) 張全圖 Golden 存入 golden_full_res_backup 與更新名單
     winning_cand_indices = purity_stats["winning_cand_indices"]
     cand_win_votes = purity_stats["cand_win_votes"]
     cand_mean_costs = purity_stats["cand_mean_costs"]
@@ -1077,7 +1307,6 @@ def prepare_tiled_golden_trainset(
         os.makedirs(report_dir, exist_ok=True)
         safe_copy(record_txt, os.path.join(report_dir, f"selected_{shots}_golden_images.txt"))
 
-    # 清空 train/<category> 內的暫存原圖，寫入 48 張跨候選池最純淨的高解析度訓練圖塊
     for f in os.listdir(cat_train_dir):
         if f.lower().endswith(IMG_EXTENSIONS):
             p = os.path.join(cat_train_dir, f)
@@ -1109,6 +1338,7 @@ def prepare_tiled_golden_trainset(
         )
     purity_report_lines.append("-" * 78)
 
+    vis_selected_records: List[Tuple[int, int, str, float]] = []
     for idx, (y, x, c_idx, p_cost) in enumerate(selected_specs):
         c_img = candidate_imgs[c_idx]
         gh, gw = c_img.shape[:2]
@@ -1124,6 +1354,7 @@ def prepare_tiled_golden_trainset(
         tile_fname = f"{idx:03d}_{g_tag}_tile_y{y:04d}_x{x:04d}.png"
         out_path = os.path.join(cat_train_dir, tile_fname)
         Image.fromarray(patch).save(out_path)
+        vis_selected_records.append((y, x, g_tag, p_cost))
         purity_report_lines.append(
             f"Tile #{idx + 1:02d}: {tile_fname} | Source={valid_cand_records[c_idx]['rel_path']} | "
             f"Coord=(y={y:04d}, x={x:04d}) | Hybrid_Residual={p_cost:.4f}"
@@ -1136,6 +1367,21 @@ def prepare_tiled_golden_trainset(
         os.makedirs(report_dir, exist_ok=True)
         safe_copy(purity_txt_path, os.path.join(report_dir, "golden_tile_purity_report.txt"))
 
+    # 輸出 48 個代表性訓練圖塊與同心圓環帶視覺化對照圖
+    top1_cand_idx = winning_cand_indices[0] if winning_cand_indices else 0
+    valid_xy_coords = [(item[0], item[1]) for item in coord_Execution_items]
+    save_golden_tile_layout_visualization(
+        base_img_rgb=candidate_imgs[top1_cand_idx],
+        all_valid_coords=valid_xy_coords,
+        selected_tile_records=vis_selected_records,
+        tile_size=tile_size,
+        tile_overlap=tile_overlap,
+        num_cands=num_cands,
+        out_vis_path=os.path.join(shot_dir, "golden_tile_layout_vis.png"),
+        report_dir=report_dir,
+        log_files=log_files,
+    )
+
     num_saved = len(selected_specs)
     del candidate_imgs, coord_Execution_items
     gc.collect()
@@ -1146,6 +1392,7 @@ def prepare_tiled_golden_trainset(
         f"  ├── 切塊投票選出最終 Golden 原圖 : 已從 {num_cands} 張候選池正式選出 {len(winning_cand_indices)} 張最純淨 Golden 原圖\n"
         f"  ├── 跨片局部峰值與 DINO 離群剔除 : 自動攔截剔除 {purity_stats['rejected_outlier_tiles']} 張可疑離群圖塊\n"
         f"  ├── 徑向分層純淨度優化替換       : {purity_stats['radial_purified_swaps']} 個徑向區間已自動替換為更純淨座標\n"
+        f"  ├── 切塊分佈視覺化圖檔           : {os.path.abspath(os.path.join(shot_dir, 'golden_tile_layout_vis.png'))}\n"
         f"  └── 最終輸出純淨代表性訓練圖塊   : {num_saved} 張 ({tile_size}x{tile_size}) -> {os.path.abspath(cat_train_dir)}",
         log_files,
     )
@@ -1243,12 +1490,20 @@ def run_auto_golden_pipeline(
             min_tile_trigger=min_tile_trigger,
             shots=shots,
         )
-        # 若 Stage 2 透過切塊投票更新了最終 4 張 Golden 名單，從報表同步回傳最新名單
         voted_names = _recover_golden_filenames_from_disk(shot_dir, shots, category)
         if voted_names:
             golden_filenames = voted_names
     else:
         num_train_samples = len(golden_filenames)
+        _ensure_layout_vis_from_existing_dataset(
+            shot_dir=shot_dir,
+            category=category,
+            tile_size=tile_size,
+            tile_overlap=tile_overlap,
+            bg_std_thresh=bg_std_thresh,
+            report_dir=report_dir,
+            log_files=log_files,
+        )
     train_tile_sec = time.perf_counter() - t_s2
 
     meta = {
@@ -1295,8 +1550,7 @@ def load_or_prepare_golden_dataset(
     """
     防呆機制：
     1. 只要未指定 rebuild_golden=True，且已存在挑好的 Golden Image，絕不重新執行挑選！
-    2. 若發現舊版將 <= 1280px 的中小型圖片（如 1000x1000 MVTec）切成了 *_tile_* 碎片，
-       自動從 golden_full_res_backup 直接還原已挑選的 4 張完整 Golden 原圖（不重挑 Golden！）。
+    2. 若既有資料夾尚無 `golden_tile_layout_vis.png`，自動從既有訓練切塊補畫視覺化圖。
     """
     cat_train_dir = os.path.join(shot_dir, "train", category)
     backup_dir = os.path.join(shot_dir, "golden_full_res_backup", category)
@@ -1374,6 +1628,16 @@ def load_or_prepare_golden_dataset(
                 except Exception:
                     pass
 
+            _ensure_layout_vis_from_existing_dataset(
+                shot_dir=shot_dir,
+                category=category,
+                tile_size=tile_size,
+                tile_overlap=tile_overlap,
+                bg_std_thresh=bg_std_thresh,
+                report_dir=report_dir,
+                log_files=log_files,
+            )
+
             num_train_samples = len(train_files)
             if report_dir:
                 os.makedirs(report_dir, exist_ok=True)
@@ -1419,7 +1683,7 @@ def load_or_prepare_golden_dataset(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FoundAD Stage 1 (大資料集抽樣候選池) + Stage 2 (先切塊再投票選 Golden) 工具")
+    parser = argparse.ArgumentParser(description="FoundAD Stage 1 (大資料集抽樣候選池) + Stage 2 (先切塊再投票選 Golden 與視覺化輸出) 工具")
     parser.add_argument("--pool_dir", type=str, required=True, help="無標籤測試盲池圖片資料夾路徑")
     parser.add_argument("--ckpt", type=str, default="auto", help="DINO 預訓練權重路徑")
     parser.add_argument("--datasets_dir", type=str, default="./datasets", help="資料集根目錄")
@@ -1485,6 +1749,7 @@ def main():
         f"\n[{status_str}]\n"
         f"  ├── 最終勝出 Golden 原圖 : {', '.join(golden_filenames)}\n"
         f"  ├── 最終訓練樣本數量     : {num_train_samples} 張\n"
+        f"  ├── 切塊分佈視覺化圖檔   : {os.path.join(shot_dir, 'golden_tile_layout_vis.png')}\n"
         f"  └── 輸出資料集目錄       : {shot_dir}"
     )
 
