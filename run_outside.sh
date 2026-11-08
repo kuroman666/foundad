@@ -12,13 +12,13 @@ if [ $# -ge 1 ]; then
     TARGET_CAT_DIRS=("$@")
 else
     TARGET_CAT_DIRS=(
-        "${DATASETS_DIR}/mvtec/capsule"
+        # "${DATASETS_DIR}/mvtec/capsule"
         "${DATASETS_DIR}/mvtec-2/can"
-        "${DATASETS_DIR}/mvtec/bottle"
-        "${DATASETS_DIR}/mvtec/cable"
-        "${DATASETS_DIR}/mvtec/grid"
-        "${DATASETS_DIR}/mvtec/tile"
-        "${DATASETS_DIR}/mvtec/transistor"
+        # "${DATASETS_DIR}/mvtec/bottle"
+        # "${DATASETS_DIR}/mvtec/cable"
+        # "${DATASETS_DIR}/mvtec/grid"
+        # "${DATASETS_DIR}/mvtec/tile"
+        # "${DATASETS_DIR}/mvtec/transistor"
     )
 fi
 
@@ -55,9 +55,6 @@ SPECKLE_FILTER_RATIO=0.008
 MIN_AREA_RATIO=0.00012
 MICRO_DEFECT_MODE="--micro_defect_mode"  # 一鍵啟動微瑕疵高靈敏模式
 
-# 並在 Step 3/4 執行 python 3_infer_fab_no_gt.py 的最後一行加上 ${MICRO_DEFECT_MODE}：
-        ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
-
 # --- 高解析度切塊與縫合參數 ---
 TILE_SIZE=512
 TILE_OVERLAP=64
@@ -67,11 +64,12 @@ INFER_BATCH_SIZE=16
 BG_STD_THRESH=1.5
 DISABLE_TILING=""
 
-# --- Step 4 評估結果拆分參數 ---
-NUM_PACKS=3
-SPLIT_COUNTS=""
-SPLIT_RATIOS="1:1:1"
+# --- Step 4 評估結果拆分參數 (支援指定幾包、每包張數、總數防呆報錯與各包獨立重算門檻) ---
+NUM_PACKS=3                           # [功能 1] 設定要將資料集切成幾包 Eval (預設 3 包)
+SPLIT_COUNTS=""                       # [功能 2] 設定每包 Eval 的圖片數量：例如填 "15" 或 "15,15,10" (加總若不等於盲池總張數會立即報錯！留空 "" 則依比例拆分)
+SPLIT_RATIOS="1:1:1"                  # 若 SPLIT_COUNTS 留空，依此比例拆分
 SPLIT_ORDER="stratified"
+RECOMPUTE_PACK_THRESH="--recompute_pack_thresh"  # [新增] 設為 "--recompute_pack_thresh" 讓每一包獨立重算動態門檻；設為 "" 則沿用全池統一門檻
 EXCLUDE_GOLDEN=""
 USE_SYMLINK="--symlink"
 # ===============================================================
@@ -194,7 +192,6 @@ run_single_public_category() {
         DATA_NAME="${DS_PREFIX}_pure_${CAT_NAME}_${SHOTS}shot"
         DIY_NAME="pure_fpr_${CAT_NAME}"
         SAVE_BASE_DIR="${OUTPUT_ROOT}/3_pure_normal_${CAT_NAME}"
-        # 向下相容舊版命名 (pure_fpr)
         if [ ! -d "./logs/${DATA_NAME}" ] && [ -d "./logs/mvtec_pure_${CAT_NAME}_${SHOTS}shot/dinov3pure_fpr" ]; then
             DATA_NAME="mvtec_pure_${CAT_NAME}_${SHOTS}shot"
             DIY_NAME="pure_fpr"
@@ -204,7 +201,6 @@ run_single_public_category() {
         DATA_NAME="${DS_PREFIX}_sim_${CAT_NAME}_${SHOTS}shot"
         DIY_NAME="sim_escape_${CAT_NAME}"
         SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${CAT_NAME}"
-        # 向下相容舊版命名：若舊版 mvtec_sim_4shot 已存有該類別的 Golden 圖塊或權重，優先沿用舊版命名！
         if [ ! -d "${DATASETS_DIR}/${DATA_NAME}/train/${CAT_NAME}" ] && [ -d "${DATASETS_DIR}/mvtec_sim_${SHOTS}shot/train/${CAT_NAME}" ]; then
             echo " [🔄 命名相容防護] 偵測到舊版 Golden 目錄 mvtec_sim_${SHOTS}shot/train/${CAT_NAME}，自動沿用避免重挑！"
             DATA_NAME="mvtec_sim_${SHOTS}shot"
@@ -224,7 +220,7 @@ run_single_public_category() {
     # Step 0: 建立或沿用模擬盲池
     prepare_public_sim_pool "${CAT_DIR}" "${SIM_POOL_DIR}" "${POOL_MODE}" "${DEFECT_LIMIT}" "${REBUILD_POOL}"
 
-    # Step 1: 執行 1_auto_golden.py (內建防呆：只要 train/<CAT_NAME> 已有圖片就自動略過不重挑)
+    # Step 1: 執行 1_auto_golden.py
     local EXISTING_GOLDEN_COUNT=0
     if [ -d "${DATASETS_DIR}/${DATA_NAME}/train/${CAT_NAME}" ]; then
         EXISTING_GOLDEN_COUNT=$(find "${DATASETS_DIR}/${DATA_NAME}/train/${CAT_NAME}" -maxdepth 1 -type f \( -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.tif" -o -iname "*.tiff" -o -iname "*.bmp" \) | wc -l)
@@ -251,7 +247,7 @@ run_single_public_category() {
             ${REBUILD_POOL} ${DISABLE_TILING}
     fi
 
-    # Step 2: 執行 2_train_fab_no_gt.py (內建防呆：若 ./logs/<DATA_NAME> 下已有權重檔，自動略過訓練)
+    # Step 2: 執行 2_train_fab_no_gt.py
     echo "---------------------------------------------------------------------------"
     echo " [Step 2/4] 執行 2_train_fab_no_gt.py -> 模型訓練與權重對接檢查"
     echo "---------------------------------------------------------------------------"
@@ -307,7 +303,7 @@ run_single_public_category() {
         --bg_std_thresh "${BG_STD_THRESH}" \
         ${FORCE_INFER} ${RAW_SCORE_MODE} ${MICRO_DEFECT_MODE} ${DISABLE_TILING}
 
-    # Step 4: 執行評估結果拆分 (自動相容 4_split_eval_results.py 或 3_split_eval_results.py)
+    # Step 4: 執行評估結果拆分 (支援指定 NUM_PACKS、SPLIT_COUNTS 嚴格總數檢查與 RECOMPUTE_PACK_THRESH 各包獨立重算門檻)
     if [ "${RUN_SPLIT_EVAL}" -eq 1 ]; then
         local SPLIT_SCRIPT=""
         if [ -f "4_split_eval_results.py" ]; then
@@ -326,15 +322,26 @@ run_single_public_category() {
             if [ -n "${SPLIT_COUNTS}" ]; then
                 SPLIT_ARGS+=(--counts "${SPLIT_COUNTS}")
             elif [ -n "${SPLIT_RATIOS}" ]; then
-                SPLIT_ARGS+=(--ratios "${SPLIT_RATIOS}")
+                if [ "${SPLIT_RATIOS}" = "1:1:1" ] && [ "${NUM_PACKS}" -ne 3 ]; then
+                    local AUTO_RATIOS
+                    AUTO_RATIOS=$(printf "1:%.0s" $(seq 1 "${NUM_PACKS}") | sed 's/:$//')
+                    SPLIT_ARGS+=(--ratios "${AUTO_RATIOS}")
+                else
+                    SPLIT_ARGS+=(--ratios "${SPLIT_RATIOS}")
+                fi
             fi
 
             python "${SPLIT_SCRIPT}" \
                 --src_dir "${SAVE_BASE_DIR}" \
                 --num_packs "${NUM_PACKS}" \
                 --split_order "${SPLIT_ORDER}" \
+                --sigma_k "${SIGMA_K}" \
+                --auto_percentile "${AUTO_PERCENTILE}" \
+                --min_threshold "${MIN_THRESHOLD}" \
+                --threshold "${THRESHOLD}" \
+                --top_k "${TOP_K}" \
                 "${SPLIT_ARGS[@]}" \
-                ${EXCLUDE_GOLDEN} ${USE_SYMLINK}
+                ${RECOMPUTE_PACK_THRESH} ${EXCLUDE_GOLDEN} ${USE_SYMLINK}
         fi
     fi
 
@@ -427,7 +434,7 @@ print(f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | m
 if "Raw_Max_Score" in target_normal[0] and "Filtered_Max_Score" in target_normal[0]:
     raw_arr = [float(r["Raw_Max_Score"]) for r in target_normal]
     flt_arr = [float(r["Filtered_Max_Score"]) for r in target_normal]
-    print(f"  🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max={float(np.max(raw_arr)):.4f}, Mean={float(np.mean(raw_arr)):.4f}  vs  [四合一濾波] Max={float(np.max(flt_arr)):.4f}, Mean={float(np.mean(flt_arr)):.4f}")
+    print(f"  🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max={float(np.max(raw_arr)):.4f}, Mean={float(np.mean(raw_arr)):.4f}  vs  [四合一濾波] Max={float(np.mean(flt_arr)):.4f}")
 if escape_defects:
     esc_scores = [float(r["Max_Score"]) for r in escape_defects]
     print(f"  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min={float(np.min(esc_scores)):.4f} | Median={float(np.median(esc_scores)):.4f} | Max={float(np.max(esc_scores)):.4f}")

@@ -16,6 +16,6 @@
     "clean_008_overexposed.png"
   ],
   "num_train_samples": 48,
-  "golden_select_sec": 5.633702482038643,
-  "train_tile_sec": 5.28068050800357
+  "golden_select_sec": 5.180151930020656,
+  "train_tile_sec": 5.3867028600070626
 }

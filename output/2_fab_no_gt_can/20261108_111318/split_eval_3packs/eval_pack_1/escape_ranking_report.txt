@@ -1,0 +1,39 @@
+=== FoundAD Split Eval Report — Pack #1 (eval_pack_1) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_can/20261108_111318
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Effective Threshold: 0.7387
+Pack Total Images: 27 | Exported Anomaly Images: 0 | Skipped Normal Images: 27
+Normal False Positives (FPR): 0/21 (0.00%) | Escape Caught (Recall): 0/6 (0.00%)
+Non-Golden Normal Score Dist: Max=0.4825 | P99=0.4748 | P95=0.4440 | Median=0.2371 | Mean=0.2876 | Std=0.0951
+Ablation Compare (Normal)   : Raw_Max=0.4646, Raw_Mean=0.2839 vs Filtered_Max=0.4825, Filtered_Mean=0.2876
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.3827 | mean+2*std=0.4778 | mean+3*std=0.5729
+Overfit Diagnostic          : 🟢 良好: 無過擬合現象 (Healthy Generalization — 舊Golden基準與新資料集正常分佈一致) (Golden_Mean=0.4232, BlindNormal_Med=0.3162, Ratio=0.57x, Gap=-0.1826)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 6      | clean_009_shift_2.png      | PASS_SKIPPED        | 0.4825    | 0.4646    | 0.4825     | +0.0179  | 0      | (未超過動態門檻，不輸出圖片)
+2      | 8      | escape_bad_001_regular.png | PASS_SKIPPED        | 0.4701    | 0.4439    | 0.4701     | +0.0262  | 0      | (未超過動態門檻，不輸出圖片)
+3      | 11     | clean_000_shift_2.png      | PASS_SKIPPED        | 0.4440    | 0.4551    | 0.4440     | -0.0110  | 0      | (未超過動態門檻，不輸出圖片)
+4      | 17     | clean_000_shift_1.png      | PASS_SKIPPED        | 0.4213    | 0.4186    | 0.4213     | +0.0027  | 0      | (未超過動態門檻，不輸出圖片)
+5      | 23     | clean_008_shift_3.png      | PASS_SKIPPED        | 0.3887    | 0.3799    | 0.3887     | +0.0088  | 0      | (未超過動態門檻，不輸出圖片)
+6      | 26     | clean_004_regular.png      | PASS_SKIPPED        | 0.3838    | 0.3592    | 0.3838     | +0.0246  | 0      | (未超過動態門檻，不輸出圖片)
+7      | 30     | clean_008_shift_2.png      | PASS_SKIPPED        | 0.3619    | 0.3577    | 0.3619     | +0.0042  | 0      | (未超過動態門檻，不輸出圖片)
+8      | 31     | clean_008_shift_1.png      | PASS_SKIPPED        | 0.3594    | 0.3521    | 0.3594     | +0.0073  | 0      | (未超過動態門檻，不輸出圖片)
+9      | 34     | clean_004_shift_3.png      | PASS_SKIPPED        | 0.3467    | 0.3218    | 0.3467     | +0.0248  | 0      | (未超過動態門檻，不輸出圖片)
+10     | 43     | clean_011_shift_2.png      | PASS_SKIPPED        | 0.3152    | 0.3144    | 0.3152     | +0.0007  | 0      | (未超過動態門檻，不輸出圖片)
+11     | 45     | clean_001_overexposed.png  | PASS_SKIPPED        | 0.2441    | 0.2421    | 0.2441     | +0.0020  | 0      | (未超過動態門檻，不輸出圖片)
+12     | 46     | clean_002_shift_1.png      | PASS_SKIPPED        | 0.2371    | 0.2353    | 0.2371     | +0.0018  | 0      | (未超過動態門檻，不輸出圖片)
+13     | 50     | clean_005_overexposed.png  | PASS_SKIPPED        | 0.2301    | 0.2325    | 0.2301     | -0.0023  | 0      | (未超過動態門檻，不輸出圖片)
+14     | 51     | clean_005_underexposed.png | PASS_SKIPPED        | 0.2295    | 0.2320    | 0.2295     | -0.0025  | 0      | (未超過動態門檻，不輸出圖片)
+15     | 55     | clean_002_overexposed.png  | PASS_SKIPPED        | 0.2223    | 0.2215    | 0.2223     | +0.0008  | 0      | (未超過動態門檻，不輸出圖片)
+16     | 57     | clean_007_shift_3.png      | PASS_SKIPPED        | 0.2205    | 0.2184    | 0.2205     | +0.0021  | 0      | (未超過動態門檻，不輸出圖片)
+17     | 60     | clean_001_underexposed.png | PASS_SKIPPED        | 0.2106    | 0.2087    | 0.2106     | +0.0018  | 0      | (未超過動態門檻，不輸出圖片)
+18     | 65     | clean_001_regular.png      | PASS_SKIPPED        | 0.1960    | 0.1970    | 0.1960     | -0.0010  | 0      | (未超過動態門檻，不輸出圖片)
+19     | 67     | escape_bad_000_shift_1.png | PASS_SKIPPED        | 0.1937    | 0.1814    | 0.1937     | +0.0123  | 0      | (未超過動態門檻，不輸出圖片)
+20     | 69     | clean_005_regular.png      | PASS_SKIPPED        | 0.1916    | 0.1921    | 0.1916     | -0.0005  | 0      | (未超過動態門檻，不輸出圖片)
+21     | 70     | clean_001_shift_1.png      | PASS_SKIPPED        | 0.1903    | 0.1930    | 0.1903     | -0.0027  | 0      | (未超過動態門檻，不輸出圖片)
+22     | 73     | clean_010_underexposed.png | PASS_SKIPPED        | 0.1833    | 0.1829    | 0.1833     | +0.0005  | 0      | (未超過動態門檻，不輸出圖片)
+23     | 75     | clean_005_shift_3.png      | PASS_SKIPPED        | 0.1808    | 0.1820    | 0.1808     | -0.0012  | 0      | (未超過動態門檻，不輸出圖片)
+24     | 76     | escape_bad_000_shift_3.png | PASS_SKIPPED        | 0.1783    | 0.1699    | 0.1783     | +0.0083  | 0      | (未超過動態門檻，不輸出圖片)
+25     | 77     | escape_bad_000_shift_2.png | PASS_SKIPPED        | 0.1745    | 0.1741    | 0.1745     | +0.0003  | 0      | (未超過動態門檻，不輸出圖片)
+26     | 79     | escape_bad_000_overexposed.png | PASS_SKIPPED        | 0.1547    | 0.1526    | 0.1547     | +0.0021  | 0      | (未超過動態門檻，不輸出圖片)
+27     | 80     | escape_bad_000_underexposed.png | PASS_SKIPPED        | 0.1492    | 0.1477    | 0.1492     | +0.0015  | 0      | (未超過動態門檻，不輸出圖片)

@@ -10,6 +10,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_000_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -138,6 +139,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_000_regular__tile_y0000_x0000_h0512_w0512",
@@ -266,6 +268,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_000_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -394,6 +397,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_000_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -522,6 +526,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_000_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -650,6 +655,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_000_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_000_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -778,6 +784,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_001_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -906,6 +913,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_001_regular__tile_y0000_x0000_h0512_w0512",
@@ -1034,6 +1042,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_001_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -1162,6 +1171,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_001_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -1290,6 +1300,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_001_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -1418,6 +1429,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_001_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_001_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -1546,6 +1558,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_002_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -1674,6 +1687,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_002_regular__tile_y0000_x0000_h0512_w0512",
@@ -1802,6 +1816,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_002_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -1930,6 +1945,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_002_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -2058,6 +2074,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_002_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -2186,6 +2203,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_002_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_002_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -2314,6 +2332,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_003_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -2442,6 +2461,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_003_regular__tile_y0000_x0000_h0512_w0512",
@@ -2570,6 +2590,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_003_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -2698,6 +2719,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_003_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -2826,6 +2848,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_003_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -2954,6 +2977,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_003_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_003_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -3082,6 +3106,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_004_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -3210,6 +3235,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_004_regular__tile_y0000_x0000_h0512_w0512",
@@ -3338,6 +3364,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_004_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -3466,6 +3493,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_004_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -3594,6 +3622,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_004_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -3722,6 +3751,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_004_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_004_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -3850,6 +3880,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_005_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_005_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -3978,6 +4009,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_005_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_005_regular__tile_y0000_x0000_h0512_w0512",
@@ -4106,6 +4138,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_005_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_005_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -4234,6 +4267,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_005_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_005_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -4362,6 +4396,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_005_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_005_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -4490,6 +4525,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_005_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_005_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -4618,6 +4654,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_006_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -4746,6 +4783,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_006_regular__tile_y0000_x0000_h0512_w0512",
@@ -4874,6 +4912,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_006_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -5002,6 +5041,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_006_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -5130,6 +5170,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_006_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -5258,6 +5299,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_006_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_006_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -5386,6 +5428,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_007_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_007_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -5514,6 +5557,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_007_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_007_regular__tile_y0000_x0000_h0512_w0512",
@@ -5642,6 +5686,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_007_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_007_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -5770,6 +5815,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_007_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_007_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -5898,6 +5944,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_007_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_007_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -6026,6 +6073,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_007_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_007_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -6154,6 +6202,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_008_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -6282,6 +6331,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_008_regular__tile_y0000_x0000_h0512_w0512",
@@ -6410,6 +6460,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_008_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -6538,6 +6589,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_008_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -6666,6 +6718,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_008_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -6794,6 +6847,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_008_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_008_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -6922,6 +6976,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_009_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -7050,6 +7105,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_009_regular__tile_y0000_x0000_h0512_w0512",
@@ -7178,6 +7234,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_009_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -7306,6 +7363,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_009_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -7434,6 +7492,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_009_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -7562,6 +7621,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_009_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_009_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -7690,6 +7750,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_010_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_010_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -7818,6 +7879,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_010_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_010_regular__tile_y0000_x0000_h0512_w0512",
@@ -7946,6 +8008,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_010_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_010_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -8074,6 +8137,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_010_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_010_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -8202,6 +8266,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_010_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_010_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -8330,6 +8395,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_010_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_010_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -8458,6 +8524,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_011_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -8586,6 +8653,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_011_regular__tile_y0000_x0000_h0512_w0512",
@@ -8714,6 +8782,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_011_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -8842,6 +8911,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_011_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -8970,6 +9040,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_011_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -9098,6 +9169,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/clean_011_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "clean_011_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -9226,6 +9298,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_000_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -9354,6 +9427,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_000_regular__tile_y0000_x0000_h0512_w0512",
@@ -9482,6 +9556,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_shift_1.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_000_shift_1__tile_y0000_x0000_h0512_w0512",
@@ -9610,6 +9685,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_shift_2.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_000_shift_2__tile_y0000_x0000_h0512_w0512",
@@ -9738,6 +9814,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_shift_3.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_000_shift_3__tile_y0000_x0000_h0512_w0512",
@@ -9866,6 +9943,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_000_underexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_000_underexposed__tile_y0000_x0000_h0512_w0512",
@@ -9994,6 +10072,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_001_overexposed.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_001_overexposed__tile_y0000_x0000_h0512_w0512",
@@ -10122,6 +10201,7 @@
       "path": "/home/kenny/project/FoundAD/datasets/sim_fab_can_pool/escape_bad_001_regular.png",
       "height": 1024,
       "width": 2232,
+      "is_external_golden": false,
       "tiles": [
         {
           "tile_stem": "escape_bad_001_regular__tile_y0000_x0000_h0512_w0512",
@@ -10247,5 +10327,6 @@
     }
   },
   "total_tiles": 1200,
-  "num_images": 80
+  "num_images": 80,
+  "num_external_golden": 0
 }

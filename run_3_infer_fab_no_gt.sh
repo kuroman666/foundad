@@ -80,7 +80,7 @@ if [ -n "${CUSTOM_TRAINED_CKPT}" ]; then
 fi
 
 echo "============================================================"
-echo " [Step 2b: FoundAD 無GT高解析度推論啟動] DATASET=${DATASET_ID} | LAYER=${LAYER_ID}"
+echo " [Step 3: FoundAD 無GT高解析度推論啟動] DATASET=${DATASET_ID} | LAYER=${LAYER_ID}"
 echo " [新測試集路徑] ${WAFER_POOL_DIR}"
 echo " [指定 Golden ] ${CUSTOM_GOLDEN_SRC:-(預設沿用 ${DATASETS_DIR}/${DATA_NAME})}"
 echo " [指定訓練權重] ${CUSTOM_TRAINED_CKPT:-(預設搜尋 ./logs/${DATA_NAME})}"

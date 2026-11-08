@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/3_split_eval_results.py
+# 檔案位置: FoundAD/4_split_eval_results.py (相容 3_split_eval_results.py)
 import os
 import re
 import csv
@@ -18,6 +18,10 @@ def find_latest_run_dir(base_dir: str) -> str:
         return abs_base
 
     csv_candidates = sorted(glob.glob(os.path.join(abs_base, "*", "escape_ranking_report.csv")))
+    csv_candidates = [
+        p for p in csv_candidates
+        if not os.path.basename(os.path.dirname(p)).startswith("eval_pack_")
+    ]
     if not csv_candidates:
         raise FileNotFoundError(
             f"在 {abs_base} 及其子目錄下找不到 escape_ranking_report.csv！請確認已完成推論。"
@@ -26,19 +30,21 @@ def find_latest_run_dir(base_dir: str) -> str:
 
 
 def parse_header_metadata(txt_path: str) -> Dict[str, str]:
-    """從原始 escape_ranking_report.txt 讀取 Effective Threshold 與模型設定資訊。"""
+    """從原始 escape_ranking_report.txt 讀取 Effective Threshold、Golden 分數與模型設定資訊。"""
     meta = {
         "score_mode": "FILTERED_ROBUST",
         "thresh_mode": "hybrid",
         "eff_thresh": "0.2500",
         "wafer_edge_info": "auto",
         "overfit_diag": "N/A",
+        "golden_mean": "0.0",
+        "ext_golden_scores": "",
     }
     if not os.path.isfile(txt_path):
         return meta
 
     with open(txt_path, "r", encoding="utf-8") as f:
-        head = f.read(2000)
+        head = f.read(2500)
 
     m_sm = re.search(r"Score Mode:\s*([A-Z_]+)", head)
     if m_sm:
@@ -59,10 +65,183 @@ def parse_header_metadata(txt_path: str) -> Dict[str, str]:
     m_ov = re.search(r"Overfit Diagnostic\s*:\s*([^\n]+)", head)
     if m_ov:
         meta["overfit_diag"] = m_ov.group(1).strip()
+        m_gm = re.search(r"Golden_Mean=([0-9.]+)", meta["overfit_diag"])
+        if m_gm:
+            meta["golden_mean"] = m_gm.group(1).strip()
+
+    m_ext = re.search(r"External Golden Ref Scores\s*:\s*([^\n]+)", head)
+    if m_ext:
+        meta["ext_golden_scores"] = m_ext.group(1).strip()
 
     return meta
 
 
+def extract_global_golden_scores(all_records: List[Dict], header_meta: Dict[str, str]) -> List[float]:
+    """從原始完整報表或標頭提取 Golden 基準圖的分數清單，供各包獨立重算門檻時作為安全錨點。"""
+    g_scores = [
+        float(r["Max_Score"]) for r in all_records if str(r.get("Status", "")).startswith("GOLDEN")
+    ]
+    if g_scores:
+        return g_scores
+
+    ext_str = header_meta.get("ext_golden_scores", "")
+    if ext_str:
+        parsed = [float(m) for m in re.findall(r"=([0-9.]+)", ext_str)]
+        if parsed:
+            return parsed
+
+    try:
+        gm = float(header_meta.get("golden_mean", 0.0))
+        if gm > 0:
+            return [gm]
+    except ValueError:
+        pass
+    return []
+
+
+# =====================================================================
+# 各包獨立重算動態門檻演算法 (與 3_infer_fab_no_gt.py 100% 數學公式對齊)
+# =====================================================================
+def estimate_blind_normal_core_stats(
+    non_golden_scores: List[float],
+    golden_scores: List[float],
+) -> Tuple[float, float, float, np.ndarray]:
+    """真無 GT 盲池左半部正常核心估計器 (Left-Half Normal Core Estimator, sigma_left)。"""
+    pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
+    g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
+    if pool_arr.size == 0:
+        return 0.20, 0.015, 0.20, np.array([0.20], dtype=np.float32)
+
+    sorted_pool = np.sort(pool_arr)
+    n = sorted_pool.size
+
+    half_n = max(1, (n + 1) // 2)
+    lower_half = sorted_pool[:half_n]
+    med_pool = float(np.median(sorted_pool))
+
+    if g_arr.size > 0:
+        g_med = float(np.median(g_arr))
+        g_max = float(np.max(g_arr))
+        g_std = float(np.std(g_arr)) if g_arr.size > 1 else 0.015
+        core_anchor = min(med_pool, max(g_med * 1.25, g_max + 2.0 * max(g_std, 0.012)))
+    else:
+        g_med = float(np.median(lower_half))
+        core_anchor = med_pool
+
+    left_samples = sorted_pool[sorted_pool <= core_anchor]
+    if left_samples.size < max(3, n // 5):
+        left_samples = lower_half
+
+    mu_core = float(np.percentile(left_samples, 75.0)) if left_samples.size >= 4 else float(np.median(left_samples))
+    if g_arr.size > 0:
+        mu_core = float(np.clip(mu_core, g_med, core_anchor))
+
+    left_diffs = mu_core - sorted_pool[sorted_pool <= mu_core]
+    if left_diffs.size >= 2:
+        sigma_left_rms = float(np.sqrt(np.mean(np.square(left_diffs))))
+        sigma_left_mad = float(1.4826 * np.median(np.abs(left_diffs)))
+        sigma_left = max(sigma_left_rms, sigma_left_mad)
+    else:
+        sigma_left = float(np.std(left_samples)) if left_samples.size > 1 else 0.015
+
+    if g_arr.size > 1:
+        g_iqr = float((np.percentile(g_arr, 75.0) - np.percentile(g_arr, 25.0)) / 1.349)
+        sigma_left = max(sigma_left, float(np.std(g_arr)), g_iqr)
+
+    sigma_left = float(np.clip(sigma_left, 0.010, 0.065))
+
+    est_normal_mask = sorted_pool <= (mu_core + 2.5 * sigma_left)
+    est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else left_samples
+    return mu_core, sigma_left, g_med, est_normal_arr
+
+
+def compute_dynamic_effective_threshold(
+    non_golden_scores: List[float],
+    golden_scores: List[float],
+    thresh_mode: str,
+    user_threshold: float,
+    min_threshold: float,
+    auto_percentile: float,
+    sigma_k: float,
+    top_k: int,
+) -> Tuple[float, str]:
+    """針對單一 Eval Pack 獨立重新計算真無 GT 動態異常判定門檻。"""
+    mode = thresh_mode.lower().strip()
+    scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
+    g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
+    if scores_arr.size == 0:
+        return max(user_threshold, min_threshold), "無樣本保底門檻"
+
+    mu_core, sigma_left, g_med, est_normal_arr = estimate_blind_normal_core_stats(
+        non_golden_scores=non_golden_scores,
+        golden_scores=golden_scores,
+    )
+
+    left_stat_bound = float(mu_core + sigma_k * sigma_left)
+
+    if g_arr.size > 0:
+        g_mean = float(np.mean(g_arr))
+        g_max = float(np.max(g_arr))
+        g_std = max(float(np.std(g_arr)) if g_arr.size > 1 else 0.012, 0.012)
+        golden_ref_bound = max(g_mean + sigma_k * max(g_std, sigma_left), g_max * 1.08 + 0.015)
+        golden_safety_cap = max(
+            g_max * 1.35 + 0.05,
+            mu_core + (sigma_k + 1.5) * sigma_left,
+            float(min_threshold) + 0.06,
+        )
+    else:
+        golden_ref_bound = left_stat_bound
+        golden_safety_cap = max(mu_core + (sigma_k + 2.0) * sigma_left, float(min_threshold) + 0.08)
+
+    calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
+
+    p_clip = float(np.clip(auto_percentile, 50.0, 99.9))
+    p_val_core = float(np.percentile(est_normal_arr, p_clip))
+    p_val_raw = float(np.percentile(scores_arr, p_clip))
+
+    topk_bound = 0.0
+    if top_k > 0 and scores_arr.size > top_k:
+        sorted_desc = np.sort(scores_arr)[::-1]
+        topk_bound = float(0.5 * (sorted_desc[top_k - 1] + sorted_desc[top_k]))
+
+    floor_val = max(float(min_threshold), float(user_threshold))
+
+    if mode == "fixed":
+        eff = float(user_threshold)
+        desc = f"Fixed 固定門檻 = {eff:.4f}"
+    elif mode == "mean_std":
+        eff = (
+            max(float(min_threshold), calibrated_bound, topk_bound)
+            if top_k > 0
+            else max(float(min_threshold), calibrated_bound)
+        )
+        desc = (
+            f"Pack獨立重算 Left-Core+Golden 門檻 (mu_core+{sigma_k:g}*σ_left) = {eff:.4f} "
+            f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, Golden_Med={g_med:.4f}]"
+        )
+    elif mode == "percentile":
+        eff = max(float(min_threshold), min(p_val_raw, golden_safety_cap), topk_bound)
+        desc = (
+            f"Pack獨立重算 Auto-P{auto_percentile:g} 門檻 = {eff:.4f} "
+            f"[Core_P{auto_percentile:g}={p_val_core:.4f}, Raw_P{auto_percentile:g}={p_val_raw:.4f}]"
+        )
+    elif mode == "top_k":
+        eff = max(float(min_threshold), topk_bound if top_k > 0 else calibrated_bound)
+        desc = f"Pack獨立重算 Auto-TopK (K={top_k}) 門檻 = {eff:.4f}"
+    else:
+        hybrid_stat = max(floor_val, calibrated_bound, min(p_val_core, golden_safety_cap))
+        eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
+        desc = (
+            f"Pack獨立重算 Hybrid 雙重校準門檻 = {eff:.4f} "
+            f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, LeftBound={left_stat_bound:.4f}, "
+            f"GoldenBound={golden_ref_bound:.4f}, Core_P{auto_percentile:g}={p_val_core:.4f}]"
+        )
+    return eff, desc
+
+
+# =====================================================================
+# 拆分張數計算與嚴格總數防呆檢查 (Strict Count Mismatch Guard)
+# =====================================================================
 def compute_pack_sizes(
     total_items: int,
     num_packs: int,
@@ -71,44 +250,67 @@ def compute_pack_sizes(
 ) -> List[int]:
     """
     根據使用者設定的「每包張數 (--counts)」或「比例 (--ratios)」計算每一包應分配的張數。
-    - counts_str: 例如 "50" (每包50張，共3包) 或 "40,40,20" (分別指定3包張數)
-    - ratios_str: 例如 "1:1:1" 或 "0.4,0.3,0.3" 或 "2:1:1"
+    【嚴格防呆】：
+    1. 當使用 --counts 指定每包張數時，若「各包設定張數加總」與「目前可拆分資料集總張數 (total_items)」不相等，
+       立即拋出 ValueError 報錯，並明確列出設定加總、各包清單與資料集實際總張數！
+    2. 若指定了多筆逗號分隔的 --counts (如 "400,400,200")，但包數與 --num_packs 不一致，亦明確報錯。
     """
-    if counts_str and ratios_str:
-        raise ValueError("請勿同時指定 --counts 與 --ratios，請擇一使用！")
+    if num_packs <= 0:
+        raise ValueError(f"[設定錯誤] 拆分包數 (--num_packs={num_packs}) 必須大於 0！")
 
-    # 模式 A：指定每包張數 (--counts)
+    if counts_str and ratios_str:
+        raise ValueError("[設定錯誤] 請勿同時指定 --counts 與 --ratios，請擇一使用！")
+
+    # 模式 A：指定每包張數 (--counts) —— 啟動嚴格總數相等防呆檢查
     if counts_str:
         parts = [int(x.strip()) for x in re.split(r"[,:/\s]+", counts_str.strip()) if x.strip()]
+        if not parts or any(p <= 0 for p in parts):
+            raise ValueError(f"[設定錯誤] --counts ('{counts_str}') 內的每包張數皆必須為大於 0 的正整數！")
+
         if len(parts) == 1:
             per_pack = parts[0]
-            if per_pack <= 0:
-                raise ValueError("--counts 數值必須大於 0")
-            sizes = []
-            rem = total_items
-            for i in range(num_packs):
-                take = min(per_pack, rem)
-                sizes.append(take)
-                rem -= take
-            return sizes
+            sizes = [per_pack] * num_packs
         else:
-            if any(p < 0 for p in parts):
-                raise ValueError("--counts 不可包含負數")
-            sizes = []
-            rem = total_items
-            for p in parts:
-                take = min(p, rem)
-                sizes.append(take)
-                rem -= take
-            return sizes
+            if len(parts) != num_packs:
+                raise ValueError(
+                    f"\n❌ [拆分包數與張數設定不一致錯誤]\n"
+                    f"  ├── 設定的拆分包數 (--num_packs)       : {num_packs} 包\n"
+                    f"  ├── --counts 實際提供的包數 ({counts_str}) : {len(parts)} 包 {parts}\n"
+                    f"  └── 請確認 --num_packs 與 --counts 逗號分隔的數量一致，或只填單一數字代表每包固定張數！"
+                )
+            sizes = list(parts)
 
-    # 模式 B：指定比例 (--ratios)，或預設均分 3 份 (1:1:1)
+        sum_counts = sum(sizes)
+        if sum_counts != total_items:
+            diff = sum_counts - total_items
+            diff_str = f"多出 {diff} 張" if diff > 0 else f"少算 {abs(diff)} 張"
+            raise ValueError(
+                f"\n❌ [拆分圖片總數量不符錯誤 (Count Mismatch Error)]\n"
+                f"  ├── 原選擇資料集內的可拆分圖片總數量 : {total_items} 張\n"
+                f"  ├── 您設定的拆分包數 (--num_packs)   : {num_packs} 包\n"
+                f"  ├── 您設定的各包張數明細 (--counts)  : {sizes}\n"
+                f"  ├── 各包設定張數加總                 : {sum_counts} 張 (比資料集實際數量{diff_str})\n"
+                f"  └── 請修正 NUM_PACKS / --num_packs 或 COUNTS / --counts，使其加總剛好等於 {total_items} 張！"
+            )
+        return sizes
+
+    # 模式 B：指定比例 (--ratios)，或預設均分 num_packs 份 (1:1:...:1)
     if not ratios_str:
         ratios_str = ":".join(["1"] * num_packs)
 
     raw_ratios = [float(x.strip()) for x in re.split(r"[,:/\s]+", ratios_str.strip()) if x.strip()]
     if not raw_ratios or any(r <= 0 for r in raw_ratios):
-        raise ValueError(f"無效的比例設定: {ratios_str}")
+        raise ValueError(f"[設定錯誤] 無效的比例設定: {ratios_str}")
+
+    if len(raw_ratios) == 1 and num_packs > 1:
+        raw_ratios = raw_ratios * num_packs
+    elif len(raw_ratios) != num_packs:
+        raise ValueError(
+            f"\n❌ [拆分包數與比例數量不一致錯誤]\n"
+            f"  ├── 設定的拆分包數 (--num_packs)       : {num_packs} 包\n"
+            f"  ├── --ratios 實際提供的項數 ({ratios_str}) : {len(raw_ratios)} 項\n"
+            f"  └── 請將 --ratios 改為 {num_packs} 項 (例如 '{':'.join(['1']*num_packs)}')，或將 --ratios 留空自動均分！"
+        )
 
     total_weight = sum(raw_ratios)
     exact_counts = [total_items * (r / total_weight) for r in raw_ratios]
@@ -135,9 +337,9 @@ def split_records(
 ) -> List[List[Dict]]:
     """
     支援 4 種排序/抽樣拆分策略：
-    - random     : 固定隨機種子打亂後依張數/比例切分 (適合一般隨機分包 Eval)
     - stratified : 分層抽樣 (確保每一包裡面的 ANOMALY / GOLDEN / PASS 比例一致)
-    - rank       : 依照異常分數排名由高到低依序切分 (例如 Eval_1 高分群、Eval_2 中分群、Eval_3 低分群)
+    - random     : 固定隨機種子打亂後依張數/比例切分
+    - rank       : 依照異常分數排名由高到低依序切分
     - filename   : 依照原始檔名字母順序排列後切分
     """
     n_packs = len(pack_sizes)
@@ -152,10 +354,9 @@ def split_records(
         rng.shuffle(work_records)
     elif split_order == "stratified":
         rng = random.Random(seed)
-        # 依狀態分群後交錯發牌至各包，確保異常與正常比例在 3 份 Eval 中均勻分佈
         buckets: Dict[str, List[Dict]] = {}
         for r in work_records:
-            key = "ESCAPE" if r["Original_Filename"].startswith("escape_") else r["Status"]
+            key = "ESCAPE" if os.path.basename(r["Original_Filename"]).startswith("escape_") else r["Status"]
             buckets.setdefault(key, []).append(r)
 
         interleaved = []
@@ -170,7 +371,6 @@ def split_records(
 
     packs: List[List[Dict]] = [[] for _ in range(n_packs)]
     if split_order == "stratified" and sum(pack_sizes) == len(work_records):
-        # 依照各包目標容量進行權重輪詢分配，讓分層樣本均勻落入各包
         remaining_cap = list(pack_sizes)
         idx = 0
         for item in work_records:
@@ -186,7 +386,6 @@ def split_records(
             packs[p_idx] = work_records[cursor : cursor + sz]
             cursor += sz
 
-    # 每包內部重新依 Max_Score 由高到低排序，方便查看報表
     for p in packs:
         p.sort(key=lambda r: float(r["Max_Score"]), reverse=True)
     return packs
@@ -210,9 +409,24 @@ def generate_pack_eval_report(
     src_run_dir: str,
     pack_out_dir: str,
     header_meta: Dict[str, str],
+    global_golden_scores: List[float],
+    recompute_pack_thresh: bool = False,
+    thresh_mode_override: str = "",
+    sigma_k: float = 3.5,
+    auto_percentile: float = 95.0,
+    min_threshold: float = 0.0,
+    user_threshold: float = 0.0,
+    top_k: int = 0,
     use_symlink: bool = False,
 ) -> Dict:
-    """為單一拆分包建立完整的 Eval 資料夾、複製對應的紅框圖/熱力圖並產出獨立的 TXT/CSV 評估報表。"""
+    """
+    為單一拆分包建立完整的 Eval 資料夾、複製對應的紅框圖/熱力圖並產出獨立的 TXT/CSV 評估報表。
+    支援兩種門檻評估模式：
+    1. 預設模式 (recompute_pack_thresh=False)：沿用全池統一動態門檻 (global_eff_thresh)。
+    2. 各包獨立重算模式 (recompute_pack_thresh=True)：僅使用本包內的樣本分數與 Golden 基準，
+       獨立重算本包專屬的 local_eff_thresh，並動態更新本包內每張圖的判定狀態 (Status)，
+       同时在報表中並列對照「本包獨立門檻」與「全池統一門檻」的結果！
+    """
     os.makedirs(pack_out_dir, exist_ok=True)
     anom_vis_dir = os.path.join(pack_out_dir, "anomaly_images")
     anom_full_dir = os.path.join(anom_vis_dir, "full_res_bbox_only")
@@ -225,19 +439,64 @@ def generate_pack_eval_report(
     src_anom_full_dir = os.path.join(src_anom_vis_dir, "full_res_bbox_only")
     src_amap_dir = os.path.join(src_run_dir, "amap_npy")
 
-    eff_thresh = float(header_meta.get("eff_thresh", 0.25))
+    global_eff_thresh = float(header_meta.get("eff_thresh", 0.25))
+    active_thresh_mode = thresh_mode_override if thresh_mode_override else header_meta.get("thresh_mode", "hybrid")
+
+    pack_non_golden_scores = [
+        float(r["Max_Score"]) for r in pack_records if not str(r.get("Status", "")).startswith("GOLDEN")
+    ]
+    pack_golden_scores = [
+        float(r["Max_Score"]) for r in pack_records if str(r.get("Status", "")).startswith("GOLDEN")
+    ]
+    eff_golden_scores = pack_golden_scores if pack_golden_scores else global_golden_scores
+
+    # 無論是否啟用覆寫，皆計算出本包獨立動態門檻 (local_eff_thresh) 供報表並列比較
+    local_eff_thresh, local_thresh_desc = compute_dynamic_effective_threshold(
+        non_golden_scores=pack_non_golden_scores,
+        golden_scores=eff_golden_scores,
+        thresh_mode=active_thresh_mode,
+        user_threshold=user_threshold,
+        min_threshold=min_threshold,
+        auto_percentile=auto_percentile,
+        sigma_k=sigma_k,
+        top_k=top_k,
+    )
+
+    eff_thresh = local_eff_thresh if recompute_pack_thresh else global_eff_thresh
+    thresh_source_tag = "PACK_LOCAL_RECOMPUTED" if recompute_pack_thresh else "GLOBAL_POOL_UNIFIED"
+
     anomaly_count = 0
     skipped_count = 0
 
-    # 複製該包專屬的異常圖片與 .npy，並更新 pack 內排名
     updated_records = []
     for local_rank, r in enumerate(pack_records, 1):
         row = dict(r)
         row["Global_Rank"] = r["Rank"]
         row["Pack_Rank"] = local_rank
+        orig_status = str(r.get("Status", "PASS_SKIPPED"))
+        row["Global_Status"] = orig_status
+        score_val = float(r["Max_Score"])
+        num_bboxes = int(r.get("Num_BBoxes", 0))
         saved_fname = r.get("Saved_Anomaly_Filename", "")
+        is_golden = orig_status.startswith("GOLDEN")
 
-        if "ANOMALY" in r["Status"] and saved_fname and not saved_fname.startswith("("):
+        if recompute_pack_thresh:
+            # 依本包獨立重算的 local_eff_thresh 重新判定該圖在本包的異常狀態
+            if score_val >= eff_thresh:
+                if orig_status == "PASS_NOISE_FILTERED":
+                    new_status = "GOLDEN_PASS" if is_golden else "PASS_NOISE_FILTERED"
+                elif num_bboxes > 0:
+                    new_status = "GOLDEN_ANOMALY" if is_golden else "ANOMALY"
+                else:
+                    # 原先因微幅低於 Global 門檻未畫框，但高於本包獨立門檻
+                    new_status = "GOLDEN_ANOMALY" if is_golden else "ANOMALY_LOCAL_TH"
+            else:
+                new_status = "GOLDEN_PASS" if is_golden else "PASS_SKIPPED"
+                saved_fname = "(未超過本包獨立動態門檻，不輸出圖片)"
+            row["Status"] = new_status
+            row["Saved_Anomaly_Filename"] = saved_fname
+
+        if "ANOMALY" in row["Status"] and saved_fname and not saved_fname.startswith("("):
             anomaly_count += 1
             link_or_copy_file(
                 os.path.join(src_anom_vis_dir, saved_fname),
@@ -264,7 +523,7 @@ def generate_pack_eval_report(
 
     # 計算本包專屬的統計指標
     total = len(updated_records)
-    non_golden = [r for r in updated_records if not r["Status"].startswith("GOLDEN")]
+    non_golden = [r for r in updated_records if not str(r["Status"]).startswith("GOLDEN")]
     non_golden_normal = [
         r for r in non_golden if not os.path.basename(r["Original_Filename"]).startswith("escape_")
     ]
@@ -302,11 +561,15 @@ def generate_pack_eval_report(
     # 輸出本包的 escape_ranking_report.txt
     report_txt = os.path.join(pack_out_dir, "escape_ranking_report.txt")
     with open(report_txt, "w", encoding="utf-8") as f:
-        f.write(f"=== FoundAD Split Eval Report — Pack #{pack_idx} ({ os.path.basename(pack_out_dir) }) ===\n")
+        f.write(f"=== FoundAD Split Eval Report — Pack #{pack_idx} ({os.path.basename(pack_out_dir)}) ===\n")
         f.write(
             f"Source Run Dir: {src_run_dir}\n"
-            f"Score Mode: {header_meta['score_mode']} | Threshold Mode: {header_meta['thresh_mode']} | "
-            f"Effective Threshold: {eff_thresh:.4f}\n"
+            f"Score Mode: {header_meta['score_mode']} | Threshold Mode: {active_thresh_mode} | "
+            f"Threshold Policy: {thresh_source_tag}\n"
+            f"Effective Threshold (Used)  : {eff_thresh:.4f} "
+            f"(Pack_Local_Thresh={local_eff_thresh:.4f} vs Global_Pool_Thresh={global_eff_thresh:.4f}, "
+            f"Diff={local_eff_thresh - global_eff_thresh:+.4f})\n"
+            f"Pack Local Thresh Detail    : {local_thresh_desc}\n"
             f"Pack Total Images: {total} | Exported Anomaly Images: {anomaly_count} | "
             f"Skipped Normal Images: {skipped_count}\n"
             f"Normal False Positives (FPR): {len(fp_normal)}/{len(target_normal)} ({fpr_normal:.2f}%) | "
@@ -318,20 +581,22 @@ def generate_pack_eval_report(
             f"Threshold Ref (Mean+k*Std)  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
             f"Overfit Diagnostic          : {header_meta['overfit_diag']}\n"
         )
-        f.write("-" * 155 + "\n")
+        f.write("-" * 165 + "\n")
         f.write(
             f"{'P_Rank':<6} | {'G_Rank':<6} | {'Original_Filename':<26} | {'Status':<19} | "
-            f"{'Max_Score':<9} | {'Raw_Score':<9} | {'Filt_Score':<10} | {'Delta':<8} | {'BBoxes':<6} | {'Saved_Anomaly_Filename'}\n"
+            f"{'Global_Status':<19} | {'Max_Score':<9} | {'Raw_Score':<9} | {'Filt_Score':<10} | "
+            f"{'Delta':<8} | {'BBoxes':<6} | {'Saved_Anomaly_Filename'}\n"
         )
-        f.write("-" * 155 + "\n")
+        f.write("-" * 165 + "\n")
         for r in updated_records:
             raw_v = float(r.get("Raw_Max_Score", r["Max_Score"]))
             flt_v = float(r.get("Filtered_Max_Score", r["Max_Score"]))
             dlt_v = float(r.get("Filter_Delta", flt_v - raw_v))
             f.write(
                 f"{r['Pack_Rank']:<6} | {r['Global_Rank']:<6} | {r['Original_Filename']:<26} | "
-                f"{r['Status']:<19} | {float(r['Max_Score']):<9.4f} | {raw_v:<9.4f} | "
-                f"{flt_v:<10.4f} | {dlt_v:<+8.4f} | {r['Num_BBoxes']:<6} | {r['Saved_Anomaly_Filename']}\n"
+                f"{r['Status']:<19} | {r['Global_Status']:<19} | {float(r['Max_Score']):<9.4f} | "
+                f"{raw_v:<9.4f} | {flt_v:<10.4f} | {dlt_v:<+8.4f} | {r['Num_BBoxes']:<6} | "
+                f"{r['Saved_Anomaly_Filename']}\n"
             )
 
     # 輸出本包的 escape_ranking_report.csv
@@ -339,8 +604,9 @@ def generate_pack_eval_report(
     with open(report_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow([
-            "Pack_Rank", "Global_Rank", "Original_Filename", "Status", "Max_Score",
-            "Raw_Max_Score", "Filtered_Max_Score", "Filter_Delta",
+            "Pack_Rank", "Global_Rank", "Original_Filename", "Status", "Global_Status",
+            "Effective_Threshold_Used", "Pack_Local_Threshold", "Global_Pool_Threshold",
+            "Max_Score", "Raw_Max_Score", "Filtered_Max_Score", "Filter_Delta",
             "TopK_Mean_Score", "Num_BBoxes", "Saved_Anomaly_Filename", "Resolution"
         ])
         for r in updated_records:
@@ -349,6 +615,10 @@ def generate_pack_eval_report(
                 r["Global_Rank"],
                 r["Original_Filename"],
                 r["Status"],
+                r["Global_Status"],
+                f"{eff_thresh:.6f}",
+                f"{local_eff_thresh:.6f}",
+                f"{global_eff_thresh:.6f}",
                 r["Max_Score"],
                 r.get("Raw_Max_Score", r["Max_Score"]),
                 r.get("Filtered_Max_Score", r["Max_Score"]),
@@ -374,6 +644,9 @@ def generate_pack_eval_report(
         "fp_normal": len(fp_normal),
         "fpr_normal": fpr_normal,
         "anomaly_exported": anomaly_count,
+        "eff_thresh_used": eff_thresh,
+        "local_eff_thresh": local_eff_thresh,
+        "global_eff_thresh": global_eff_thresh,
         "max_s": max_s,
         "p99_s": p99_s,
         "p95_s": p95_s,
@@ -388,7 +661,7 @@ def generate_pack_eval_report(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="將 FoundAD 全部推論結果依「每包張數 (--counts)」或「比例 (--ratios)」拆分為多份 (預設3份) 獨立 Eval 結果。"
+        description="將 FoundAD 全部推論結果依「每包張數 (--counts)」或「比例 (--ratios)」拆分為多份獨立 Eval 結果，並支援各包獨立重算動態門檻。"
     )
     parser.add_argument(
         "--src_dir", type=str, default="./output/2_fab_no_gt",
@@ -396,29 +669,46 @@ def main():
     )
     parser.add_argument(
         "--out_dir", type=str, default="",
-        help="拆分後輸出目錄 (預設存在該次結果目錄下的 split_eval_3packs/)"
+        help="拆分後輸出目錄 (預設存在該次結果目錄下的 split_eval_{num_packs}packs/)"
     )
     parser.add_argument(
         "--num_packs", type=int, default=3,
-        help="預設拆分成幾份 Eval 結果 (預設: 3)"
+        help="設定要將資料集拆分成幾包 Eval 結果 (預設: 3)"
     )
     parser.add_argument(
         "--counts", type=str, default="",
-        help="依【每包張數】拆分：可填單一數字如 '30' (代表每包30張，共拆 num_packs 包) 或逗號分隔如 '30,30,20'"
+        help=(
+            "依【每包張數】拆分：可填單一數字如 '500' (代表每包500張，共拆 num_packs 包) "
+            "或逗號分隔如 '700,700,600'。注意：所有包的張數加總必須完全等於可拆分圖片總數，否則會立即報錯！"
+        )
     )
     parser.add_argument(
         "--ratios", type=str, default="",
-        help="依【比例】拆分：例如 '1:1:1' (均分3份)、'2:1:1' 或 '0.5,0.25,0.25' (若未指定 counts 也未指定 ratios，預設按 1:1:1 拆為3份)"
+        help="依【比例】拆分：例如 '1:1:1' (均分3份)、'2:1:1' 或 '0.5,0.25,0.25' (若未指定 counts，預設依 num_packs 自動均分)"
     )
     parser.add_argument(
         "--split_order", type=str, default="stratified",
         choices=["stratified", "random", "rank", "filename"],
-        help="拆分抽樣方式：stratified(分層抽樣，確保3份Eval中異常/正常比例一致)、random(純隨機)、rank(依分數高低分段)、filename(依檔名順序)"
+        help="拆分抽樣方式：stratified(分層抽樣，確保各包異常/正常比例一致)、random(純隨機)、rank(依分數高低分段)、filename(依檔名順序)"
     )
     parser.add_argument(
         "--exclude_golden", action="store_true",
         help="若設定此旗標，拆分前會先排除作為訓練集的 Golden 圖片，只對非 Golden 測試圖進行拆分"
     )
+    parser.add_argument(
+        "--recompute_pack_thresh", action="store_true",
+        help="【關鍵新增】啟用各包獨立重算動態門檻：每一包僅根據該包內部的樣本分數獨立重算 local_eff_thresh 並判定異常，完全消除跨包統計洩漏疑慮"
+    )
+    parser.add_argument(
+        "--thresh_mode", type=str, default="",
+        choices=["", "hybrid", "mean_std", "percentile", "top_k", "fixed"],
+        help="各包獨立重算門檻時使用的模式 (留空則自動沿用 Step 3 推論時的 thresh_mode)"
+    )
+    parser.add_argument("--sigma_k", type=float, default=3.5, help="各包獨立重算門檻時的標準差倍數 sigma_k (預設 3.5)")
+    parser.add_argument("--auto_percentile", type=float, default=95.0, help="各包獨立重算門檻時的分位數 (預設 95.0)")
+    parser.add_argument("--min_threshold", type=float, default=0.0, help="各包獨立重算門檻時的最低保底門檻")
+    parser.add_argument("--threshold", type=float, default=0.0, help="fixed 或 hybrid 模式下的自訂門檻下限")
+    parser.add_argument("--top_k", type=int, default=0, help="top_k 模式下的異常張數上限")
     parser.add_argument(
         "--symlink", action="store_true",
         help="使用軟連結 (Symlink) 取代實體複製異常紅框圖與 .npy，節省硬碟空間並秒速完成"
@@ -432,15 +722,23 @@ def main():
 
     header_meta = parse_header_metadata(src_txt)
     with open(src_csv, "r", encoding="utf-8") as f:
-        records = list(csv.DictReader(f))
+        all_records = list(csv.DictReader(f))
 
-    if not records:
+    if not all_records:
         raise ValueError(f"報表 {src_csv} 內沒有任何紀錄！")
 
+    global_golden_scores = extract_global_golden_scores(all_records, header_meta)
+    total_raw_records = len(all_records)
+    num_golden_in_csv = sum(1 for r in all_records if str(r.get("Status", "")).startswith("GOLDEN"))
+
     if args.exclude_golden:
-        records = [r for r in records if not r["Status"].startswith("GOLDEN")]
+        records = [r for r in all_records if not str(r.get("Status", "")).startswith("GOLDEN")]
+    else:
+        records = list(all_records)
 
     total_avail = len(records)
+
+    # 計算各包大小（內含嚴格的總數防呆檢查，若加總 != total_avail 會直接拋出明確錯誤訊息）
     pack_sizes = compute_pack_sizes(
         total_items=total_avail,
         num_packs=args.num_packs,
@@ -455,17 +753,40 @@ def main():
         seed=args.seed,
     )
 
-    out_root = os.path.abspath(args.out_dir) if args.out_dir else os.path.join(src_run_dir, f"split_eval_{len(packs)}packs")
+    out_root = (
+        os.path.abspath(args.out_dir)
+        if args.out_dir
+        else os.path.join(src_run_dir, f"split_eval_{len(packs)}packs")
+    )
     if os.path.exists(out_root):
         shutil.rmtree(out_root)
     os.makedirs(out_root, exist_ok=True)
 
-    mode_desc = f"每包張數 (--counts={args.counts})" if args.counts else f"比例 (--ratios={args.ratios or '1:1:1'})"
-    print("\n" + "=" * 95)
+    mode_desc = (
+        f"指定每包張數 (--counts={args.counts})"
+        if args.counts
+        else f"依比例均分 (--ratios={args.ratios or ':'.join(['1']*args.num_packs)})"
+    )
+    thresh_policy_desc = (
+        f"ON (各包獨立重算 Local Threshold, sigma_k={args.sigma_k:g})"
+        if args.recompute_pack_thresh
+        else f"OFF (沿用全池統一門檻 Global={header_meta['eff_thresh']}; 報表同步並列各包獨立門檻對照)"
+    )
+
+    print("\n" + "=" * 105)
     print(f" 📦 [FoundAD 推論結果拆分器] 來源目錄: {src_run_dir}")
-    print(f" 🔧 拆分模式: {mode_desc} | 排序/抽樣策略: {args.split_order} | 有效門檻: {header_meta['eff_thresh']}")
-    print(f" 📊 總處理張數: {total_avail} 張 -> 分配為 {len(packs)} 份 Eval: {pack_sizes} (總計分配 {sum(pack_sizes)} 張)")
-    print("=" * 95)
+    print(
+        f" 🖼️ 資料集圖片數量核對 : 原始報表總計 {total_raw_records} 張 "
+        f"(含 Golden {num_golden_in_csv} 張) | 本次納入拆分總張數: {total_avail} 張 "
+        f"{'(已排除 Golden)' if args.exclude_golden else '(含 Golden)'}"
+    )
+    print(f" 🔧 拆分模式與策略     : {mode_desc} | 抽樣策略: {args.split_order}")
+    print(f" 🎚️ 動態門檻重算機制   : {thresh_policy_desc}")
+    print(
+        f" ✅ 數量防呆檢查通過   : 拆分為 {len(packs)} 包 {pack_sizes} -> "
+        f"各包加總 = {sum(pack_sizes)} 張 == 資料集可拆分總數 {total_avail} 張"
+    )
+    print("=" * 105)
 
     summaries = []
     for i, pack_recs in enumerate(packs, 1):
@@ -476,67 +797,90 @@ def main():
             src_run_dir=src_run_dir,
             pack_out_dir=pack_dir,
             header_meta=header_meta,
+            global_golden_scores=global_golden_scores,
+            recompute_pack_thresh=args.recompute_pack_thresh,
+            thresh_mode_override=args.thresh_mode,
+            sigma_k=args.sigma_k,
+            auto_percentile=args.auto_percentile,
+            min_threshold=args.min_threshold,
+            user_threshold=args.threshold,
+            top_k=args.top_k,
             use_symlink=args.symlink,
         )
         summaries.append(s)
 
-    # 輸出三份 Eval 的並列總表 (TXT 與 CSV)
+    # 輸出多份 Eval 的並列總表 (同時保留動態名稱與向下相容的 all_3_evals_comparison 名稱)
     overview_txt = os.path.join(out_root, "all_3_evals_comparison.txt")
     overview_csv = os.path.join(out_root, "all_3_evals_comparison.csv")
+    dynamic_txt = os.path.join(out_root, f"all_{len(summaries)}_evals_comparison.txt")
+    dynamic_csv = os.path.join(out_root, f"all_{len(summaries)}_evals_comparison.csv")
 
     lines = [
-        "=" * 95,
-        f" 🎯 [最終 {len(summaries)} 份 Eval 結果並列總覽 (All Split Evaluations Comparison)]",
-        "-" * 95,
+        "=" * 115,
+        f" 🎯 [最終 {len(summaries)} 份 Eval 結果並列總覽 (All {len(summaries)} Split Evaluations Comparison)]",
+        "-" * 115,
         f"  📂 來源完整推論目錄 : {src_run_dir}",
         f"  📂 拆分結果根目錄   : {out_root}",
-        f"  🎚️ 採用有效門檻     : {header_meta['eff_thresh']} (Mode: {header_meta['thresh_mode']}, Score: {header_meta['score_mode']})",
-        "-" * 95,
-        f"{'Eval包名稱':<14} | {'總張數':<6} | {'非Golden正常':<12} | {'正常誤報(FPR)':<16} | {'抓出Escape瑕疵':<16} | {'Normal Mean±Std':<17} | {'mean+3*std'}",
-        "-" * 95,
+        f"  🖼️ 拆分數量核對     : 各包張數 {pack_sizes} (加總={sum(pack_sizes)} 張 / 資料集總數={total_avail} 張)",
+        f"  🎚️ 門檻判定策略     : {'各包獨立重算動態門檻 (PACK_LOCAL_RECOMPUTED)' if args.recompute_pack_thresh else '全池統一動態門檻 (GLOBAL_POOL_UNIFIED)'} "
+        f"| 全池基準門檻={header_meta['eff_thresh']} (Mode: {header_meta['thresh_mode']}, Score: {header_meta['score_mode']})",
+        "-" * 115,
+        f"{'Eval包名稱':<12} | {'總張數':<6} | {'非Golden正常':<12} | {'實際採用門檻':<12} | {'本包獨立門檻':<12} | {'正常誤報(FPR)':<16} | {'抓出Escape瑕疵':<15} | {'Normal Mean±Std':<16} | {'mean+3*std'}",
+        "-" * 115,
     ]
     for s in summaries:
         fpr_str = f"{s['fp_normal']}/{s['num_normal']} ({s['fpr_normal']:.1f}%)"
-        esc_str = f"{s['caught_escape']}/{s['num_escape']} ({s['escape_recall']:.1f}%)" if s["num_escape"] > 0 else "0/0 (N/A)"
+        esc_str = (
+            f"{s['caught_escape']}/{s['num_escape']} ({s['escape_recall']:.1f}%)"
+            if s["num_escape"] > 0
+            else "0/0 (N/A)"
+        )
         ms_str = f"{s['mean_s']:.4f}±{s['std_s']:.4f}"
         lines.append(
-            f"{s['pack_name']:<14} | {s['total']:<6} | {s['num_normal']:<12} | {fpr_str:<16} | {esc_str:<16} | {ms_str:<17} | {s['m3std']:.4f}"
+            f"{s['pack_name']:<12} | {s['total']:<6} | {s['num_normal']:<12} | "
+            f"{s['eff_thresh_used']:<12.4f} | {s['local_eff_thresh']:<12.4f} | "
+            f"{fpr_str:<16} | {esc_str:<15} | {ms_str:<16} | {s['m3std']:.4f}"
         )
-    lines.append("-" * 95)
+    lines.append("-" * 115)
 
     for s in summaries:
         lines.extend([
             f"  🔹 [{s['pack_name']}] (共 {s['total']} 張, 輸出異常紅框圖 {s['anomaly_exported']} 張)",
+            f"     ├── 門檻對照       : 實際採用={s['eff_thresh_used']:.4f} | 本包獨立重算(Local)={s['local_eff_thresh']:.4f} | 全池統一(Global)={s['global_eff_thresh']:.4f}",
             f"     ├── 正常圖分數分佈 : Max={s['max_s']:.4f} | P99={s['p99_s']:.4f} | P95={s['p95_s']:.4f} | Median={s['median_s']:.4f} | Mean={s['mean_s']:.4f} | Std={s['std_s']:.4f}",
             f"     ├── 門檻參考值     : mean+1*std={s['m1std']:.4f} | mean+2*std={s['m2std']:.4f} | mean+3*std={s['m3std']:.4f}",
             f"     ├── 評估報表 (TXT) : {s['report_txt']}",
             f"     └── 異常圖片資料夾 : {os.path.join(s['pack_dir'], 'anomaly_images')}",
         ])
-    lines.append("=" * 95)
+    lines.append("=" * 115)
 
     full_summary_text = "\n".join(lines)
     print(full_summary_text)
 
-    with open(overview_txt, "w", encoding="utf-8") as f:
-        f.write(full_summary_text + "\n")
+    for txt_p in {overview_txt, dynamic_txt}:
+        with open(txt_p, "w", encoding="utf-8") as f:
+            f.write(full_summary_text + "\n")
 
-    with open(overview_csv, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            "Eval_Pack", "Total_Images", "Golden_Images", "NonGolden_Normal_Images",
-            "Normal_FP_Count", "Normal_FPR_Percent", "Escape_Total", "Escape_Caught",
-            "Escape_Recall_Percent", "Normal_Max", "Normal_P99", "Normal_P95",
-            "Normal_Median", "Normal_Mean", "Normal_Std", "Mean_Plus_1Std",
-            "Mean_Plus_2Std", "Mean_Plus_3Std", "Pack_Dir"
-        ])
-        for s in summaries:
+    for csv_p in {overview_csv, dynamic_csv}:
+        with open(csv_p, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
             writer.writerow([
-                s["pack_name"], s["total"], s["num_golden"], s["num_normal"],
-                s["fp_normal"], f"{s['fpr_normal']:.2f}", s["num_escape"], s["caught_escape"],
-                f"{s['escape_recall']:.2f}", f"{s['max_s']:.6f}", f"{s['p99_s']:.6f}", f"{s['p95_s']:.6f}",
-                f"{s['median_s']:.6f}", f"{s['mean_s']:.6f}", f"{s['std_s']:.6f}", f"{s['m1std']:.6f}",
-                f"{s['m2std']:.6f}", f"{s['m3std']:.6f}", s["pack_dir"]
+                "Eval_Pack", "Total_Images", "Golden_Images", "NonGolden_Normal_Images",
+                "Effective_Threshold_Used", "Pack_Local_Threshold", "Global_Pool_Threshold",
+                "Normal_FP_Count", "Normal_FPR_Percent", "Escape_Total", "Escape_Caught",
+                "Escape_Recall_Percent", "Normal_Max", "Normal_P99", "Normal_P95",
+                "Normal_Median", "Normal_Mean", "Normal_Std", "Mean_Plus_1Std",
+                "Mean_Plus_2Std", "Mean_Plus_3Std", "Pack_Dir"
             ])
+            for s in summaries:
+                writer.writerow([
+                    s["pack_name"], s["total"], s["num_golden"], s["num_normal"],
+                    f"{s['eff_thresh_used']:.6f}", f"{s['local_eff_thresh']:.6f}", f"{s['global_eff_thresh']:.6f}",
+                    s["fp_normal"], f"{s['fpr_normal']:.2f}", s["num_escape"], s["caught_escape"],
+                    f"{s['escape_recall']:.2f}", f"{s['max_s']:.6f}", f"{s['p99_s']:.6f}", f"{s['p95_s']:.6f}",
+                    f"{s['median_s']:.6f}", f"{s['mean_s']:.6f}", f"{s['std_s']:.6f}", f"{s['m1std']:.6f}",
+                    f"{s['m2std']:.6f}", f"{s['m3std']:.6f}", s["pack_dir"]
+                ])
 
 
 if __name__ == "__main__":
