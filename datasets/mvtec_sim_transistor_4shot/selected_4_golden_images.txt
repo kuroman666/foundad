@@ -1,0 +1,5 @@
+=== Stage 1 Coarse Top-4 Golden Images (Scanned 68/68 imgs, Candidate Pool=16) ===
+Golden #1 (-> 000.png): clean_036.png | Hybrid_Score: 0.994854 (Raw_Cent: 0.997238, Spatial_Align: 0.9919, Photo_Z: 0.64, Token_Spike: 2.224)
+Golden #2 (-> 001.png): clean_059.png | Hybrid_Score: 0.992706 (Raw_Cent: 0.997215, Spatial_Align: 0.9872, Photo_Z: 0.14, Token_Spike: 2.228)
+Golden #3 (-> 002.png): clean_045.png | Hybrid_Score: 0.970871 (Raw_Cent: 0.996201, Spatial_Align: 0.9788, Photo_Z: 0.92, Token_Spike: 2.298)
+Golden #4 (-> 003.png): clean_004.png | Hybrid_Score: 0.850958 (Raw_Cent: 0.997378, Spatial_Align: 0.9851, Photo_Z: 0.49, Token_Spike: 2.428)
