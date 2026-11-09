@@ -1,0 +1,185 @@
+{
+  "pool_dir": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool",
+  "total_pool_images": 66,
+  "scanned_images": 66,
+  "candidate_pool_size": 16,
+  "shots": 4,
+  "candidates": [
+    {
+      "cand_rank": 1,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_015.png",
+      "rel_path": "clean_015.png",
+      "hybrid_score": 0.9955105781555176,
+      "raw_centrality": 0.9992047548294067,
+      "spatial_align": 0.9909954071044922,
+      "photo_z": 0.1313665211200714,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.280121088027954
+    },
+    {
+      "cand_rank": 2,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_023.png",
+      "rel_path": "clean_023.png",
+      "hybrid_score": 0.9948801398277283,
+      "raw_centrality": 0.9991716146469116,
+      "spatial_align": 0.9896349906921387,
+      "photo_z": 0.49799758195877075,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2947421073913574
+    },
+    {
+      "cand_rank": 3,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_037.png",
+      "rel_path": "clean_037.png",
+      "hybrid_score": 0.9939854741096497,
+      "raw_centrality": 0.9984237551689148,
+      "spatial_align": 0.9885609149932861,
+      "photo_z": 0.6215776205062866,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.210495710372925
+    },
+    {
+      "cand_rank": 4,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_014.png",
+      "rel_path": "clean_014.png",
+      "hybrid_score": 0.9938524961471558,
+      "raw_centrality": 0.9990672469139099,
+      "spatial_align": 0.9874788522720337,
+      "photo_z": 0.3600735366344452,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2580747604370117
+    },
+    {
+      "cand_rank": 5,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_024.png",
+      "rel_path": "clean_024.png",
+      "hybrid_score": 0.9936150908470154,
+      "raw_centrality": 0.9990989565849304,
+      "spatial_align": 0.9876254200935364,
+      "photo_z": 0.9730527400970459,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.3017375469207764
+    },
+    {
+      "cand_rank": 6,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_022.png",
+      "rel_path": "clean_022.png",
+      "hybrid_score": 0.9935923218727112,
+      "raw_centrality": 0.9990881681442261,
+      "spatial_align": 0.9868751764297485,
+      "photo_z": 0.5324270129203796,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2982306480407715
+    },
+    {
+      "cand_rank": 7,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_028.png",
+      "rel_path": "clean_028.png",
+      "hybrid_score": 0.9933793544769287,
+      "raw_centrality": 0.9989117383956909,
+      "spatial_align": 0.9866175651550293,
+      "photo_z": 0.9070901870727539,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2200698852539062
+    },
+    {
+      "cand_rank": 8,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/escape_bent_wire_003.png",
+      "rel_path": "escape_bent_wire_003.png",
+      "hybrid_score": 0.9928169250488281,
+      "raw_centrality": 0.9990268349647522,
+      "spatial_align": 0.9852269887924194,
+      "photo_z": 0.5441098809242249,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.292743682861328
+    },
+    {
+      "cand_rank": 9,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_032.png",
+      "rel_path": "clean_032.png",
+      "hybrid_score": 0.9925401210784912,
+      "raw_centrality": 0.9988057017326355,
+      "spatial_align": 0.9848820567131042,
+      "photo_z": 0.47638803720474243,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.21492075920105
+    },
+    {
+      "cand_rank": 10,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_048.png",
+      "rel_path": "clean_048.png",
+      "hybrid_score": 0.9922999143600464,
+      "raw_centrality": 0.9991433620452881,
+      "spatial_align": 0.9875407814979553,
+      "photo_z": 0.8781596422195435,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.308851480484009
+    },
+    {
+      "cand_rank": 11,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_033.png",
+      "rel_path": "clean_033.png",
+      "hybrid_score": 0.9899714589118958,
+      "raw_centrality": 0.998805820941925,
+      "spatial_align": 0.9821760654449463,
+      "photo_z": 1.0900646448135376,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.1377477645874023
+    },
+    {
+      "cand_rank": 12,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_035.png",
+      "rel_path": "clean_035.png",
+      "hybrid_score": 0.9897872805595398,
+      "raw_centrality": 0.9987170696258545,
+      "spatial_align": 0.9873538017272949,
+      "photo_z": 1.2544221878051758,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.1013808250427246
+    },
+    {
+      "cand_rank": 13,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_010.png",
+      "rel_path": "clean_010.png",
+      "hybrid_score": 0.9897614121437073,
+      "raw_centrality": 0.9986230134963989,
+      "spatial_align": 0.9858300685882568,
+      "photo_z": 1.206984519958496,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.1432578563690186
+    },
+    {
+      "cand_rank": 14,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_034.png",
+      "rel_path": "clean_034.png",
+      "hybrid_score": 0.9890096783638,
+      "raw_centrality": 0.9988194704055786,
+      "spatial_align": 0.9822342991828918,
+      "photo_z": 0.7592952847480774,
+      "patch_anom_z": 0.05214342102408409,
+      "token_spike": 2.1609370708465576
+    },
+    {
+      "cand_rank": 15,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/escape_bent_wire_002.png",
+      "rel_path": "escape_bent_wire_002.png",
+      "hybrid_score": 0.9884876608848572,
+      "raw_centrality": 0.9990723729133606,
+      "spatial_align": 0.9867551922798157,
+      "photo_z": 0.3940933048725128,
+      "patch_anom_z": 0.11204332113265991,
+      "token_spike": 2.287869453430176
+    },
+    {
+      "cand_rank": 16,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_cable_pool/clean_004.png",
+      "rel_path": "clean_004.png",
+      "hybrid_score": 0.987379789352417,
+      "raw_centrality": 0.9991148710250854,
+      "spatial_align": 0.9878979921340942,
+      "photo_z": 0.5108932852745056,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.336538314819336
+    }
+  ]
+}

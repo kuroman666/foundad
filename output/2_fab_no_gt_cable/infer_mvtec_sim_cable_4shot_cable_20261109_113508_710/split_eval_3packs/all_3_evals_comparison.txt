@@ -1,0 +1,33 @@
+===================================================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All 3 Split Evaluations Comparison)]
+-------------------------------------------------------------------------------------------------------------------
+  📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710
+  📂 拆分結果根目錄   : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs
+  🖼️ 拆分數量核對     : 各包張數 [22, 22, 22] (加總=66 張 / 資料集總數=66 張)
+  🎚️ 門檻判定策略     : 各包獨立重算動態門檻 (PACK_LOCAL_RECOMPUTED) | 全池基準門檻=0.2420 (Mode: hybrid, Score: MICRO_DEFECT_SENSITIVE)
+-------------------------------------------------------------------------------------------------------------------
+Eval包名稱      | 總張數    | 非Golden正常    | 實際採用門檻       | 本包獨立門檻       | 正常誤報(FPR)        | 抓出Escape瑕疵      | Normal Mean±Std  | mean+3*std
+-------------------------------------------------------------------------------------------------------------------
+eval_pack_1  | 22     | 18           | 0.2411       | 0.2411       | 1/18 (5.6%)      | 1/1 (100.0%)    | 0.1751±0.0326    | 0.2730
+eval_pack_2  | 22     | 20           | 0.1988       | 0.1988       | 4/20 (20.0%)     | 2/2 (100.0%)    | 0.1712±0.0404    | 0.2923
+eval_pack_3  | 22     | 16           | 0.2289       | 0.2289       | 0/16 (0.0%)      | 5/5 (100.0%)    | 0.1611±0.0277    | 0.2441
+-------------------------------------------------------------------------------------------------------------------
+  🔹 [eval_pack_1] (共 22 張, 輸出異常紅框圖 2 張)
+     ├── 門檻對照       : 實際採用=0.2411 | 本包獨立重算(Local)=0.2411 | 全池統一(Global)=0.2420
+     ├── 正常圖分數分佈 : Max=0.2680 | P99=0.2570 | P95=0.2132 | Median=0.1708 | Mean=0.1751 | Std=0.0326
+     ├── 門檻參考值     : mean+1*std=0.2078 | mean+2*std=0.2404 | mean+3*std=0.2730
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs/eval_pack_1/anomaly_images
+  🔹 [eval_pack_2] (共 22 張, 輸出異常紅框圖 3 張)
+     ├── 門檻對照       : 實際採用=0.1988 | 本包獨立重算(Local)=0.1988 | 全池統一(Global)=0.2420
+     ├── 正常圖分數分佈 : Max=0.2734 | P99=0.2651 | P95=0.2317 | Median=0.1696 | Mean=0.1712 | Std=0.0404
+     ├── 門檻參考值     : mean+1*std=0.2116 | mean+2*std=0.2520 | mean+3*std=0.2923
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs/eval_pack_2/anomaly_images
+  🔹 [eval_pack_3] (共 22 張, 輸出異常紅框圖 5 張)
+     ├── 門檻對照       : 實際採用=0.2289 | 本包獨立重算(Local)=0.2289 | 全池統一(Global)=0.2420
+     ├── 正常圖分數分佈 : Max=0.2175 | P99=0.2155 | P95=0.2078 | Median=0.1589 | Mean=0.1611 | Std=0.0277
+     ├── 門檻參考值     : mean+1*std=0.1888 | mean+2*std=0.2164 | mean+3*std=0.2441
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261109_113508_710/split_eval_3packs/eval_pack_3/anomaly_images
+===================================================================================================================

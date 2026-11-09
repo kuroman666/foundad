@@ -2,4 +2,4 @@
 Golden #1 (-> 000.png): clean_009.png | Hybrid_Score: 0.983219 (Raw_Cent: 0.982081, Spatial_Align: 0.9846, Photo_Z: 0.00, Token_Spike: 1.151)
 Golden #2 (-> 001.png): clean_002.png | Hybrid_Score: 0.980522 (Raw_Cent: 0.979091, Spatial_Align: 0.9823, Photo_Z: 0.67, Token_Spike: 1.153)
 Golden #3 (-> 002.png): clean_008.png | Hybrid_Score: 0.977288 (Raw_Cent: 0.977429, Spatial_Align: 0.9813, Photo_Z: 1.12, Token_Spike: 1.166)
-Golden #4 (-> 003.png): clean_001.png | Hybrid_Score: 0.977030 (Raw_Cent: 0.983179, Spatial_Align: 0.9844, Photo_Z: 0.79, Token_Spike: 1.199)
+Golden #4 (-> 003.png): clean_000.png | Hybrid_Score: 0.975700 (Raw_Cent: 0.977102, Spatial_Align: 0.9740, Photo_Z: 0.56, Token_Spike: 1.096)

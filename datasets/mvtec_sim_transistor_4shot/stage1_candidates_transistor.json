@@ -1,0 +1,185 @@
+{
+  "pool_dir": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool",
+  "total_pool_images": 68,
+  "scanned_images": 68,
+  "candidate_pool_size": 16,
+  "shots": 4,
+  "candidates": [
+    {
+      "cand_rank": 1,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_036.png",
+      "rel_path": "clean_036.png",
+      "hybrid_score": 0.994854211807251,
+      "raw_centrality": 0.9972379803657532,
+      "spatial_align": 0.9919406175613403,
+      "photo_z": 0.6438499689102173,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.224473476409912
+    },
+    {
+      "cand_rank": 2,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_059.png",
+      "rel_path": "clean_059.png",
+      "hybrid_score": 0.9927055835723877,
+      "raw_centrality": 0.997214674949646,
+      "spatial_align": 0.9871945977210999,
+      "photo_z": 0.13804474472999573,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2282252311706543
+    },
+    {
+      "cand_rank": 3,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_045.png",
+      "rel_path": "clean_045.png",
+      "hybrid_score": 0.9708710312843323,
+      "raw_centrality": 0.9962007403373718,
+      "spatial_align": 0.9788439273834229,
+      "photo_z": 0.9161310195922852,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2983834743499756
+    },
+    {
+      "cand_rank": 4,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_004.png",
+      "rel_path": "clean_004.png",
+      "hybrid_score": 0.7025757431983948,
+      "raw_centrality": 0.9973780512809753,
+      "spatial_align": 0.9850836992263794,
+      "photo_z": 0.48511552810668945,
+      "patch_anom_z": 2.7067689895629883,
+      "token_spike": 2.427711009979248
+    },
+    {
+      "cand_rank": 5,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/escape_bent_lead_005.png",
+      "rel_path": "escape_bent_lead_005.png",
+      "hybrid_score": 0.9947034120559692,
+      "raw_centrality": 0.997604250907898,
+      "spatial_align": 0.9911580085754395,
+      "photo_z": 0.32370665669441223,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.1900126934051514
+    },
+    {
+      "cand_rank": 6,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_005.png",
+      "rel_path": "clean_005.png",
+      "hybrid_score": 0.9946001172065735,
+      "raw_centrality": 0.9972907304763794,
+      "spatial_align": 0.9913116097450256,
+      "photo_z": 0.6152043342590332,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.174733877182007
+    },
+    {
+      "cand_rank": 7,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_041.png",
+      "rel_path": "clean_041.png",
+      "hybrid_score": 0.9945173263549805,
+      "raw_centrality": 0.9971410632133484,
+      "spatial_align": 0.9913105368614197,
+      "photo_z": 0.7907626032829285,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.2580974102020264
+    },
+    {
+      "cand_rank": 8,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_058.png",
+      "rel_path": "clean_058.png",
+      "hybrid_score": 0.9944841861724854,
+      "raw_centrality": 0.9966855049133301,
+      "spatial_align": 0.9917936325073242,
+      "photo_z": 0.519722580909729,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.301053762435913
+    },
+    {
+      "cand_rank": 9,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_042.png",
+      "rel_path": "clean_042.png",
+      "hybrid_score": 0.9944819211959839,
+      "raw_centrality": 0.9970173835754395,
+      "spatial_align": 0.9913830757141113,
+      "photo_z": 0.37472033500671387,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.269409656524658
+    },
+    {
+      "cand_rank": 10,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_022.png",
+      "rel_path": "clean_022.png",
+      "hybrid_score": 0.9941965937614441,
+      "raw_centrality": 0.9966579675674438,
+      "spatial_align": 0.9911882877349854,
+      "photo_z": 0.3227134644985199,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.3112175464630127
+    },
+    {
+      "cand_rank": 11,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_035.png",
+      "rel_path": "clean_035.png",
+      "hybrid_score": 0.9938867092132568,
+      "raw_centrality": 0.9972028732299805,
+      "spatial_align": 0.9898334741592407,
+      "photo_z": 0.5236092209815979,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.237358808517456
+    },
+    {
+      "cand_rank": 12,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_038.png",
+      "rel_path": "clean_038.png",
+      "hybrid_score": 0.992766797542572,
+      "raw_centrality": 0.9970849752426147,
+      "spatial_align": 0.9907592535018921,
+      "photo_z": 0.779349684715271,
+      "patch_anom_z": 0.03270129859447479,
+      "token_spike": 2.2965641021728516
+    },
+    {
+      "cand_rank": 13,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_052.png",
+      "rel_path": "clean_052.png",
+      "hybrid_score": 0.9921865463256836,
+      "raw_centrality": 0.9974338412284851,
+      "spatial_align": 0.9900493621826172,
+      "photo_z": 0.17969690263271332,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.3230984210968018
+    },
+    {
+      "cand_rank": 14,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_021.png",
+      "rel_path": "clean_021.png",
+      "hybrid_score": 0.9916650652885437,
+      "raw_centrality": 0.9971691966056824,
+      "spatial_align": 0.9876783490180969,
+      "photo_z": 0.147319495677948,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.3202128410339355
+    },
+    {
+      "cand_rank": 15,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/escape_bent_lead_003.png",
+      "rel_path": "escape_bent_lead_003.png",
+      "hybrid_score": 0.9913153648376465,
+      "raw_centrality": 0.9960845112800598,
+      "spatial_align": 0.9854863882064819,
+      "photo_z": 0.7771764397621155,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.257810115814209
+    },
+    {
+      "cand_rank": 16,
+      "abs_path": "/home/kenny/project/FoundAD/datasets/sim_fab_mvtec_transistor_pool/clean_000.png",
+      "rel_path": "clean_000.png",
+      "hybrid_score": 0.9912064671516418,
+      "raw_centrality": 0.9975448846817017,
+      "spatial_align": 0.9864828586578369,
+      "photo_z": 1.0906985998153687,
+      "patch_anom_z": 0.0,
+      "token_spike": 2.249905586242676
+    }
+  ]
+}

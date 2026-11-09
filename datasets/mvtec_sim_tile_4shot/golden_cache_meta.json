@@ -1,0 +1,21 @@
+{
+  "pool_signature": "3e8ff4438e573cd8d6dc7de52a3e019d",
+  "category": "tile",
+  "shots": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "tile_size": 512,
+  "tile_overlap": 64,
+  "max_train_tiles": 48,
+  "disable_tiling": false,
+  "min_tile_trigger": 1280,
+  "golden_filenames": [
+    "clean_004.png",
+    "clean_032.png",
+    "clean_007.png",
+    "clean_003.png"
+  ],
+  "num_train_samples": 4,
+  "golden_select_sec": 1.873809264972806,
+  "train_tile_sec": 0.6643137390492484
+}

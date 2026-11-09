@@ -1,0 +1,24 @@
+=== FoundAD Split Eval Report — Pack #2 (eval_pack_2) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261109_115016_821
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Threshold Policy: PACK_LOCAL_RECOMPUTED
+Effective Threshold (Used)  : 0.1843 (Pack_Local_Thresh=0.1843 vs Global_Pool_Thresh=0.1782, Diff=+0.0061)
+Pack Local Thresh Detail    : Hybrid 真無GT雙重校準動態門檻 = 0.1935 [未見過正常核心上界(mu+3.5*σ_left)=0.1935 (mu=0.1227, σ_left=0.0202), Golden基準上界=0.0349, Core_P95=0.1441, MinFloor=0.0000] [小樣本平滑融合 α=0.40 with Global=0.1782]
+Pack Total Images: 10 | Exported Anomaly Images: 6 | Skipped Normal Images: 4
+Normal False Positives (FPR): 0/4 (0.00%) | Escape Caught (Recall): 6/6 (100.00%)
+Non-Golden Normal Score Dist: Max=0.1478 | P99=0.1471 | P95=0.1441 | Median=0.1182 | Mean=0.1186 | Std=0.0206
+Ablation Compare (Normal)   : Raw_Max=0.1432, Raw_Mean=0.1241 vs Filtered_Max=0.1478, Filtered_Mean=0.1186
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1392 | mean+2*std=0.1599 | mean+3*std=0.1805
+Overfit Diagnostic          : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0167, BlindNormal_Med=0.1163, Ratio=6.95x, Gap=+0.0996)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Global_Status       | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 2      | escape_bent_002.png        | ANOMALY             | ANOMALY             | 0.7500    | 0.7297    | 0.7500     | +0.0204  | 3      | Rank002_Score0.7500_Box03_escape_bent_002.png
+2      | 3      | escape_bent_003.png        | ANOMALY             | ANOMALY             | 0.7317    | 0.7155    | 0.7317     | +0.0162  | 3      | Rank003_Score0.7317_Box03_escape_bent_003.png
+3      | 4      | escape_bent_000.png        | ANOMALY             | ANOMALY             | 0.7148    | 0.6990    | 0.7148     | +0.0157  | 3      | Rank004_Score0.7148_Box03_escape_bent_000.png
+4      | 5      | escape_bent_004.png        | ANOMALY             | ANOMALY             | 0.7106    | 0.6869    | 0.7106     | +0.0237  | 2      | Rank005_Score0.7105_Box02_escape_bent_004.png
+5      | 7      | escape_bent_006.png        | ANOMALY             | ANOMALY             | 0.6920    | 0.6721    | 0.6920     | +0.0199  | 3      | Rank007_Score0.6920_Box03_escape_bent_006.png
+6      | 8      | escape_bent_007.png        | ANOMALY             | ANOMALY             | 0.5962    | 0.5775    | 0.5962     | +0.0187  | 3      | Rank008_Score0.5962_Box03_escape_bent_007.png
+7      | 11     | clean_007.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1478    | 0.1432    | 0.1478     | +0.0046  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+8      | 16     | clean_018.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1227    | 0.1307    | 0.1227     | -0.0080  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+9      | 18     | clean_005.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1137    | 0.1098    | 0.1137     | +0.0039  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+10     | 23     | clean_013.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0901    | 0.1126    | 0.0901     | -0.0225  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
