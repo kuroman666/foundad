@@ -764,6 +764,11 @@ def select_golden_images(
         - spike_penalty
     )
 
+    # [新增硬性攔截] 若單張圖的局部跨片異常 (patch_anom_z) 或 Token 尖峰 (spike_z) 明顯超標，
+    # 代表該圖極可能含有局部裂痕/刮傷 (如 escape_crack_000)，直接大幅扣分並踢出 Stage 2 候選池！
+    local_defect_suspect = (patch_anom_z > 1.35) | (spike_z > 1.45) | ((patch_anom_z + spike_z) > 2.2)
+    hybrid_centrality = np.where(local_defect_suspect, hybrid_centrality - 1.0, hybrid_centrality)
+
     feats_np = feats_tensor.numpy()
     cand_indices = _select_diverse_top_indices(
         scores=hybrid_centrality,
@@ -788,6 +793,7 @@ def select_golden_images(
                 "spatial_align": float(spatial_alignment[idx]),
                 "photo_z": float(photo_z[idx]),
                 "patch_anom_z": float(patch_anom_z[idx]),
+                "spike_z": float(spike_z[idx]),          # <--- 新增這一行：記錄標準化後的尖峰 Z-score
                 "token_spike": float(spike_arr[idx]),
             }
         )
@@ -934,11 +940,22 @@ def _compute_local_patch_peak_residuals(
 
     combined_diff = 0.50 * abs_diff + 0.50 * struct_diff
 
+    # 1. 原本的 16x16 區域結構殘差
     cell_h = eval_res // patch_grid
     cell_w = eval_res // patch_grid
     patched = combined_diff.reshape(n, patch_grid, cell_h, patch_grid, cell_w).mean(axis=(2, 4)).reshape(n, -1)
-
     top2_patch_peak = np.sort(patched, axis=1)[:, -2:].mean(axis=1)
+
+    # 2. [新增] 針對晶圓微小瑕疵 (Micro-Defects)：32x32 細網格峰值 + Top-24 像素尖峰，防止微塵被大網格平均稀釋
+    fine_grid = 32
+    f_h, f_w = eval_res // fine_grid, eval_res // fine_grid
+    fine_patched = combined_diff.reshape(n, fine_grid, f_h, fine_grid, f_w).mean(axis=(2, 4)).reshape(n, -1)
+    top2_fine_peak = np.sort(fine_patched, axis=1)[:, -2:].mean(axis=1)
+
+    flat_diff = combined_diff.reshape(n, -1)
+    top_px_k = min(24, flat_diff.shape[1])
+    top_pixel_spike = np.mean(np.partition(flat_diff, -top_px_k, axis=1)[:, -top_px_k:], axis=1)
+
     global_l1 = combined_diff.mean(axis=(1, 2))
 
     means_arr = np.array(tile_means, dtype=np.float32)
@@ -947,7 +964,13 @@ def _compute_local_patch_peak_residuals(
     std_low_z = _robust_mad_z(stds_arr, directional="low")
     exposure_penalty = 2.5 * np.maximum(0.0, mean_z - 1.2) + 3.0 * np.maximum(0.0, std_low_z - 1.2)
 
-    return (0.65 * top2_patch_peak + 0.35 * global_l1 + exposure_penalty).astype(np.float32)
+    return (
+        0.35 * top2_patch_peak
+        + 0.30 * top2_fine_peak
+        + 0.15 * top_pixel_spike
+        + 0.20 * global_l1
+        + exposure_penalty
+    ).astype(np.float32)
 
 
 def purify_golden_tiles_two_stage(
@@ -981,7 +1004,12 @@ def purify_golden_tiles_two_stage(
         s1_arr = np.array(stage1_priors, dtype=np.float32)
         s1_max = float(np.max(s1_arr))
         s1_mad = max(float(1.4826 * np.median(np.abs(s1_arr - np.median(s1_arr)))), 1e-4)
-        prior_arr = np.clip((s1_max - s1_arr) / s1_mad, 0.0, 4.0) * 0.08
+        # 若為整張不切塊模式 (len == 1)，Stage 1 (512px) 解析度高於 Stage 2 (256px)，給予 0.35 高權重；
+        # 若為高解析度晶圓切塊模式 (len > 1)，微瑕疵僅在 Stage 2 原生 512x512 切塊可見，調降為 0.06 避免蓋過微瑕疵殘差！
+        is_full_img_mode = (len(coord_Execution_items) <= 1)
+        prior_weight = 0.35 if is_full_img_mode else 0.06
+        prior_cap = 8.0 if is_full_img_mode else 3.0
+        prior_arr = np.clip((s1_max - s1_arr) / s1_mad, 0.0, prior_cap) * prior_weight
 
     for idx, (y, x, radius, non_bg_items) in enumerate(coord_Execution_items):
         s_idx, e_idx = coord_slices[idx]
@@ -1171,10 +1199,21 @@ def prepare_tiled_golden_trainset(
 
     eff_trigger = max(tile_size, min_tile_trigger)
     if max(h0, w0) <= eff_trigger:
-        # [重要升級] 即使保持整張原圖訓練，依然載入 Stage 1 的 16 張候選池進行局部峰值與 DINO 純淨度投票！
+        # [重要升級] 即使保持整張原圖訓練，依然載入 Stage 1 的候選池進行局部峰值與 DINO 純淨度投票！
         if cand_records and len(cand_records) > shots:
+            # 整張原圖模式下，Stage 1 已使用 518x518 進行空間與局部尖峰檢驗。
+            # 為避免 Stage 2 (256x256) 降採樣稀釋細微裂痕，僅篩選 Stage 1 局部異常極低的前段安全候選圖！
+            safe_cand_records = [
+                r for r in cand_records
+                if float(r.get("patch_anom_z", 0.0)) <= 1.25 and float(r.get("spike_z", 0.0)) <= 1.35
+            ]
+            if len(safe_cand_records) < shots:
+                safe_cand_records = cand_records[:shots]
+            else:
+                safe_cand_records = safe_cand_records[:max(shots, min(len(safe_cand_records), shots * 2))]
+
             c_imgs, valid_c_recs = [], []
-            for rec in cand_records:
+            for rec in safe_cand_records:  # <--- 注意這裡改成 safe_cand_records！
                 try:
                     c_imgs.append(load_image_rgb_uint8(rec["abs_path"]))
                     valid_c_recs.append(rec)
@@ -1259,7 +1298,7 @@ def prepare_tiled_golden_trainset(
 
     candidate_imgs = []
     valid_cand_records = []
-    for rec in cand_records:
+    for rec in safe_cand_records:
         try:
             img = load_image_rgb_uint8(rec["abs_path"])
             candidate_imgs.append(img)
