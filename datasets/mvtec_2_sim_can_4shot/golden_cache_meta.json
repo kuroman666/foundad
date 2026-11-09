@@ -1,0 +1,21 @@
+{
+  "pool_signature": "31f251f5341df6d324bf7ce5a7248176",
+  "category": "can",
+  "shots": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "tile_size": 512,
+  "tile_overlap": 64,
+  "max_train_tiles": 48,
+  "disable_tiling": false,
+  "min_tile_trigger": 1280,
+  "golden_filenames": [
+    "clean_008_regular.png",
+    "clean_009_regular.png",
+    "clean_011_regular.png",
+    "clean_000_regular.png"
+  ],
+  "num_train_samples": 48,
+  "golden_select_sec": 6.04058765002992,
+  "train_tile_sec": 5.355039558955468
+}

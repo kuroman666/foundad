@@ -1,0 +1,366 @@
+nohup: ignoring input
+
+===========================================================================
+ 🚀 [廠外公開資料集無 GT 測試啟動] 資料集: mvtec | 類別: capsule
+    DATA_NAME: mvtec_sim_capsule_4shot | DIY_NAME: sim_escape_capsule
+    獨立輸出目錄: ./output/2_fab_no_gt_capsule
+===========================================================================
+[⚡ 模擬無GT盲池快取命中] 直接沿用既有 31 張盲池圖片 -> /home/kenny/project/FoundAD/datasets/sim_fab_mvtec_capsule_pool
+ [⚡ Step 1/4 防呆略過] ./datasets/mvtec_sim_capsule_4shot/train/capsule 已存在 4 張 Golden 圖塊，直接沿用不重挑！
+---------------------------------------------------------------------------
+ [Step 2/4] 執行 2_train_fab_no_gt.py -> 模型訓練與權重對接檢查
+---------------------------------------------------------------------------
+
+===========================================================================
+[Task 2 無GT訓練階段啟動時間] 2026-11-09 21:05:49 (UTC+8)
+[資料集與類別識別] DATA_NAME=mvtec_sim_capsule_4shot | CATEGORY=capsule
+[本次訓練輸出與日誌目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/train_mvtec_sim_capsule_4shot_capsule_20261109_210549_972
+===========================================================================
+[⚡ 防呆略過 Golden 重挑] 偵測到已存在 Golden 訓練集 (/home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot/train/capsule)，直接沿用既有 4 張 Golden 原圖 (clean_001.png, clean_017.png, clean_016.png, clean_018.png) 與 4 張訓練樣本 (若需強制重挑請加上 --rebuild_golden)
+[⚡ 防呆略過模型重訓] 偵測到已存在訓練完成的權重檔: /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/train-step2000.pth.tar
+                     自動跳過訓練階段！(若欲強制重新訓練請加上 --force_train)
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/pretrained.pth.tar
+
+===========================================================================
+ [✅ 訓練階段完成 (mvtec_sim_capsule_4shot / capsule) — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Auto-Golden 候選池切塊投票耗時        : 00:00:00.00 (0.00 秒) (Loaded Existing Golden)
+  ⏱️ Step 1 FoundAD 模型訓練耗時           : 00:00:00.00 (0.00 秒) (Skipped Existing Ckpt)
+  ⏱️ 整體訓練階段總時間                   : 00:00:00.00 (0.00 秒)
+---------------------------------------------------------------------------
+  🏆 最終勝出 Golden 原圖名單              : clean_001.png, clean_017.png, clean_016.png, clean_018.png
+  📁 Golden 訓練樣本資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot/train/capsule
+  📁 Golden 原圖備份資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot/golden_full_res_backup/capsule
+  📄 本次訓練專屬輸出資料夾               : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/train_mvtec_sim_capsule_4shot_capsule_20261109_210549_972
+  📄 訓練階段 Meta 紀錄檔                 : /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot/train_meta_capsule.json
+  📦 訓練權重檔儲存資料夾                 : /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/pretrained.pth.tar
+===========================================================================
+---------------------------------------------------------------------------
+ [Step 3/4] 執行 3_infer_fab_no_gt.py -> 高解析度切塊推論與防誤報紅框定位
+---------------------------------------------------------------------------
+
+===========================================================================
+[Task 2 無GT推論階段啟動時間] 2026-11-09 21:05:51 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197
+[指定 Golden 來源 (--golden_src)] (預設沿用 shot_dir)
+[指定訓練權重 (--trained_ckpt)] (預設搜尋 ./logs/mvtec_sim_capsule_4shot)
+[微瑕疵高靈敏模式狀態] ON (已啟動白頂帽增強與防稀釋局部尖峰計分)
+===========================================================================
+[Golden-Meta] 已從 /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot/train_meta_capsule.json 載入 4 張 Golden 清單
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池、Golden 基準與切塊參數未變動 (min_tile_trigger=1280px)，直接沿用既有 31 張推論圖塊 PNG (0.00 秒)
+
+[Step 2] 執行 FoundAD 批次推論 (共 31 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/_tmp_tile_amap_npy 並將於 Step 3 RAM 拼接後立即銷毀):
+
+[EXEC] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_capsule_4shot diy_name=sim_escape_capsule data.test_root=/home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot_tiled_pool app=test app.ckpt_step=2000
+------------------------------------------------------------
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=138246326664576>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_capsule_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_capsule_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 52159},
+  'diy_name': 'sim_escape_capsule',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule/pretrained.pth.tar...
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 31 tile images under /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [31/31] tiles processed (.npy saved)
+
+[Step 3.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 31 張測試原圖) | 計分模式: MICRO_DEFECT_SENSITIVE (微瑕疵白頂帽增強 [boost=0.35] + Top-24px 防稀釋局部尖峰 + 5x5閉運算微框保護)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/_tmp_tile_amap_npy
+[Step 3.2] 異常判定門檻設定: Hybrid 真無GT雙重校準動態門檻 = 0.5325 [未見過正常核心上界(mu+3.5*σ_left)=0.5325 (mu=0.1753, σ_left=0.1021), Golden基準上界=0.0375, Core_P95=0.3432, MinFloor=0.0000]
+           (計分模式=MICRO_DEFECT_SENSITIVE, 圓周邊緣抑制=auto, 邊界縮減=4.0%)
+[Step 3.2b] 過擬合自檢診斷 : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) [Golden平均=0.0204 | 盲池正常核心中位數=0.1732 | Overfit_Ratio=8.51x (Gap=+0.1529)]
+  [ℹ️ 記憶效應/批次偏移自動補償] 未見過正常核心中位數 (0.1732) 高於 Golden 訓練圖平均 (0.0204) [Ratio=8.51x, Gap=+0.1529]。
+                                系統已自動將動態門檻錨點切換至「未見過正常核心 (Unseen-Normal Core)」，避免誤殺正常樣本。
+[Step 3.3] 篩選與畫框完成：共 14 張超過有效門檻 (0.5325) 已畫框並將整張 Wafer .npy 存於 output；其餘 17 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論階段完成 (mvtec_sim_capsule_4shot / capsule) — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : 00:00:00.00 (0.00 秒) (ckpt_step=2000)
+---------------------------------------------------------------------------
+  [2] 整體推論階段總時間 (Total Inference Time) : 00:00:10.58 (10.58 秒)
+      ├─ Step 2.1 測試池圖塊準備 (31 塊, trigger=1280px) : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 2.2 FoundAD 模型推論               : 00:00:06.56 (6.56 秒)
+      ├─ Step 3 RAM 縫合銷毀碎片與MICRO_DEFECT畫框 : 00:00:04.02 (4.02 秒)
+      └─ 平均每張原圖推論耗時 (31 張原圖)         : 0.34 秒/張
+---------------------------------------------------------------------------
+  [3] 本次推論腳本總執行時間 (Total Wall Time)  : 00:00:10.60 (10.60 秒)
+---------------------------------------------------------------------------
+  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score=MICRO_DEFECT, Mode=hybrid, Eff_Thresh=0.5325):
+      🚨 超過門檻判定異常並畫框輸出 : 14 張
+      ✅ 未達門檻或微塵濾除直接略過 : 17 張 (不輸出圖片)
+      📊 盲池正常核心分數分佈 (MICRO_DEFECT_SENSITIVE) : Max=0.4774 | P99=0.4632 | P95=0.4062 | Median=0.1751 | Mean=0.2169 | Std=0.1045
+      📐 盲池正常核心門檻參考值      : mean+1*std=0.3214 | mean+2*std=0.4258 | mean+3*std=0.5303
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.4642, Mean=0.2110, Std=0.1021  vs  [當前模式] Max=0.4774, Mean=0.2169, Std=0.1045
+      🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償)
+                                       [Golden平均=0.0204 vs 盲池正常中位數=0.1751 | Overfit_Ratio=8.51x | Gap=+0.1529]
+  [ℹ️ 記憶效應/批次偏移自動補償] 未見過正常核心中位數 (0.1732) 高於 Golden 訓練圖平均 (0.0204) [Ratio=8.51x, Gap=+0.1529]。
+                                系統已自動將動態門檻錨點切換至「未見過正常核心 (Unseen-Normal Core)」，避免誤殺正常樣本。
+---------------------------------------------------------------------------
+  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 使用之訓練權重資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot/dinov3sim_escape_capsule
+      🏆 指定之 Golden 來源         : /home/kenny/project/FoundAD/datasets/mvtec_sim_capsule_4shot
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/anomaly_images/full_res_bbox_only
+          ├── 整張Wafer熱力圖(.npy) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/log.txt
+===========================================================================
+---------------------------------------------------------------------------
+ [Step 4/4] 執行 4_split_eval_results.py -> 拆分為 3 份獨立 Eval 報表
+---------------------------------------------------------------------------
+
+=========================================================================================================
+ 📦 [FoundAD 推論結果拆分器] 來源目錄: /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197
+ 🖼️ 資料集圖片數量核對 : 原始報表總計 31 張 (含 Golden 4 張) | 本次納入拆分總張數: 31 張 (含 Golden)
+ 🔧 拆分模式與策略     : 依比例均分 (--ratios=1:1:1) | 抽樣策略: stratified
+ 🎚️ 動態門檻重算機制   : ON (各包獨立重算 Local Threshold, sigma_k=3.5)
+ ✅ 數量防呆檢查通過   : 拆分為 3 包 [11, 10, 10] -> 各包加總 = 31 張 == 資料集可拆分總數 31 張
+=========================================================================================================
+===================================================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All 3 Split Evaluations Comparison)]
+-------------------------------------------------------------------------------------------------------------------
+  📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197
+  📂 拆分結果根目錄   : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs
+  🖼️ 拆分數量核對     : 各包張數 [11, 10, 10] (加總=31 張 / 資料集總數=31 張)
+  🎚️ 門檻判定策略     : 各包獨立重算動態門檻 (PACK_LOCAL_RECOMPUTED) | 全池基準門檻=0.5325 (Mode: hybrid, Score: MICRO_DEFECT_SENSITIVE)
+-------------------------------------------------------------------------------------------------------------------
+Eval包名稱      | 總張數    | 非Golden正常    | 實際採用門檻       | 本包獨立門檻       | 正常誤報(FPR)        | 抓出Escape瑕疵      | Normal Mean±Std  | mean+3*std
+-------------------------------------------------------------------------------------------------------------------
+eval_pack_1  | 11     | 9            | 0.3895       | 0.3895       | 2/9 (22.2%)      | 0/1 (0.0%)      | 0.3367±0.3307    | 1.3289
+eval_pack_2  | 10     | 7            | 0.6362       | 0.6362       | 6/7 (85.7%)      | 0/2 (0.0%)      | 0.8712±0.3005    | 1.7726
+eval_pack_3  | 10     | 3            | 0.6986       | 0.6986       | 1/3 (33.3%)      | 4/5 (80.0%)     | 0.5259±0.3082    | 1.4505
+-------------------------------------------------------------------------------------------------------------------
+  🔹 [eval_pack_1] (共 11 張, 輸出異常紅框圖 2 張)
+     ├── 門檻對照       : 實際採用=0.3895 | 本包獨立重算(Local)=0.3895 | 全池統一(Global)=0.5325
+     ├── 正常圖分數分佈 : Max=0.9536 | P99=0.9532 | P95=0.9517 | Median=0.1714 | Mean=0.3367 | Std=0.3307
+     ├── 門檻參考值     : mean+1*std=0.6674 | mean+2*std=0.9982 | mean+3*std=1.3289
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs/eval_pack_1/anomaly_images
+  🔹 [eval_pack_2] (共 10 張, 輸出異常紅框圖 6 張)
+     ├── 門檻對照       : 實際採用=0.6362 | 本包獨立重算(Local)=0.6362 | 全池統一(Global)=0.5325
+     ├── 正常圖分數分佈 : Max=1.1224 | P99=1.1185 | P95=1.1026 | Median=0.9465 | Mean=0.8712 | Std=0.3005
+     ├── 門檻參考值     : mean+1*std=1.1717 | mean+2*std=1.4722 | mean+3*std=1.7726
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs/eval_pack_2/anomaly_images
+  🔹 [eval_pack_3] (共 10 張, 輸出異常紅框圖 5 張)
+     ├── 門檻對照       : 實際採用=0.6986 | 本包獨立重算(Local)=0.6986 | 全池統一(Global)=0.5325
+     ├── 正常圖分數分佈 : Max=0.9253 | P99=0.9163 | P95=0.8805 | Median=0.4774 | Mean=0.5259 | Std=0.3082
+     ├── 門檻參考值     : mean+1*std=0.8341 | mean+2*std=1.1423 | mean+3*std=1.4505
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/split_eval_3packs/eval_pack_3/anomaly_images
+===================================================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_CAPSULE 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/train_mvtec_sim_capsule_4shot_capsule_20261109_210549_972
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261109_210551_197/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 31 張 (Golden: 4 張 | 非Golden正常圖: 19 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.5325
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 5/8 張 (Recall=62.5%) | 正常圖誤報 9/19 張 (FPR=47.4%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0204, BlindNormal_Med=0.1751, Ratio=8.51x, Gap=+0.1529)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=1.1224 | P99=1.1105 | P95=1.0630 | Median=0.4774 | Mean=0.5635 | Std=0.3994
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.9629 | mean+2*std=1.3623 | mean+3*std=1.7618
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.1943 | Median=0.6644 | Max=0.9638
+=====================================================================================
+
+
+===========================================================================
+ 🚀 [廠外公開資料集無 GT 測試啟動] 資料集: mvtec-2 | 類別: can
+    DATA_NAME: mvtec_2_sim_can_4shot | DIY_NAME: sim_escape_mvtec_2_can
+    獨立輸出目錄: ./output/2_fab_no_gt_mvtec_2_can
+===========================================================================
+[✓ 模擬無GT盲池建立完成] 來源: ./datasets/mvtec-2/can/test_public | 模式: escape | 共 80 張圖 (正常: 72 張, 隱藏瑕疵: 8 張) -> /home/kenny/project/FoundAD/datasets/sim_fab_mvtec_2_can_pool
+---------------------------------------------------------------------------
+ [Step 1/4] 執行 1_auto_golden.py -> 自動挑選並純化 can Golden 訓練集
+---------------------------------------------------------------------------
+[Auto-Golden Stage 1] 遞迴掃描共找到 80 張圖片，正在提取全域特徵以鎖定 Top-16 候選池...
+[Auto-Golden] 已自動在快取中找到 DINOV3 權重: /home/kenny/.cache/torch/hub/checkpoints/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth
+[Auto-Golden] 正在讀取本地權重檔: /home/kenny/.cache/torch/hub/checkpoints/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth
+[DINO 規格自動偵測] Embed_Dim=768 | Patch=16x16 | Layers=12 | Registers=False
+  Golden #1 (-> 000.png): clean_000_regular.png | Hybrid_Score: 0.981006 (Raw_Cent: 0.996649, Spatial_Align: 0.9775, Photo_Z: 0.79, Token_Spike: 1.662)
+  Golden #2 (-> 001.png): escape_bad_000_regular.png | Hybrid_Score: 0.976534 (Raw_Cent: 0.997055, Spatial_Align: 0.9553, Photo_Z: 0.41, Token_Spike: 1.479)
+  Golden #3 (-> 002.png): clean_003_regular.png | Hybrid_Score: 0.971482 (Raw_Cent: 0.995973, Spatial_Align: 0.9629, Photo_Z: 0.36, Token_Spike: 1.683)
+  Golden #4 (-> 003.png): clean_011_shift_3.png | Hybrid_Score: 0.970778 (Raw_Cent: 0.995662, Spatial_Align: 0.9605, Photo_Z: 0.61, Token_Spike: 1.679)
+[Auto-Golden Stage 1] 已鎖定 16 張候選圖片池，並建立初始目錄: /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can
+[⏱️ 計時] Stage 1 候選池鎖定耗時: 00:00:06.04 (6.04 秒)
+[Stage 2 候選池切塊投票] 正在將 15 張 (2232x1024) 候選晶圓於 RAM 內切塊 (共 15 個網格座標)，進行跨片同座標純淨度對決...
+[Auto-Golden] 已自動在快取中找到 DINOV3 權重: /home/kenny/.cache/torch/hub/checkpoints/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth
+[Auto-Golden] 正在讀取本地權重檔: /home/kenny/.cache/torch/hub/checkpoints/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth
+[DINO 規格自動偵測] Embed_Dim=768 | Patch=16x16 | Layers=12 | Registers=False
+  [切塊投票勝出] Golden #1 (-> 000.png): clean_008_regular.png | Tile_Win_Votes: 15 | Mean_Tile_Cost: 0.8716 | Stage1_Score: 0.980505
+  [切塊投票勝出] Golden #2 (-> 001.png): clean_009_regular.png | Tile_Win_Votes: 6 | Mean_Tile_Cost: 0.9202 | Stage1_Score: 0.980864
+  [切塊投票勝出] Golden #3 (-> 002.png): clean_011_regular.png | Tile_Win_Votes: 6 | Mean_Tile_Cost: 0.9566 | Stage1_Score: 0.979631
+  [切塊投票勝出] Golden #4 (-> 003.png): clean_000_regular.png | Tile_Win_Votes: 6 | Mean_Tile_Cost: 0.9981 | Stage1_Score: 0.981006
+[🎨 切塊空間分佈視覺化已輸出] 已將 48 個代表性訓練圖塊與同心圓環帶繪製於 -> /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/golden_tile_layout_vis.png
+[Tiling-Train 切塊投票與二次純化完成] 已從 15 張 (2232x1024) 候選晶圓評估 225 張子圖塊：
+  ├── 切塊投票選出最終 Golden 原圖 : 已從 15 張候選池正式選出 4 張最純淨 Golden 原圖
+  ├── 跨片局部峰值與 DINO 離群剔除 : 自動攔截剔除 53 張可疑離群圖塊
+  ├── 徑向分層純淨度優化替換       : 0 個徑向區間已自動替換為更純淨座標
+  ├── 切塊分佈視覺化圖檔           : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/golden_tile_layout_vis.png
+  └── 最終輸出純淨代表性訓練圖塊   : 48 張 (512x512) -> /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can
+
+[✅ 新建完成 (16張候選池切塊投票)]
+  ├── 最終勝出 Golden 原圖 : clean_008_regular.png, clean_009_regular.png, clean_011_regular.png, clean_000_regular.png
+  ├── 最終訓練樣本數量     : 48 張
+  ├── 切塊分佈視覺化圖檔   : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/golden_tile_layout_vis.png
+  └── 輸出資料集目錄       : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot
+---------------------------------------------------------------------------
+ [Step 2/4] 執行 2_train_fab_no_gt.py -> 模型訓練與權重對接檢查
+---------------------------------------------------------------------------
+
+===========================================================================
+[Task 2 無GT訓練階段啟動時間] 2026-11-09 21:06:15 (UTC+8)
+[資料集與類別識別] DATA_NAME=mvtec_2_sim_can_4shot | CATEGORY=can
+[本次訓練輸出與日誌目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_mvtec_2_can/train_mvtec_2_sim_can_4shot_can_20261109_210615_908
+===========================================================================
+[⚡ 防呆略過 Golden 重挑] 偵測到已存在 Golden 訓練集 (/home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can)，直接沿用既有 4 張 Golden 原圖 (clean_008_regular.png, clean_009_regular.png, clean_011_regular.png, clean_000_regular.png) 與 48 張訓練樣本 (若需強制重挑請加上 --rebuild_golden)
+[🚀 啟動新訓練] 在 ./logs/mvtec_2_sim_can_4shot/ 下尚未發現權重檔，自動開始執行模型訓練...
+
+[Step 1] 執行 FoundAD 高解析度訓練 (train_samples=48, batch_size=8, iters_per_epoch=6, epochs=400, total_updates=2400):
+
+[EXEC] python foundad/main.py mode=train data.batch_size=8 data.dataset=mvtec data.data_name=mvtec_2_sim_can_4shot data.data_path=/home/kenny/project/FoundAD/datasets data.train_root=/home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot data.mvtec_classnames='[can]' optimization.epochs=400 diy_name=sim_escape_mvtec_2_can app=train_dinov3
+------------------------------------------------------------
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=134629210290496>,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_2_sim_can_4shot',
+            'data_path': '/home/kenny/project/FoundAD/datasets',
+            'dataset': 'mvtec',
+            'mvtec_classnames': ['can'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/path/to/dataset',
+            'train_root': '/home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 53025},
+  'diy_name': 'sim_escape_mvtec_2_can',
+  'logging': { 'folder': 'logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can',
+               'write_tag': 'train'},
+  'meta': { 'crop_size': 512,
+            'feat_normed': False,
+            'if_pred_pe': False,
+            'loss_mode': 'l2',
+            'model': 'dinov3',
+            'n_layer': 3,
+            'pred_depth': 6,
+            'pred_emb_dim': 384,
+            'use_bfloat16': False},
+  'mode': 'train',
+  'optimization': { 'epochs': 400,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+Config saved to logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/params.yaml
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN

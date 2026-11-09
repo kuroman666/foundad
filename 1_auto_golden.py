@@ -1296,6 +1296,15 @@ def prepare_tiled_golden_trainset(
             for i, p in enumerate(initial_files)
         ]
 
+    safe_cand_records = [
+    r for r in cand_records
+    if float(r.get("patch_anom_z", float("inf"))) <= 1.25
+    and float(r.get("spike_z", 0.0)) <= 1.35
+]
+    # 過濾後不足 shots 張時，退回原始候選池
+    if len(safe_cand_records) < shots:
+        safe_cand_records = cand_records[:shots]
+
     candidate_imgs = []
     valid_cand_records = []
     for rec in safe_cand_records:
