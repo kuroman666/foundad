@@ -25,3 +25,57 @@
       └── /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_can/train-step2000.pth.tar
       └── /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_can/pretrained.pth.tar
 ===========================================================================
+
+===========================================================================
+[Task 2 無GT訓練階段啟動時間] 2026-11-08 20:47:46 (UTC+8)
+[資料集與類別識別] DATA_NAME=mvtec_2_sim_can_4shot | CATEGORY=can
+[本次訓練輸出與日誌目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_can/train_mvtec_2_sim_can_4shot_can_20261108_204746_210
+===========================================================================
+[⚡ 防呆略過 Golden 重挑] 偵測到已存在 Golden 訓練集 (/home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can)，直接沿用既有 4 張 Golden 原圖 (clean_008_regular.png, clean_000_regular.png, clean_006_overexposed.png, clean_008_overexposed.png) 與 48 張訓練樣本 (若需強制重挑請加上 --rebuild_golden)
+[⚡ 防呆略過模型重訓] 偵測到已存在訓練完成的權重檔: /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step400.pth.tar
+                     自動跳過訓練階段！(若欲強制重新訓練請加上 --force_train)
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/pretrained.pth.tar
+
+===========================================================================
+ [✅ 訓練階段完成 (mvtec_2_sim_can_4shot / can) — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Auto-Golden 候選池切塊投票耗時        : 00:00:00.00 (0.00 秒) (Loaded Existing Golden)
+  ⏱️ Step 1 FoundAD 模型訓練耗時           : 00:00:00.00 (0.00 秒) (Skipped Existing Ckpt)
+  ⏱️ 整體訓練階段總時間                   : 00:00:00.00 (0.00 秒)
+---------------------------------------------------------------------------
+  🏆 最終勝出 Golden 原圖名單              : clean_008_regular.png, clean_000_regular.png, clean_006_overexposed.png, clean_008_overexposed.png
+  📁 Golden 訓練樣本資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can
+  📁 Golden 原圖備份資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/golden_full_res_backup/can
+  📄 本次訓練專屬輸出資料夾               : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/train_mvtec_2_sim_can_4shot_can_20261108_204746_210
+  📄 訓練階段 Meta 紀錄檔                 : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train_meta_can.json
+  📦 訓練權重檔儲存資料夾                 : /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can
+      └── /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+[Task 2 無GT訓練階段啟動時間] 2026-11-08 20:50:00 (UTC+8)
+[資料集與類別識別] DATA_NAME=mvtec_2_sim_can_4shot | CATEGORY=can
+[本次訓練輸出與日誌目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_can/train_mvtec_2_sim_can_4shot_can_20261108_205000_588
+===========================================================================
+[⚡ 防呆略過 Golden 重挑] 偵測到已存在 Golden 訓練集 (/home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can)，直接沿用既有 4 張 Golden 原圖 (clean_008_regular.png, clean_000_regular.png, clean_006_overexposed.png, clean_008_overexposed.png) 與 48 張訓練樣本 (若需強制重挑請加上 --rebuild_golden)
+[⚡ 防呆略過模型重訓] 偵測到已存在訓練完成的權重檔: /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step400.pth.tar
+                     自動跳過訓練階段！(若欲強制重新訓練請加上 --force_train)
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/pretrained.pth.tar
+
+===========================================================================
+ [✅ 訓練階段完成 (mvtec_2_sim_can_4shot / can) — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Auto-Golden 候選池切塊投票耗時        : 00:00:00.00 (0.00 秒) (Loaded Existing Golden)
+  ⏱️ Step 1 FoundAD 模型訓練耗時           : 00:00:00.00 (0.00 秒) (Skipped Existing Ckpt)
+  ⏱️ 整體訓練階段總時間                   : 00:00:00.00 (0.00 秒)
+---------------------------------------------------------------------------
+  🏆 最終勝出 Golden 原圖名單              : clean_008_regular.png, clean_000_regular.png, clean_006_overexposed.png, clean_008_overexposed.png
+  📁 Golden 訓練樣本資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train/can
+  📁 Golden 原圖備份資料夾                : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/golden_full_res_backup/can
+  📄 本次訓練專屬輸出資料夾               : /home/kenny/project/FoundAD/output/2_fab_no_gt_can/train_mvtec_2_sim_can_4shot_can_20261108_205000_588
+  📄 訓練階段 Meta 紀錄檔                 : /home/kenny/project/FoundAD/datasets/mvtec_2_sim_can_4shot/train_meta_can.json
+  📦 訓練權重檔儲存資料夾                 : /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can
+      └── /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/pretrained.pth.tar
+===========================================================================

@@ -40,7 +40,7 @@ APP_TRAIN="train_dinov3"
 APP_TEST="test"
 
 THRESH_MODE="hybrid"
-SIGMA_K=5
+SIGMA_K=3.5
 THRESHOLD=0
 MIN_THRESHOLD=0
 AUTO_PERCENTILE=95.0
@@ -216,13 +216,14 @@ run_single_public_category() {
         if [ ! -d "${SIM_POOL_DIR}" ] && [ -d "${DATASETS_DIR}/sim_fab_${CAT_NAME}_pool" ]; then
             SIM_POOL_DIR="${DATASETS_DIR}/sim_fab_${CAT_NAME}_pool"
         fi
+        # 將 run_outside.sh 第 170~177 行替換為以下內容：
         DATA_NAME="${DS_PREFIX}_sim_${CAT_NAME}_${SHOTS}shot"
-        DIY_NAME="sim_escape_${CAT_NAME}"
-        SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${CAT_NAME}"
-        # 若跨資料集有同名類別，自動加上資料集前綴避免覆蓋
-        if [ "${DS_PREFIX}" != "mvtec" ] && [ -d "${OUTPUT_ROOT}/2_fab_no_gt_${CAT_NAME}" ] && [ ! -d "${DATASETS_DIR}/${DATA_NAME}" ]; then
-            SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${UNIQUE_TAG}"
+        if [ "${DS_PREFIX}" != "mvtec" ]; then
             DIY_NAME="sim_escape_${UNIQUE_TAG}"
+            SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${UNIQUE_TAG}"
+        else
+            DIY_NAME="sim_escape_${CAT_NAME}"
+            SAVE_BASE_DIR="${OUTPUT_ROOT}/2_fab_no_gt_${CAT_NAME}"
         fi
     fi
 

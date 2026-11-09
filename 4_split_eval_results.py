@@ -102,11 +102,14 @@ def extract_global_golden_scores(all_records: List[Dict], header_meta: Dict[str,
 # =====================================================================
 # 各包獨立重算動態門檻演算法 (與 3_infer_fab_no_gt.py 100% 數學公式對齊)
 # =====================================================================
+# 覆蓋 3_infer_fab_no_gt.py 與 4_split_eval_results.py 中的這兩個函式：
 def estimate_blind_normal_core_stats(
     non_golden_scores: List[float],
     golden_scores: List[float],
 ) -> Tuple[float, float, float, np.ndarray]:
-    """真無 GT 盲池左半部正常核心估計器 (Adaptive Unseen-Normal Left-Core Estimator)。"""
+    """
+    真無 GT 盲池左半部正常核心估計器 (修正比較方向與跨批號曝光離散度上限)：
+    """
     pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
     if pool_arr.size == 0:
@@ -115,15 +118,16 @@ def estimate_blind_normal_core_stats(
     sorted_pool = np.sort(pool_arr)
     n = sorted_pool.size
 
-    half_n = max(1, int(np.ceil(n * 0.55)))
+    # 取非 Golden 盲池左半部 50% 低分群的中位數作為 mu_unseen，徹底杜絕右半部異常晶圓污染
+    half_n = max(1, int(np.ceil(n * 0.50)))
     lower_half = sorted_pool[:half_n]
-    med_pool = float(np.median(sorted_pool))
-    g_med = float(np.median(g_arr)) if g_arr.size > 0 else float(np.median(lower_half))
+    mu_unseen = float(np.median(lower_half))
+    g_med = float(np.median(g_arr)) if g_arr.size > 0 else mu_unseen
 
-    mu_unseen = float(np.percentile(lower_half, 75.0)) if lower_half.size >= 4 else float(np.median(lower_half))
-
-    if g_arr.size > 0 and g_med > mu_unseen:
-        mu_core = float(min(med_pool, 0.5 * mu_unseen + 0.5 * g_med))
+    # 若 Golden 與盲池正常核心差距在合理範圍內 (<1.8x，如公司大圖切塊晶圓)，平滑融合兩者；
+    # 若發生整張原圖記憶效應 (Golden 極低分)，則 100% 鎖定 mu_unseen
+    if g_arr.size > 0 and (mu_unseen / max(g_med, 1e-4) < 1.8):
+        mu_core = float(0.65 * mu_unseen + 0.35 * g_med)
     else:
         mu_core = mu_unseen
 
@@ -138,15 +142,12 @@ def estimate_blind_normal_core_stats(
 
     if lower_half.size >= 4:
         lower_iqr_std = float((np.percentile(lower_half, 75.0) - np.percentile(lower_half, 25.0)) / 1.349)
-        sigma_left = max(sigma_left, lower_iqr_std * 0.85)
+        sigma_left = max(sigma_left, lower_iqr_std * 0.80)
 
-    if g_arr.size > 1:
-        g_iqr = float((np.percentile(g_arr, 75.0) - np.percentile(g_arr, 25.0)) / 1.349)
-        sigma_left = max(sigma_left, float(np.std(g_arr)), g_iqr)
+    # 放寬上限至 0.14，確保遇到跨批號光照偏移 (如不同機台曝光) 時不會被硬截斷在 0.075
+    sigma_left = float(np.clip(sigma_left, 0.012, 0.14))
 
-    sigma_left = float(np.clip(sigma_left, 0.012, 0.075))
-
-    est_normal_mask = sorted_pool <= (mu_core + 3.0 * sigma_left)
+    est_normal_mask = sorted_pool <= (mu_core + 2.5 * sigma_left)
     est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else lower_half
     return mu_core, sigma_left, g_med, est_normal_arr
 
@@ -161,7 +162,6 @@ def compute_dynamic_effective_threshold(
     sigma_k: float,
     top_k: int,
 ) -> Tuple[float, str]:
-    """針對單一 Eval Pack 獨立重新計算真無 GT 動態異常判定門檻。"""
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
@@ -173,28 +173,25 @@ def compute_dynamic_effective_threshold(
         golden_scores=golden_scores,
     )
 
-    left_stat_bound = float(mu_core + sigma_k * sigma_left)
-
-    if g_arr.size > 0:
-        g_mean = float(np.mean(g_arr))
-        g_max = float(np.max(g_arr))
-        g_std = max(float(np.std(g_arr)) if g_arr.size > 1 else 0.012, 0.012)
-        golden_ref_bound = max(g_mean + sigma_k * max(g_std, sigma_left), g_max * 1.08 + 0.015)
-        effective_base = max(mu_core, g_max)
-        golden_safety_cap = max(
-            effective_base * 1.35 + 0.05,
-            mu_core + (sigma_k + 2.0) * sigma_left,
-            float(min_threshold) + 0.06,
-        )
-    else:
-        golden_ref_bound = left_stat_bound
-        golden_safety_cap = max(mu_core + (sigma_k + 2.0) * sigma_left, float(min_threshold) + 0.08)
-
-    calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
+    # 自動保護：公司大池 (>=60張) 完整採用設定之 sigma_k (3.5)；小測試池 (<60張) 自動限制在 <=3.5，防止門檻失控
+    eff_sigma_k = min(float(sigma_k), 3.5) if scores_arr.size < 60 else float(sigma_k)
+    left_stat_bound = float(mu_core + eff_sigma_k * sigma_left)
 
     p_clip = float(np.clip(auto_percentile, 50.0, 99.9))
     p_val_core = float(np.percentile(est_normal_arr, p_clip))
     p_val_raw = float(np.percentile(scores_arr, p_clip))
+
+    if g_arr.size > 0:
+        g_max = float(np.max(g_arr))
+        # Golden 基準上界僅作為「不能比 Golden 最高分還低」的防誤殺底線 (g_max * 1.05 + 0.015)，
+        # 絕不再加上 sigma_k * g_std，徹底修復門檻暴衝到 1.1500 吃掉微瑕疵的 Bug！
+        golden_ref_bound = g_max * 1.05 + 0.015
+        golden_safety_cap = max(p_val_core * 1.18 + 0.02, left_stat_bound)
+    else:
+        golden_ref_bound = left_stat_bound
+        golden_safety_cap = left_stat_bound
+
+    calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
 
     topk_bound = 0.0
     if top_k > 0 and scores_arr.size > top_k:
@@ -207,31 +204,26 @@ def compute_dynamic_effective_threshold(
         eff = float(user_threshold)
         desc = f"Fixed 固定門檻 = {eff:.4f}"
     elif mode == "mean_std":
-        eff = (
-            max(float(min_threshold), calibrated_bound, topk_bound)
-            if top_k > 0
-            else max(float(min_threshold), calibrated_bound)
-        )
+        eff = max(float(min_threshold), calibrated_bound, topk_bound) if top_k > 0 else max(float(min_threshold), calibrated_bound)
         desc = (
-            f"Pack獨立重算 Left-Core+Golden 門檻 (mu_core+{sigma_k:g}*σ_left) = {eff:.4f} "
+            f"Left-Core + Golden 雙重校準統計門檻 (mu_core+{eff_sigma_k:g}*σ_left) = {eff:.4f} "
             f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, Golden_Med={g_med:.4f}]"
         )
     elif mode == "percentile":
         eff = max(float(min_threshold), min(p_val_raw, golden_safety_cap), topk_bound)
-        desc = (
-            f"Pack獨立重算 Auto-P{auto_percentile:g} 門檻 = {eff:.4f} "
-            f"[Core_P{auto_percentile:g}={p_val_core:.4f}, Raw_P{auto_percentile:g}={p_val_raw:.4f}]"
-        )
+        desc = f"Auto-P{auto_percentile:g} 動態分位數門檻 = {eff:.4f}"
     elif mode == "top_k":
         eff = max(float(min_threshold), topk_bound if top_k > 0 else calibrated_bound)
-        desc = f"Pack獨立重算 Auto-TopK (K={top_k}) 門檻 = {eff:.4f}"
+        desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f}"
     else:
         hybrid_stat = max(floor_val, calibrated_bound, min(p_val_core, golden_safety_cap))
         eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
         desc = (
-            f"Pack獨立重算 Hybrid 雙重校準門檻 = {eff:.4f} "
-            f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, LeftBound={left_stat_bound:.4f}, "
-            f"GoldenBound={golden_ref_bound:.4f}, Core_P{auto_percentile:g}={p_val_core:.4f}]"
+            f"Hybrid 真無GT雙重校準動態門檻 = {eff:.4f} "
+            f"[未見過正常核心上界(mu+{eff_sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
+            f"Golden基準上界={golden_ref_bound:.4f}, Core_P{auto_percentile:g}={p_val_core:.4f}, "
+            f"MinFloor={floor_val:.4f}"
+            f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
         )
     return eff, desc
 

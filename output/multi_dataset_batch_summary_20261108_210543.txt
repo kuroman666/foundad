@@ -1,0 +1,115 @@
+==========================================================================================================
+ 📊 [FoundAD 多資料集批次訓練與推論總覽報表] 啟動時間: 20261108_210543
+==========================================================================================================
+=====================================================================================
+ 🎯 [MVTEC_CAPSULE 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/train_mvtec_sim_capsule_4shot_capsule_20261108_210544_348
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261108_210545_582
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261108_210545_582/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 31 張 (Golden: 4 張 | 非Golden正常圖: 19 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.7589
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 4/8 張 (Recall=50.0%) | 正常圖誤報 9/19 張 (FPR=47.4%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0205, BlindNormal_Med=0.1697, Ratio=8.24x, Gap=+0.1483)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=1.0381 | P99=1.0315 | P95=1.0052 | Median=0.4255 | Mean=0.5445 | Std=0.3848
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.9293 | mean+2*std=1.3141 | mean+3*std=1.6988
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.2043 | Median=0.7392 | Max=0.9436
+=====================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_2_CAN 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_mvtec_2_can/train_mvtec_2_sim_can_4shot_can_20261108_210558_399
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_mvtec_2_can/infer_mvtec_2_sim_can_4shot_can_20261108_210559_656
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_mvtec_2_can/infer_mvtec_2_sim_can_4shot_can_20261108_210559_656/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 80 張 (Golden: 4 張 | 非Golden正常圖: 68 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 1.1500
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 0/8 張 (Recall=0.0%) | 正常圖誤報 0/68 張 (FPR=0.0%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.2979, BlindNormal_Med=0.7710, Ratio=2.58x, Gap=+0.4692)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=0.9212 | P99=0.9130 | P95=0.8930 | Median=0.7577 | Mean=0.6081 | Std=0.2767
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.8848 | mean+2*std=1.1615 | mean+3*std=1.4383
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.7755 | Median=0.8252 | Max=1.0204
+=====================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_BOTTLE 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/train_mvtec_sim_bottle_4shot_bottle_20261108_210633_574
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/infer_mvtec_sim_bottle_4shot_bottle_20261108_210634_793
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_bottle/infer_mvtec_sim_bottle_4shot_bottle_20261108_210634_793/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 28 張 (Golden: 4 張 | 非Golden正常圖: 16 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.2598
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 8/8 張 (Recall=100.0%) | 正常圖誤報 1/16 張 (FPR=6.2%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0172, BlindNormal_Med=0.1219, Ratio=7.09x, Gap=+0.1046)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=0.2834 | P99=0.2741 | P95=0.2370 | Median=0.1261 | Mean=0.1420 | Std=0.0484
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1904 | mean+2*std=0.2387 | mean+3*std=0.2871
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.6124 | Median=0.7671 | Max=0.8652
+=====================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_CABLE 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/train_mvtec_sim_cable_4shot_cable_20261108_210644_784
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261108_210646_009
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_cable/infer_mvtec_sim_cable_4shot_cable_20261108_210646_009/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 66 張 (Golden: 4 張 | 非Golden正常圖: 54 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.2959
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 8/8 張 (Recall=100.0%) | 正常圖誤報 0/54 張 (FPR=0.0%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0246, BlindNormal_Med=0.1650, Ratio=6.70x, Gap=+0.1401)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=0.2669 | P99=0.2483 | P95=0.2255 | Median=0.1650 | Mean=0.1708 | Std=0.0327
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.2035 | mean+2*std=0.2362 | mean+3*std=0.2689
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.4074 | Median=0.5416 | Max=0.8393
+=====================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_GRID 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/train_mvtec_sim_grid_4shot_grid_20261108_210700_211
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_210701_432
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid/infer_mvtec_sim_grid_4shot_grid_20261108_210701_432/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 29 張 (Golden: 4 張 | 非Golden正常圖: 17 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.2493
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 8/8 張 (Recall=100.0%) | 正常圖誤報 1/17 張 (FPR=5.9%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0172, BlindNormal_Med=0.1355, Ratio=7.67x, Gap=+0.1145)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=0.2876 | P99=0.2761 | P95=0.2297 | Median=0.1374 | Mean=0.1498 | Std=0.0469
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1967 | mean+2*std=0.2437 | mean+3*std=0.2906
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.5916 | Median=0.7538 | Max=0.9527
+=====================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_TILE 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/train_mvtec_sim_tile_4shot_tile_20261108_210711_627
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/infer_mvtec_sim_tile_4shot_tile_20261108_210712_843
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/infer_mvtec_sim_tile_4shot_tile_20261108_210712_843/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 41 張 (Golden: 4 張 | 非Golden正常圖: 30 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.2027
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 6/8 張 (Recall=75.0%) | 正常圖誤報 1/30 張 (FPR=3.3%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0190, BlindNormal_Med=0.1049, Ratio=5.37x, Gap=+0.0828)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=0.3788 | P99=0.3186 | P95=0.1688 | Median=0.1049 | Mean=0.1176 | Std=0.0549
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1724 | mean+2*std=0.2273 | mean+3*std=0.2822
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.0207 | Median=0.2331 | Max=0.7131
+=====================================================================================
+
+=====================================================================================
+ 🎯 [MVTEC_TRANSISTOR 廠外公開資料集測試總結 — 分數分佈與 Threshold 參考 (MICRO_DEFECT_SENSITIVE)]
+-------------------------------------------------------------------------------------
+  📂 訓練紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/train_mvtec_sim_transistor_4shot_transistor_20261108_210724_832
+  📂 推論紀錄資料夾             : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_210726_057
+  📄 最新排名報表位置           : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261108_210726_057/escape_ranking_report.csv
+  🖼️ 盲池圖片結構               : 總計 68 張 (Golden: 4 張 | 非Golden正常圖: 56 張 | 隱藏Escape瑕疵: 8 張)
+  🎚️ 本次動態對齊後有效門檻      : 0.2381
+  🎯 抓漏與誤報表現             : 成功抓出瑕疵 6/8 張 (Recall=75.0%) | 正常圖誤報 5/56 張 (FPR=8.9%)
+  🩺 模型過擬合自檢 (Overfit)    : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0212, BlindNormal_Med=0.1453, Ratio=6.60x, Gap=+0.1188)
+-------------------------------------------------------------------------------------
+  📊 非 Golden 正常圖分數分佈    : Max=0.3616 | P99=0.3187 | P95=0.2659 | Median=0.1470 | Mean=0.1641 | Std=0.0482
+  📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.2123 | mean+2*std=0.2605 | mean+3*std=0.3086
+  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min=0.2210 | Median=0.4125 | Max=0.7586
+=====================================================================================
+

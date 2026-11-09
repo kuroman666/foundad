@@ -10,12 +10,12 @@
   "disable_tiling": false,
   "min_tile_trigger": 1280,
   "golden_filenames": [
-    "clean_001.png",
     "clean_017.png",
-    "clean_016.png",
-    "clean_003.png"
+    "clean_001.png",
+    "escape_crack_000.png",
+    "clean_018.png"
   ],
   "num_train_samples": 4,
-  "golden_select_sec": 2.05902263300959,
-  "train_tile_sec": 0.06013257196173072
+  "golden_select_sec": 2.0085708600236103,
+  "train_tile_sec": 0.7770366200711578
 }

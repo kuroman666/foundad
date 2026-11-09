@@ -1,0 +1,29 @@
+{
+  "data_name": "mvtec_sim_transistor_4shot",
+  "category": "transistor",
+  "diy_name": "sim_escape_transistor",
+  "actual_step": 2000,
+  "golden_filenames": [
+    "clean_036.png",
+    "clean_059.png",
+    "clean_045.png",
+    "clean_004.png"
+  ],
+  "num_train_samples": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "golden_select_sec": 0.0,
+  "train_tile_sec": 0.0,
+  "model_train_sec": 1269.9583495360566,
+  "total_train_time": 1269.9583495360566,
+  "ckpt_dirs": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor"
+  ],
+  "ckpt_files": [
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/train-step2000.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_sim_transistor_4shot/dinov3sim_escape_transistor/pretrained.pth.tar"
+  ],
+  "run_out_dir": "/home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/train_mvtec_sim_transistor_4shot_transistor_20261108_201826_332",
+  "timestamp": "20261108_201826_332",
+  "timezone": "Asia/Taipei (UTC+8)"
+}

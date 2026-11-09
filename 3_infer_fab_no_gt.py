@@ -260,6 +260,16 @@ def prepare_ckpt_for_demo(
             pretrained_alias = os.path.join(d, "pretrained.pth.tar")
             if os.path.abspath(target_ckpt) != os.path.abspath(pretrained_alias):
                 safe_copy(target_ckpt, pretrained_alias)
+            
+            # [新增防呆] 若找到的權重目錄名稱與當前 diy_name 不同，自動同步權重與 params.yaml 至目標目錄
+            expected_dir = os.path.join("./logs", data_name, f"dinov3{diy_name}")
+            if os.path.abspath(d) != os.path.abspath(expected_dir):
+                os.makedirs(expected_dir, exist_ok=True)
+                safe_copy(target_ckpt, os.path.join(expected_dir, "pretrained.pth.tar"))
+                safe_copy(target_ckpt, os.path.join(expected_dir, os.path.basename(target_ckpt)))
+                src_yaml = os.path.join(d, "params.yaml")
+                if os.path.exists(src_yaml):
+                    safe_copy(src_yaml, os.path.join(expected_dir, "params.yaml"))
             abs_d = os.path.abspath(d)
             abs_target = os.path.abspath(target_ckpt)
             abs_alias = os.path.abspath(pretrained_alias)
@@ -974,6 +984,7 @@ def refine_amap_for_wafer_and_noise(
     work_map = full_amap.astype(np.float32).copy()
     img_median = float(np.median(work_map))
 
+    # 1. 扣除 Golden 固定結構容差 (微瑕疵模式下僅輕微扣除 0.08，避免吃掉微瑕疵信號)
     eff_tol_weight = min(golden_tol_weight, 0.08) if micro_defect_mode else golden_tol_weight
     if golden_spatial_ref is not None and eff_tol_weight > 0:
         if golden_spatial_ref.shape[:2] != (h, w):
@@ -984,27 +995,27 @@ def refine_amap_for_wafer_and_noise(
         structural_excess = np.maximum(0.0, g_ref - g_med)
         work_map = img_median + np.maximum(0.0, (work_map - img_median) - eff_tol_weight * structural_excess)
 
-    if micro_defect_mode:
-        smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
-        k_bg = max(15, min(35, int(round(max(h, w) * 0.006)) | 1))
-        bg_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_bg, k_bg))
-        local_bg = cv2.morphologyEx(smooth_3x3, cv2.MORPH_OPEN, bg_kernel)
-        local_bg = cv2.GaussianBlur(local_bg, (k_bg, k_bg), 0)
-        tophat_peak = np.maximum(0.0, smooth_3x3 - local_bg)
-        work_map = smooth_3x3 + float(micro_boost_weight) * tophat_peak
-    elif speckle_filter_ratio > 0:
-        light_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-        opened_3x3 = cv2.morphologyEx(work_map, cv2.MORPH_OPEN, light_kernel)
-        smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
-        work_map = np.maximum(opened_3x3, 0.85 * work_map + 0.15 * smooth_3x3)
-
+    # 2. 建立平滑空間有效遮罩 (Spatial Feather Mask: 1.0=晶圓內部有效區, 0.0=邊框/晶圓倒角外圍)
+    # 避免直接硬切 img_median 造成形態學白頂帽在邊界產生斷崖偽影 (Step-Edge Artifact)
+    spatial_mask = np.ones((h, w), dtype=np.float32)
     if border_ratio > 0:
         by = max(2, int(round(h * border_ratio)))
         bx = max(2, int(round(w * border_ratio)))
-        work_map[:by, :] = img_median
-        work_map[-by:, :] = img_median
-        work_map[:, :bx] = img_median
-        work_map[:, -bx:] = img_median
+        ramp_y = np.ones(h, dtype=np.float32)
+        ramp_x = np.ones(w, dtype=np.float32)
+        ramp_y[:by] = 0.0
+        ramp_y[-by:] = 0.0
+        ramp_x[:bx] = 0.0
+        ramp_x[-bx:] = 0.0
+        # 在邊框內側加 4px 餘弦緩衝帶，徹底消除切邊斷崖
+        pad_b = min(6, min(h, w) // 20)
+        if pad_b > 1 and by + pad_b < h // 2 and bx + pad_b < w // 2:
+            t_b = np.linspace(0.0, 1.0, pad_b, dtype=np.float32)
+            ramp_y[by:by + pad_b] = t_b
+            ramp_y[-(by + pad_b):-by] = t_b[::-1]
+            ramp_x[bx:bx + pad_b] = t_b
+            ramp_x[-(bx + pad_b):-bx] = t_b[::-1]
+        spatial_mask *= np.outer(ramp_y, ramp_x)
 
     use_circle, cy, cx, radius = detect_circular_wafer_geometry(
         img_path=img_path,
@@ -1024,10 +1035,34 @@ def refine_amap_for_wafer_and_noise(
             t = (dist_from_center[transition_mask] - inner_r) / max(outer_r - inner_r, 1.0)
             radial_weight[transition_mask] = 0.5 * (1.0 + np.cos(np.pi * t))
         radial_weight[dist_from_center >= outer_r] = 0.0
-        work_map = img_median + radial_weight * (work_map - img_median)
+        spatial_mask *= radial_weight
 
+    # 3. 針對晶圓微瑕疵的「信號雜訊比 (Peak-to-Background SNR) 自適應白頂帽增強」
+    if micro_defect_mode:
+        smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
+        k_bg = max(15, min(35, int(round(max(h, w) * 0.006)) | 1))
+        bg_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_bg, k_bg))
+        local_bg = cv2.morphologyEx(smooth_3x3, cv2.MORPH_OPEN, bg_kernel)
+        local_bg = cv2.GaussianBlur(local_bg, (k_bg, k_bg), 0)
+        tophat_peak = np.maximum(0.0, smooth_3x3 - local_bg)
+
+        # [關鍵設計] 僅保留真正顯著高於全圖背景波動 (2.0 * MAD) 的局部微瑕疵尖峰，
+        # 並乘上 spatial_mask，防止正常圖的背景起伏或邊緣被白頂帽無差別加分！
+        valid_vals = smooth_3x3[spatial_mask > 0.5] if np.any(spatial_mask > 0.5) else smooth_3x3.reshape(-1)
+        bg_mad = float(1.4826 * np.median(np.abs(valid_vals - np.median(valid_vals)))) + 1e-5
+        snr_gate = np.clip((tophat_peak - 1.5 * bg_mad) / (2.0 * bg_mad), 0.0, 1.0)
+        effective_tophat = tophat_peak * snr_gate * spatial_mask
+
+        work_map = smooth_3x3 + float(micro_boost_weight) * effective_tophat
+    elif speckle_filter_ratio > 0:
+        light_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+        opened_3x3 = cv2.morphologyEx(work_map, cv2.MORPH_OPEN, light_kernel)
+        smooth_3x3 = cv2.GaussianBlur(work_map, (3, 3), 0)
+        work_map = np.maximum(opened_3x3, 0.85 * work_map + 0.15 * smooth_3x3)
+
+    # 4. 最後套用平滑空間遮罩壓抑晶圓倒角外圍與邊框
+    work_map = img_median + spatial_mask * (work_map - img_median)
     return work_map
-
 
 def merge_nearby_bboxes(
     bboxes: List[Tuple[int, int, int, int, float, int]],
@@ -1145,22 +1180,12 @@ def extract_tight_bboxes_for_anomaly_image(
     merged_bboxes = merge_nearby_bboxes(raw_bboxes, merge_gap=merge_gap)
     return merged_bboxes, pixel_box_thresh
 
-
-# =====================================================================
-# [升級] 自適應未見過正常核心估計器 (Adaptive Unseen-Normal Core Estimator)
-# 同時完美支援：
-# 1. 公司大圖切塊晶圓池 (Golden 與 Unseen Normal 同分佈，並自動補償跨批號機台微偏移)
-# 2. 整張原圖訓練模式 (自動排除 4-shot Golden 記憶壓低效應，鎖定真正的 Unseen Normal 核心)
-# =====================================================================
 def estimate_blind_normal_core_stats(
     non_golden_scores: List[float],
     golden_scores: List[float],
 ) -> Tuple[float, float, float, np.ndarray]:
     """
-    真無 GT 盲池左半部正常核心估計器 (Adaptive Unseen-Normal Left-Core Estimator)：
-    - 直接針對已排除 Golden 訓練圖的 non_golden_scores 估計未見過正常樣本的核心位置 mu_core 與左半標準差 sigma_left。
-    - 避免當 Golden 整張原圖被模型記憶 (如 Golden=0.02, Unseen Normal=0.12) 或跨 Lot 光照微偏移時，
-      將 mu_core 錯誤往下鎖死在 g_max，導致正常晶圓大量誤報。
+    真無 GT 盲池左半部正常核心估計器 (修正比較方向與跨批號曝光離散度上限)：
     """
     pool_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
@@ -1170,23 +1195,19 @@ def estimate_blind_normal_core_stats(
     sorted_pool = np.sort(pool_arr)
     n = sorted_pool.size
 
-    # 取非 Golden 盲池左半部 (前 55% 低分群，保證排除右尾端潛在 Escape 瑕疵)
-    half_n = max(1, int(np.ceil(n * 0.55)))
+    # 取非 Golden 盲池左半部 50% 低分群的中位數作為 mu_unseen，徹底杜絕右半部異常晶圓污染
+    half_n = max(1, int(np.ceil(n * 0.50)))
     lower_half = sorted_pool[:half_n]
-    med_pool = float(np.median(sorted_pool))
-    g_med = float(np.median(g_arr)) if g_arr.size > 0 else float(np.median(lower_half))
+    mu_unseen = float(np.median(lower_half))
+    g_med = float(np.median(g_arr)) if g_arr.size > 0 else mu_unseen
 
-    # 以非 Golden 左半群的 P75 (約全池 P40) 作為未見過正常樣本的核心基準 mu_unseen
-    mu_unseen = float(np.percentile(lower_half, 75.0)) if lower_half.size >= 4 else float(np.median(lower_half))
-
-    # 若 Golden 分數高於 mu_unseen (例如部分切塊晶圓)，適度參考 Golden；
-    # 若 Golden 因整張記憶效應遠低於 mu_unseen，則以 mu_unseen 為主，絕不向下硬拉！
-    if g_arr.size > 0 and g_med > mu_unseen:
-        mu_core = float(min(med_pool, 0.5 * mu_unseen + 0.5 * g_med))
+    # 若 Golden 與盲池正常核心差距在合理範圍內 (<1.8x，如公司大圖切塊晶圓)，平滑融合兩者；
+    # 若發生整張原圖記憶效應 (Golden 極低分)，則 100% 鎖定 mu_unseen
+    if g_arr.size > 0 and (mu_unseen / max(g_med, 1e-4) < 1.8):
+        mu_core = float(0.65 * mu_unseen + 0.35 * g_med)
     else:
         mu_core = mu_unseen
 
-    # 計算相對於 mu_core 的左半部單邊離散度 sigma_left (不受右側高分瑕疵污染)
     left_of_mu = sorted_pool[sorted_pool <= mu_core]
     left_diffs = mu_core - left_of_mu
     if left_diffs.size >= 2:
@@ -1196,18 +1217,14 @@ def estimate_blind_normal_core_stats(
     else:
         sigma_left = float(np.std(lower_half)) if lower_half.size > 1 else 0.015
 
-    # 結合下半部 IQR 穩健標準差，防止小樣本低估正常波動
     if lower_half.size >= 4:
         lower_iqr_std = float((np.percentile(lower_half, 75.0) - np.percentile(lower_half, 25.0)) / 1.349)
-        sigma_left = max(sigma_left, lower_iqr_std * 0.85)
+        sigma_left = max(sigma_left, lower_iqr_std * 0.80)
 
-    if g_arr.size > 1:
-        g_iqr = float((np.percentile(g_arr, 75.0) - np.percentile(g_arr, 25.0)) / 1.349)
-        sigma_left = max(sigma_left, float(np.std(g_arr)), g_iqr)
+    # 放寬上限至 0.14，確保遇到跨批號光照偏移 (如不同機台曝光) 時不會被硬截斷在 0.075
+    sigma_left = float(np.clip(sigma_left, 0.012, 0.14))
 
-    sigma_left = float(np.clip(sigma_left, 0.012, 0.075))
-
-    est_normal_mask = sorted_pool <= (mu_core + 3.0 * sigma_left)
+    est_normal_mask = sorted_pool <= (mu_core + 2.5 * sigma_left)
     est_normal_arr = sorted_pool[est_normal_mask] if np.any(est_normal_mask) else lower_half
     return mu_core, sigma_left, g_med, est_normal_arr
 
@@ -1222,7 +1239,6 @@ def compute_dynamic_effective_threshold(
     sigma_k: float,
     top_k: int,
 ) -> Tuple[float, str]:
-    """計算真無 GT 盲池最終異常判定門檻 (支援跨批號微偏移與排除 Golden 記憶效應)。"""
     mode = thresh_mode.lower().strip()
     scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
     g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
@@ -1234,29 +1250,25 @@ def compute_dynamic_effective_threshold(
         golden_scores=golden_scores,
     )
 
-    left_stat_bound = float(mu_core + sigma_k * sigma_left)
-
-    if g_arr.size > 0:
-        g_mean = float(np.mean(g_arr))
-        g_max = float(np.max(g_arr))
-        g_std = max(float(np.std(g_arr)) if g_arr.size > 1 else 0.012, 0.012)
-        golden_ref_bound = max(g_mean + sigma_k * max(g_std, sigma_left), g_max * 1.08 + 0.015)
-        # 安全上限以 mu_core (未見過正常核心) 與 g_max 的較大者為基準，避免 4-shot 記憶效應壓低上限
-        effective_base = max(mu_core, g_max)
-        golden_safety_cap = max(
-            effective_base * 1.35 + 0.05,
-            mu_core + (sigma_k + 2.0) * sigma_left,
-            float(min_threshold) + 0.06,
-        )
-    else:
-        golden_ref_bound = left_stat_bound
-        golden_safety_cap = max(mu_core + (sigma_k + 2.0) * sigma_left, float(min_threshold) + 0.08)
-
-    calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
+    # 自動保護：公司大池 (>=60張) 完整採用設定之 sigma_k (3.5)；小測試池 (<60張) 自動限制在 <=3.5，防止門檻失控
+    eff_sigma_k = min(float(sigma_k), 3.5) if scores_arr.size < 60 else float(sigma_k)
+    left_stat_bound = float(mu_core + eff_sigma_k * sigma_left)
 
     p_clip = float(np.clip(auto_percentile, 50.0, 99.9))
     p_val_core = float(np.percentile(est_normal_arr, p_clip))
     p_val_raw = float(np.percentile(scores_arr, p_clip))
+
+    if g_arr.size > 0:
+        g_max = float(np.max(g_arr))
+        # Golden 基準上界僅作為「不能比 Golden 最高分還低」的防誤殺底線 (g_max * 1.05 + 0.015)，
+        # 絕不再加上 sigma_k * g_std，徹底修復門檻暴衝到 1.1500 吃掉微瑕疵的 Bug！
+        golden_ref_bound = g_max * 1.05 + 0.015
+        golden_safety_cap = max(p_val_core * 1.18 + 0.02, left_stat_bound)
+    else:
+        golden_ref_bound = left_stat_bound
+        golden_safety_cap = left_stat_bound
+
+    calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
 
     topk_bound = 0.0
     if top_k > 0 and scores_arr.size > top_k:
@@ -1271,27 +1283,21 @@ def compute_dynamic_effective_threshold(
     elif mode == "mean_std":
         eff = max(float(min_threshold), calibrated_bound, topk_bound) if top_k > 0 else max(float(min_threshold), calibrated_bound)
         desc = (
-            f"Left-Core + Golden 雙重校準統計門檻 (mu_core+{sigma_k:g}*σ_left) = {eff:.4f} "
-            f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, Golden_Med={g_med:.4f}, "
-            f"LeftBound={left_stat_bound:.4f}, GoldenBound={golden_ref_bound:.4f}"
-            f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
+            f"Left-Core + Golden 雙重校準統計門檻 (mu_core+{eff_sigma_k:g}*σ_left) = {eff:.4f} "
+            f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, Golden_Med={g_med:.4f}]"
         )
     elif mode == "percentile":
         eff = max(float(min_threshold), min(p_val_raw, golden_safety_cap), topk_bound)
-        desc = (
-            f"Auto-P{auto_percentile:g} 動態分位數門檻 = {eff:.4f} "
-            f"(Core_P{auto_percentile:g}={p_val_core:.4f}, Raw_P{auto_percentile:g}={p_val_raw:.4f}, "
-            f"SafetyCap={golden_safety_cap:.4f})"
-        )
+        desc = f"Auto-P{auto_percentile:g} 動態分位數門檻 = {eff:.4f}"
     elif mode == "top_k":
         eff = max(float(min_threshold), topk_bound if top_k > 0 else calibrated_bound)
-        desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f} (TopK_Bound={topk_bound:.4f}, MinFloor={min_threshold:.4f})"
+        desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f}"
     else:
         hybrid_stat = max(floor_val, calibrated_bound, min(p_val_core, golden_safety_cap))
         eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
         desc = (
             f"Hybrid 真無GT雙重校準動態門檻 = {eff:.4f} "
-            f"[未見過正常核心上界(mu+{sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
+            f"[未見過正常核心上界(mu+{eff_sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
             f"Golden基準上界={golden_ref_bound:.4f}, Core_P{auto_percentile:g}={p_val_core:.4f}, "
             f"MinFloor={floor_val:.4f}"
             f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"

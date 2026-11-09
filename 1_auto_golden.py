@@ -751,8 +751,9 @@ def select_golden_images(
     photo_penalty = 0.015 * np.maximum(0.0, photo_z - 1.0) + 0.045 * np.maximum(0.0, photo_z - 1.8)
     shift_penalty = 0.012 * np.maximum(0.0, shift_z - 0.8) + 0.035 * np.maximum(0.0, shift_z - 1.6)
     # [強化] 提高跨片局部異常 (patch_anom_z) 與單點尖峰 (spike_z) 的懲罰權重，嚴格攔截細微裂痕或微粒混入 Golden
-    patch_penalty = 0.025 * np.clip(patch_anom_z, 0.0, 6.0) + 0.040 * np.maximum(0.0, patch_anom_z - 1.2)
-    spike_penalty = 0.012 * np.clip(spike_z, 0.0, 6.0) + 0.025 * np.maximum(0.0, spike_z - 1.2)
+    # 1_auto_golden.py 約第 515 行：強化局部異常懲罰，嚴防裂痕圖混入 Golden
+    patch_penalty = 0.045 * np.clip(patch_anom_z, 0.0, 6.0) + 0.080 * np.maximum(0.0, patch_anom_z - 1.0)
+    spike_penalty = 0.025 * np.clip(spike_z, 0.0, 6.0) + 0.050 * np.maximum(0.0, spike_z - 1.0)
 
     hybrid_centrality = (
         0.55 * raw_centrality
@@ -1170,6 +1171,44 @@ def prepare_tiled_golden_trainset(
 
     eff_trigger = max(tile_size, min_tile_trigger)
     if max(h0, w0) <= eff_trigger:
+        # [重要升級] 即使保持整張原圖訓練，依然載入 Stage 1 的 16 張候選池進行局部峰值與 DINO 純淨度投票！
+        if cand_records and len(cand_records) > shots:
+            c_imgs, valid_c_recs = [], []
+            for rec in cand_records:
+                try:
+                    c_imgs.append(load_image_rgb_uint8(rec["abs_path"]))
+                    valid_c_recs.append(rec)
+                except Exception:
+                    pass
+            if len(c_imgs) >= shots:
+                s1_priors = [float(r.get("hybrid_score", 1.0)) for r in valid_c_recs]
+                coord_items = [(0, 0, 0.0, [(idx, im) for idx, im in enumerate(c_imgs)])]
+                _, p_stats = purify_golden_tiles_two_stage(
+                    coord_Execution_items=coord_items,
+                    max_train_tiles=shots,
+                    ckpt_path=ckpt_path,
+                    num_candidates=len(c_imgs),
+                    shots=shots,
+                    stage1_priors=s1_priors,
+                )
+                win_indices = p_stats["winning_cand_indices"]
+                for f in os.listdir(cat_train_dir):
+                    if f.lower().endswith(IMG_EXTENSIONS):
+                        os.remove(os.path.join(cat_train_dir, f))
+                initial_files = []
+                rec_txt = os.path.join(shot_dir, f"selected_{shots}_golden_images.txt")
+                with open(rec_txt, "w", encoding="utf-8") as fw:
+                    fw.write(f"=== Stage 2 Full-Image Purified Golden Images (from {len(c_imgs)} Candidates) ===\n")
+                    for g_i, c_idx in enumerate(win_indices):
+                        rec = valid_c_recs[c_idx]
+                        ext = os.path.splitext(rec["abs_path"])[1].lower()
+                        dst_p = os.path.join(cat_train_dir, f"{g_i:03d}{ext}")
+                        safe_copy(rec["abs_path"], dst_p)
+                        initial_files.append(dst_p)
+                        line = f"Golden #{g_i+1} (-> {g_i:03d}{ext}): {rec['rel_path']} | Stage1_Score: {rec['hybrid_score']:.6f}"
+                        log_and_print("  [整張純化勝出] " + line, log_files)
+                        fw.write(line + "\n")
+
         for p in initial_files[:shots]:
             safe_copy(p, os.path.join(full_backup_dir, os.path.basename(p)))
         log_and_print(
@@ -1179,7 +1218,7 @@ def prepare_tiled_golden_trainset(
         )
         purity_txt_path = os.path.join(shot_dir, "golden_tile_purity_report.txt")
         lines = [
-            "=== Stage 2: Full-Image Spatial Alignment Mode (No Sub-Tile Fragmentation) ===",
+            "=== Stage 2: Full-Image Spatial Alignment Mode (With Candidate Pool Purification) ===",
             f"Original Image Resolution : {w0}x{h0} (<= {eff_trigger}px trigger)",
             f"Retained Full Golden Imgs : {len(initial_files)}",
         ]

@@ -1,0 +1,27 @@
+=== FoundAD Split Eval Report — Pack #3 (eval_pack_3) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_tile/infer_mvtec_sim_tile_4shot_tile_20261108_210712_843
+Score Mode: MICRO_DEFECT_SENSITIVE | Threshold Mode: hybrid | Threshold Policy: PACK_LOCAL_RECOMPUTED
+Effective Threshold (Used)  : 0.1898 (Pack_Local_Thresh=0.1898 vs Global_Pool_Thresh=0.2027, Diff=-0.0129)
+Pack Local Thresh Detail    : Pack獨立重算 Hybrid 雙重校準門檻 = 0.1703 [mu_core=0.0953, σ_left=0.0150, LeftBound=0.1703, GoldenBound=0.0934, Core_P95=0.1226] [小樣本平滑融合 α=0.40 with Global=0.2027]
+Pack Total Images: 13 | Exported Anomaly Images: 1 | Skipped Normal Images: 12
+Normal False Positives (FPR): 0/9 (0.00%) | Escape Caught (Recall): 1/1 (100.00%)
+Non-Golden Normal Score Dist: Max=0.1239 | P99=0.1237 | P95=0.1226 | Median=0.0953 | Mean=0.0989 | Std=0.0176
+Ablation Compare (Normal)   : Raw_Max=0.1299, Raw_Mean=0.1015 vs Filtered_Max=0.1239, Filtered_Mean=0.0989
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.1165 | mean+2*std=0.1341 | mean+3*std=0.1516
+Overfit Diagnostic          : 🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償) (Golden_Mean=0.0190, BlindNormal_Med=0.1049, Ratio=5.37x, Gap=+0.0828)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Global_Status       | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 7      | escape_crack_000.png       | ANOMALY             | ANOMALY             | 0.2160    | 0.2109    | 0.2160     | +0.0052  | 2      | Rank007_Score0.2160_Box02_escape_crack_000.png
+2      | 17     | clean_005.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1239    | 0.1182    | 0.1239     | +0.0057  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+3      | 18     | clean_017.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1205    | 0.1153    | 0.1205     | +0.0052  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+4      | 20     | clean_002.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1160    | 0.1299    | 0.1160     | -0.0139  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+5      | 22     | clean_025.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1056    | 0.1147    | 0.1056     | -0.0091  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+6      | 25     | clean_027.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0953    | 0.0909    | 0.0953     | +0.0045  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+7      | 26     | clean_014.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0951    | 0.0910    | 0.0951     | +0.0041  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+8      | 33     | clean_018.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0794    | 0.0770    | 0.0794     | +0.0024  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+9      | 34     | clean_023.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0789    | 0.0907    | 0.0789     | -0.0118  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+10     | 36     | clean_007.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0757    | 0.0861    | 0.0757     | -0.0104  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+11     | 39     | clean_004.png              | GOLDEN_PASS         | GOLDEN_PASS         | 0.0190    | 0.0184    | 0.0190     | +0.0006  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+12     | 40     | clean_010.png              | GOLDEN_PASS         | GOLDEN_PASS         | 0.0181    | 0.0200    | 0.0181     | -0.0018  | 0      | (未超過本包獨立動態門檻，不輸出圖片)
+13     | 41     | clean_003.png              | GOLDEN_PASS         | GOLDEN_PASS         | 0.0180    | 0.0186    | 0.0180     | -0.0006  | 0      | (未超過本包獨立動態門檻，不輸出圖片)

@@ -1,0 +1,29 @@
+{
+  "data_name": "mvtec_2_sim_can_4shot",
+  "category": "can",
+  "diy_name": "sim_escape_mvtec_2_can",
+  "actual_step": 2000,
+  "golden_filenames": [
+    "clean_008_regular.png",
+    "clean_000_regular.png",
+    "clean_006_overexposed.png",
+    "clean_008_overexposed.png"
+  ],
+  "num_train_samples": 48,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "golden_select_sec": 0.0,
+  "train_tile_sec": 0.0,
+  "model_train_sec": 0.0,
+  "total_train_time": 0.0,
+  "ckpt_dirs": [
+    "/home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can"
+  ],
+  "ckpt_files": [
+    "/home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/train-step2000.pth.tar",
+    "/home/kenny/project/FoundAD/logs/mvtec_2_sim_can_4shot/dinov3sim_escape_mvtec_2_can/pretrained.pth.tar"
+  ],
+  "run_out_dir": "/home/kenny/project/FoundAD/output/2_fab_no_gt_mvtec_2_can/train_mvtec_2_sim_can_4shot_can_20261108_210558_399",
+  "timestamp": "20261108_210558_399",
+  "timezone": "Asia/Taipei (UTC+8)"
+}
