@@ -1,0 +1,21 @@
+{
+  "pool_signature": "5204fc2f1c4236aba813e70e96532e29",
+  "category": "transistor",
+  "shots": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "tile_size": 512,
+  "tile_overlap": 64,
+  "max_train_tiles": 48,
+  "disable_tiling": false,
+  "min_tile_trigger": 1280,
+  "golden_filenames": [
+    "clean_036.png",
+    "clean_041.png",
+    "escape_bent_lead_005.png",
+    "clean_058.png"
+  ],
+  "num_train_samples": 4,
+  "golden_select_sec": 2.8379197840113193,
+  "train_tile_sec": 0.5495687410002574
+}

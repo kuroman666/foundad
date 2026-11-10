@@ -1,0 +1,3 @@
+=== Stage 2: Full-Image Spatial Alignment Mode (With Candidate Pool Purification) ===
+Original Image Resolution : 900x900 (<= 1280px trigger)
+Retained Full Golden Imgs : 4

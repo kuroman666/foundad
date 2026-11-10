@@ -1,0 +1,21 @@
+{
+  "pool_signature": "eaa7972dde48cb6ea97f7262e2037cd5",
+  "category": "bottle",
+  "shots": 4,
+  "candidate_pool_size": 16,
+  "max_coarse_scan": 250,
+  "tile_size": 512,
+  "tile_overlap": 64,
+  "max_train_tiles": 48,
+  "disable_tiling": false,
+  "min_tile_trigger": 1280,
+  "golden_filenames": [
+    "clean_001.png",
+    "clean_004.png",
+    "clean_011.png",
+    "clean_003.png"
+  ],
+  "num_train_samples": 4,
+  "golden_select_sec": 1.41392800596077,
+  "train_tile_sec": 0.45535805099643767
+}

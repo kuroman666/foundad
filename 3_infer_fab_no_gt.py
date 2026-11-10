@@ -47,49 +47,70 @@ def get_free_port() -> int:
 
 def _ensure_offline_hub_patch_dir() -> str:
     """
-    建立 sitecustomize.py 自動攔截 torch.hub.load(source='github')：
-    優先從本地 ~/.cache/torch/hub 離線載入 DINOv3/DINOv2，徹底杜絕 GitHub HTTP 504 Gateway Time-out！
+    建立 sitecustomize.py 自動攔截 torch.hub.load：
+    優先從專案目錄 ./hub_cache 與本地 ~/.cache/torch/hub 離線載入 DINOv3/DINOv2，
+    徹底支援公司內網完全無外網 (Air-Gapped) 環境！
     """
     patch_dir = os.path.abspath("./.offline_hub_patch")
     os.makedirs(patch_dir, exist_ok=True)
     sc_path = os.path.join(patch_dir, "sitecustomize.py")
-    code = '''import os
+    project_root = os.path.abspath(os.path.dirname(__file__))
+
+    code = f'''import os
 import glob
+PROJECT_ROOT = {repr(project_root)}
 try:
     import torch.hub
     _orig_hub_load = torch.hub.load
 
-    def _safe_hub_load(repo_or_dir, model, *args, **kwargs):
-        if kwargs.get("source", "github") == "github" and isinstance(repo_or_dir, str) and "/" in repo_or_dir:
-            hub_dir = torch.hub.get_dir()
-            owner, repo = repo_or_dir.split("/")[:2]
-            cands = sorted(glob.glob(os.path.join(hub_dir, f"{owner}_{repo}_*")))
-            for c in cands:
+    def _find_local_repo(repo_or_dir):
+        search_roots = [
+            os.path.join(PROJECT_ROOT, "hub_cache"),
+            os.path.abspath("./hub_cache"),
+            torch.hub.get_dir(),
+            os.path.expanduser("~/.cache/torch/hub"),
+        ]
+        owner, repo = ("", "")
+        if isinstance(repo_or_dir, str) and "/" in repo_or_dir:
+            parts = repo_or_dir.split("/")
+            owner, repo = parts[0], parts[1].split(":")[0]
+
+        for root in search_roots:
+            if not os.path.isdir(root):
+                continue
+            if owner and repo:
+                for pat in [f"{{owner}}_{{repo}}_*", f"*{{repo}}*"]:
+                    for c in sorted(glob.glob(os.path.join(root, pat))):
+                        if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
+                            return c
+            for c in sorted(glob.glob(os.path.join(root, "*dino*"))):
                 if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
-                    try:
-                        kw_local = dict(kwargs)
-                        kw_local["source"] = "local"
-                        return _orig_hub_load(c, model, *args, **kw_local)
-                    except Exception:
-                        pass
+                    return c
+        return None
+
+    def _safe_hub_load(repo_or_dir, model, *args, **kwargs):
+        if kwargs.get("source", "github") == "github":
+            local_dir = _find_local_repo(repo_or_dir)
+            if local_dir is not None:
+                kw_local = dict(kwargs)
+                kw_local["source"] = "local"
+                return _orig_hub_load(local_dir, model, *args, **kw_local)
         try:
             return _orig_hub_load(repo_or_dir, model, *args, **kwargs)
         except Exception:
-            hub_dir = torch.hub.get_dir()
-            for c in sorted(glob.glob(os.path.join(hub_dir, "*dino*"))):
-                if os.path.isdir(c) and os.path.isfile(os.path.join(c, "hubconf.py")):
-                    kw_local = dict(kwargs)
-                    kw_local["source"] = "local"
-                    return _orig_hub_load(c, model, *args, **kw_local)
+            local_dir = _find_local_repo(repo_or_dir)
+            if local_dir is not None:
+                kw_local = dict(kwargs)
+                kw_local["source"] = "local"
+                return _orig_hub_load(local_dir, model, *args, **kw_local)
             raise
 
     torch.hub.load = _safe_hub_load
 except Exception:
     pass
 '''
-    if not os.path.isfile(sc_path):
-        with open(sc_path, "w", encoding="utf-8") as f:
-            f.write(code)
+    with open(sc_path, "w", encoding="utf-8") as f:
+        f.write(code)
     return patch_dir
 
 
