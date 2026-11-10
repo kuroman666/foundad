@@ -1,0 +1,33 @@
+===================================================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All 3 Split Evaluations Comparison)]
+-------------------------------------------------------------------------------------------------------------------
+  📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991
+  📂 拆分結果根目錄   : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs
+  🖼️ 拆分數量核對     : 各包張數 [11, 10, 10] (加總=31 張 / 資料集總數=31 張)
+  🎚️ 門檻判定策略     : 各包獨立重算動態門檻 (PACK_LOCAL_RECOMPUTED) | 全池基準門檻=0.5325 (Mode: hybrid, Score: MICRO_DEFECT_SENSITIVE)
+-------------------------------------------------------------------------------------------------------------------
+Eval包名稱      | 總張數    | 非Golden正常    | 實際採用門檻       | 本包獨立門檻       | 正常誤報(FPR)        | 抓出Escape瑕疵      | Normal Mean±Std  | mean+3*std
+-------------------------------------------------------------------------------------------------------------------
+eval_pack_1  | 11     | 9            | 0.3895       | 0.3895       | 2/9 (22.2%)      | 0/1 (0.0%)      | 0.3367±0.3307    | 1.3289
+eval_pack_2  | 10     | 7            | 0.6362       | 0.6362       | 6/7 (85.7%)      | 0/2 (0.0%)      | 0.8712±0.3005    | 1.7726
+eval_pack_3  | 10     | 3            | 0.6986       | 0.6986       | 1/3 (33.3%)      | 4/5 (80.0%)     | 0.5259±0.3082    | 1.4505
+-------------------------------------------------------------------------------------------------------------------
+  🔹 [eval_pack_1] (共 11 張, 輸出異常紅框圖 2 張)
+     ├── 門檻對照       : 實際採用=0.3895 | 本包獨立重算(Local)=0.3895 | 全池統一(Global)=0.5325
+     ├── 正常圖分數分佈 : Max=0.9536 | P99=0.9532 | P95=0.9517 | Median=0.1714 | Mean=0.3367 | Std=0.3307
+     ├── 門檻參考值     : mean+1*std=0.6674 | mean+2*std=0.9982 | mean+3*std=1.3289
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs/eval_pack_1/anomaly_images
+  🔹 [eval_pack_2] (共 10 張, 輸出異常紅框圖 6 張)
+     ├── 門檻對照       : 實際採用=0.6362 | 本包獨立重算(Local)=0.6362 | 全池統一(Global)=0.5325
+     ├── 正常圖分數分佈 : Max=1.1224 | P99=1.1185 | P95=1.1026 | Median=0.9465 | Mean=0.8712 | Std=0.3005
+     ├── 門檻參考值     : mean+1*std=1.1717 | mean+2*std=1.4722 | mean+3*std=1.7726
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs/eval_pack_2/anomaly_images
+  🔹 [eval_pack_3] (共 10 張, 輸出異常紅框圖 5 張)
+     ├── 門檻對照       : 實際採用=0.6986 | 本包獨立重算(Local)=0.6986 | 全池統一(Global)=0.5325
+     ├── 正常圖分數分佈 : Max=0.9253 | P99=0.9163 | P95=0.8805 | Median=0.4774 | Mean=0.5259 | Std=0.3082
+     ├── 門檻參考值     : mean+1*std=0.8341 | mean+2*std=1.1423 | mean+3*std=1.4505
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule/infer_mvtec_sim_capsule_4shot_capsule_20261110_202722_991/split_eval_3packs/eval_pack_3/anomaly_images
+===================================================================================================================
