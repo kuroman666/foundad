@@ -143,6 +143,30 @@ def load_image_bgr_uint8(img_path: str) -> np.ndarray:
     rgb = load_image_rgb_uint8(img_path)
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
+def _print_inline_progress(
+    stage_title: str,
+    current: int,
+    total: int,
+    start_t: float,
+    extra_info: str = "",
+    bar_len: int = 24,
+) -> None:
+    """在終端機單行即時更新視覺化進度條 (含百分比、處理速度與預估剩餘時間 ETA)。"""
+    total = max(1, total)
+    elapsed = max(1e-4, time.perf_counter() - start_t)
+    rate = current / elapsed
+    eta_sec = max(0.0, (total - current) / max(rate, 1e-6))
+    pct = min(100.0, (current / total) * 100.0)
+    filled = int(round(bar_len * current / total))
+    bar = "█" * filled + "░" * (bar_len - filled)
+    eta_str = format_duration(eta_sec) if current < total else "0.00秒"
+    el_str = format_duration(elapsed)
+    extra_str = f" | {extra_info}" if extra_info else ""
+    msg = (
+        f"\r⏳ [{stage_title}] |{bar}| {current}/{total} ({pct:5.1f}%) "
+        f"[{el_str}<{eta_str}, {rate:5.2f}張/s]{extra_str}   "
+    )
+    print(msg, end="" if current < total else "\n", flush=True)
 
 def _resolve_custom_trained_ckpt_file(trained_ckpt: str, req_step: int) -> Tuple[str, int, str]:
     ckpt_path = os.path.abspath(os.path.expanduser(trained_ckpt.strip()))
@@ -697,7 +721,10 @@ def prepare_tiled_test_pool(
     full_1to1_imgs = 0
     tiled_highres_imgs = 0
 
-    for fpath in img_paths:
+    num_pool_imgs = len(img_paths)
+    t_tile_loop_start = time.perf_counter()
+    print(f"\n[Tiling-Test] 開始準備 {num_pool_imgs} 張測試原圖之推論圖塊...", flush=True)
+    for img_idx, fpath in enumerate(img_paths, 1):
         rel_fname = os.path.relpath(fpath, pool_dir).replace("\\", "/")
         rel_no_ext = os.path.splitext(rel_fname)[0]
         stem = re.sub(r"[\\/]+", "__", rel_no_ext)
@@ -720,8 +747,18 @@ def prepare_tiled_test_pool(
             full_1to1_imgs += 1
         else:
             tiled_highres_imgs += 1
-        gc.collect()
-
+        if img_idx == 1 or img_idx % 5 == 0 or img_idx == num_pool_imgs:
+            _print_inline_progress(
+                stage_title="Step 1/3 測試池切塊",
+                current=img_idx,
+                total=num_pool_imgs,
+                start_t=t_tile_loop_start,
+                extra_info=f"累計圖塊: {total_tiles} (略過背景: {skipped_bg_tiles})",
+            )
+        if img_idx % 25 == 0:
+            gc.collect()
+    gc.collect()
+    
     ext_golden_tiles = 0
     if external_golden_paths:
         for g_idx, g_path in enumerate(external_golden_paths):
@@ -1427,6 +1464,9 @@ def stitch_and_filter_anomalies(
     non_golden_all_scores = []
     ext_golden_score_logs = []
 
+    total_manifest_imgs = len(manifest["images"])
+    t_stitch_loop_start = time.perf_counter()
+
     for idx, (fname, meta) in enumerate(manifest["images"].items(), 1):
         is_ext_golden = bool(meta.get("is_external_golden", False))
         is_golden_img = is_ext_golden or (fname in golden_set) or (os.path.basename(fname) in golden_set)
@@ -1509,6 +1549,15 @@ def stitch_and_filter_anomalies(
                 "top_k_score": top_k_score,
             }
         )
+
+        if idx == 1 or idx % 5 == 0 or idx == total_manifest_imgs:
+            _print_inline_progress(
+                stage_title="Step 3.1 RAM縫合與濾波",
+                current=idx,
+                total=total_manifest_imgs,
+                start_t=t_stitch_loop_start,
+                extra_info=f"最新分數={active_max_score:.4f}",
+            )
         if idx % 25 == 0:
             gc.collect()
 
