@@ -5,7 +5,7 @@ set -e
 
 # ===================== [可自由修改的參數區] =====================
 OUTPUT_ROOT="./output"
-DATASETS_DIR="./datasets"
+DATASETS_DIR="./data"
 DINO_CKPT_PATH="auto"                 # 廠外自動從 ~/.cache/torch/hub 或 ./hub_cache 搜尋權重
 
 if [ $# -ge 1 ]; then
