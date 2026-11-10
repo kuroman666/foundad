@@ -1,3 +1,8 @@
+從頭全跑的指令:
+run_inside.sh “資料集絕對路徑”
+
+
+
 run_1_auto_golden.sh用法介紹:
 
 指令說明:
