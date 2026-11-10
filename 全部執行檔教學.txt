@@ -1,0 +1,43 @@
+run_1_auto_golden.sh用法介紹:
+
+指令說明:
+bash run_1_auto_golden.sh "你的DATASET名稱" "你的LAYER名稱" "/你的/影像池/絕對路徑"
+
+
+
+run_2_train_fab_no_gt.sh用法介紹:
+
+情況 1：目前未訓練過，要用第一次挑的 Golden Image 進行第一次訓練(防呆機制確實已經寫好，只要不改任何檔案，直接下 bash run_2_train_fab_no_gt.sh 指令，且確保「第 2 個參數 (LAYER_ID)」與當初抓 Golden Image 時完全一致，程式就絕對不會重新抓 Golden Image，會直接開始進行第一次訓練)
+指令說明:
+bash run_2_train_fab_no_gt.sh "你的DATASET名稱" "你的LAYER名稱" "/你的/影像池/絕對路徑"
+
+情況 2：已訓練過，想用「已挑過並訓練過的 Golden Image」進行第二次訓練
+要透過 bash run_2_train_fab_no_gt.sh 沿用同一批 Golden Image 強制進行第二次訓練，必須在run_2_train_fab_no_gt.sh中改 --force_train（且確認沒有加到 --rebuild_golden，才不會把舊的 Golden 洗掉）
+指令說明:
+bash run_2_train_fab_no_gt.sh "這次的DATASET名稱" "與第一次相同的LAYER名稱" "/存在的/影像池路徑"
+
+
+
+run_3_infer_fab_no_gt.sh用法介紹:
+(用於推論已有"golden image和訓練權重檔"的資料集)
+
+指令範例:
+bash run_3_infer_fab_no_gt.sh \
+  " (自訂的名稱)要推論的新資料" \   # (自訂的名稱)要推論的新資料集
+  "(自訂的名稱)要推論的新資料集的laye" \ # (自訂的名稱)要推論的新資料集的layer
+  "(路徑)要推論的新資料集" \  # (路徑)要推論的新資料集
+  "(路徑)上次的 Golden Image" \  # (路徑)上次的 Golden Image
+  "(路徑) 上次的權重檔" # (路徑) 上次的權重檔
+
+
+
+run_4_split_eval_results.sh用法介紹:
+
+情境 1：直接指定已推論好的 CSV 檔案絕對路徑（含檔名），切成 3 包，每包各 700, 700, 600 張（自動使用預設 random_seed=42）
+bash run_4_split_eval_results.sh "" "" "/abs/path/to/results/20261110_1200/escape_ranking_report.csv" 3 "700,700,600"
+
+情境 2：指定絕對路徑，切成 4 包，每包固定 500 張，並明確指定 random_seed=42
+bash run_4_split_eval_results.sh "" "" "/abs/path/to/results/20261110_1200/escape_ranking_report.csv" 4 "500" 42
+
+情境 3：指定絕對路徑，切成 5 包，不指定張數（讓程式自動依比例均分）
+bash run_4_split_eval_results.sh "" "" "/abs/path/to/results/20261110_1200/escape_ranking_report.csv" 5 ""
