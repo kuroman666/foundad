@@ -22,8 +22,11 @@ TILE_SIZE=512            # Stage 2 子圖塊像素大小 (512 對應模型 1:1 �
 TILE_OVERLAP=64          # 相鄰圖塊重疊像素寬度
 MAX_TRAIN_TILES=48       # Stage 2 最終保留的代表性純淨訓練圖塊上限
 BG_STD_THRESH=1.5        # 過濾純黑/純白背景角落塊的標準差門檻
-DISABLE_TILING=""        # 若不切塊想直接用整張原圖，設為 "--disable_tiling"
-MOCK_FROM_MVTEC=""       # 若在公司外想從 MVTec 建立模擬盲池，可填 "./datasets/mvtec/capsule"
+
+# 流程控制旗標 (防呆機制：預設 REBUILD_GOLDEN="" 發現已有 Golden Image 時自動略過不重抓)
+REBUILD_GOLDEN=""  # 若想強制重跑 Golden 挑選與純化，可設為 "--rebuild_golden"
+DISABLE_TILING=""  # 若不切塊想直接用整張原圖，設為 "--disable_tiling"
+MOCK_FROM_MVTEC="" # 若在公司外想從 MVTec 建立模擬盲池，可填 "./datasets/mvtec/capsule"
 
 DATA_NAME="wafer_${LAYER_ID}_${SHOTS}shot"
 # ==============================================================================
