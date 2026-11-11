@@ -1,5 +1,5 @@
 # 檔案位置: FoundAD/3_infer_fab_no_gt.py
-# (全選覆蓋此檔：升級自適應未見過正常核心門檻估計、支援跨資料集 Golden/權重與離線防 504 保護)
+# (全選覆蓋此檔：升級自適應未見過正常核心門檻估計、嚴格限制異常比例 <= 5%、支援跨資料集 Golden/權重與離線防 504 保護)
 import shlex
 import os
 import re
@@ -164,6 +164,7 @@ def load_image_bgr_uint8(img_path: str) -> np.ndarray:
     rgb = load_image_rgb_uint8(img_path)
     return cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
 
+
 def _print_inline_progress(
     stage_title: str,
     current: int,
@@ -185,9 +186,10 @@ def _print_inline_progress(
     extra_str = f" | {extra_info}" if extra_info else ""
     msg = (
         f"\r⏳ [{stage_title}] |{bar}| {current}/{total} ({pct:5.1f}%) "
-        f"[{el_str}<{eta_str}, {rate:5.2f}張/s]{extra_str}   "
+        f"[{el_str}<{eta_str}, {rate:5.2f}張/s]{extra_str} "
     )
     print(msg, end="" if current < total else "\n", flush=True)
+
 
 def _resolve_custom_trained_ckpt_file(trained_ckpt: str, req_step: int) -> Tuple[str, int, str]:
     ckpt_path = os.path.abspath(os.path.expanduser(trained_ckpt.strip()))
@@ -280,7 +282,7 @@ def prepare_ckpt_for_demo(
 
         log_and_print(
             f"[Custom-Ckpt] 已載入指定訓練權重: {src_ckpt_file} (step={chosen_step})\n"
-            f"              並自動對接至推論目錄: {ckpt_dirs[0]}",
+            f" 並自動對接至推論目錄: {ckpt_dirs[0]}",
             log_files,
         )
         return chosen_step, ckpt_dirs, ckpt_files
@@ -305,7 +307,7 @@ def prepare_ckpt_for_demo(
             pretrained_alias = os.path.join(d, "pretrained.pth.tar")
             if os.path.abspath(target_ckpt) != os.path.abspath(pretrained_alias):
                 safe_copy(target_ckpt, pretrained_alias)
-            
+
             # [新增防呆] 若找到的權重目錄名稱與當前 diy_name 不同，自動同步權重與 params.yaml 至目標目錄
             expected_dir = os.path.join("./logs", data_name, f"dinov3{diy_name}")
             if os.path.abspath(d) != os.path.abspath(expected_dir):
@@ -460,7 +462,12 @@ def setup_custom_golden_for_infer(
         os.makedirs(full_backup_dir, exist_ok=True)
         for i, src_p in enumerate(custom_golden_paths):
             ext = os.path.splitext(src_p)[1].lower()
-            dst_p = os.path.join(full_backup_dir, f"{i:03d}_{os.path.basename(src_p)}" if not re.match(r"^\d{3}", os.path.basename(src_p)) else os.path.basename(src_p))
+            dst_p = os.path.join(
+                full_backup_dir,
+                f"{i:03d}_{os.path.basename(src_p)}"
+                if not re.match(r"^\d{3}", os.path.basename(src_p))
+                else os.path.basename(src_p),
+            )
             safe_copy(src_p, dst_p)
 
     if existing_train_tiles_dir and os.path.abspath(existing_train_tiles_dir) != os.path.abspath(cat_train_dir):
@@ -523,8 +530,8 @@ def setup_custom_golden_for_infer(
 
     log_and_print(
         f"[Custom-Golden] 已載入指定的 {len(custom_golden_paths)} 張 Golden Image 來源: {golden_src}\n"
-        f"                ├── 清單: {', '.join([os.path.basename(p) for p in custom_golden_paths])}\n"
-        f"                └── 跨資料集外部基準圖數量: {len(external_golden_paths)} 張 (將自動注入推論池以校準動態門檻與結構容差)",
+        f" ├── 清單: {', '.join([os.path.basename(p) for p in custom_golden_paths])}\n"
+        f" └── 跨資料集外部基準圖數量: {len(external_golden_paths)} 張 (將自動注入推論池以校準動態門檻與結構容差)",
         log_files,
     )
     return golden_filenames, external_golden_paths
@@ -779,7 +786,7 @@ def prepare_tiled_test_pool(
         if img_idx % 25 == 0:
             gc.collect()
     gc.collect()
-    
+
     ext_golden_tiles = 0
     if external_golden_paths:
         for g_idx, g_path in enumerate(external_golden_paths):
@@ -1054,7 +1061,6 @@ def refine_amap_for_wafer_and_noise(
         work_map = img_median + np.maximum(0.0, (work_map - img_median) - eff_tol_weight * structural_excess)
 
     # 2. 建立平滑空間有效遮罩 (Spatial Feather Mask: 1.0=晶圓內部有效區, 0.0=邊框/晶圓倒角外圍)
-    # 避免直接硬切 img_median 造成形態學白頂帽在邊界產生斷崖偽影 (Step-Edge Artifact)
     spatial_mask = np.ones((h, w), dtype=np.float32)
     if border_ratio > 0:
         by = max(2, int(round(h * border_ratio)))
@@ -1065,7 +1071,6 @@ def refine_amap_for_wafer_and_noise(
         ramp_y[-by:] = 0.0
         ramp_x[:bx] = 0.0
         ramp_x[-bx:] = 0.0
-        # 在邊框內側加 4px 餘弦緩衝帶，徹底消除切邊斷崖
         pad_b = min(6, min(h, w) // 20)
         if pad_b > 1 and by + pad_b < h // 2 and bx + pad_b < w // 2:
             t_b = np.linspace(0.0, 1.0, pad_b, dtype=np.float32)
@@ -1104,8 +1109,6 @@ def refine_amap_for_wafer_and_noise(
         local_bg = cv2.GaussianBlur(local_bg, (k_bg, k_bg), 0)
         tophat_peak = np.maximum(0.0, smooth_3x3 - local_bg)
 
-        # [關鍵設計] 僅保留真正顯著高於全圖背景波動 (2.0 * MAD) 的局部微瑕疵尖峰，
-        # 並乘上 spatial_mask，防止正常圖的背景起伏或邊緣被白頂帽無差別加分！
         valid_vals = smooth_3x3[spatial_mask > 0.5] if np.any(spatial_mask > 0.5) else smooth_3x3.reshape(-1)
         bg_mad = float(1.4826 * np.median(np.abs(valid_vals - np.median(valid_vals)))) + 1e-5
         snr_gate = np.clip((tophat_peak - 1.5 * bg_mad) / (2.0 * bg_mad), 0.0, 1.0)
@@ -1121,6 +1124,7 @@ def refine_amap_for_wafer_and_noise(
     # 4. 最後套用平滑空間遮罩壓抑晶圓倒角外圍與邊框
     work_map = img_median + spatial_mask * (work_map - img_median)
     return work_map
+
 
 def merge_nearby_bboxes(
     bboxes: List[Tuple[int, int, int, int, float, int]],
@@ -1238,6 +1242,7 @@ def extract_tight_bboxes_for_anomaly_image(
     merged_bboxes = merge_nearby_bboxes(raw_bboxes, merge_gap=merge_gap)
     return merged_bboxes, pixel_box_thresh
 
+
 def estimate_blind_normal_core_stats(
     non_golden_scores: List[float],
     golden_scores: List[float],
@@ -1316,10 +1321,24 @@ def compute_dynamic_effective_threshold(
     p_val_core = float(np.percentile(est_normal_arr, p_clip))
     p_val_raw = float(np.percentile(scores_arr, p_clip))
 
+    # 嚴格上限門檻 (Strict Upper-Bound Cap): 確保 score >= thresh 的張數絕對 <= floor(N * (100 - p_clip)%)
+    n_total = scores_arr.size
+    max_allowed_anoms = int(np.floor(n_total * ((100.0 - p_clip) / 100.0) + 1e-6))
+    sorted_desc_all = np.sort(scores_arr)[::-1]
+    if max_allowed_anoms <= 0:
+        strict_pct_bound = float(sorted_desc_all[0] + 1e-5)
+    elif max_allowed_anoms < n_total:
+        hi_v = float(sorted_desc_all[max_allowed_anoms - 1])
+        lo_v = float(sorted_desc_all[max_allowed_anoms])
+        strict_pct_bound = float(0.5 * (hi_v + lo_v)) if hi_v > lo_v else float(hi_v + 1e-5)
+    else:
+        strict_pct_bound = p_val_raw
+
+    raw_pct_floor = max(p_val_raw, strict_pct_bound)
+
     if g_arr.size > 0:
         g_max = float(np.max(g_arr))
-        # Golden 基準上界僅作為「不能比 Golden 最高分還低」的防誤殺底線 (g_max * 1.05 + 0.015)，
-        # 絕不再加上 sigma_k * g_std，徹底修復門檻暴衝到 1.1500 吃掉微瑕疵的 Bug！
+        # Golden 基準上界僅作為「不能比 Golden 最高分還低」的防誤殺底線 (g_max * 1.05 + 0.015)
         golden_ref_bound = g_max * 1.05 + 0.015
         golden_safety_cap = max(p_val_core * 1.18 + 0.02, left_stat_bound)
     else:
@@ -1330,8 +1349,7 @@ def compute_dynamic_effective_threshold(
 
     topk_bound = 0.0
     if top_k > 0 and scores_arr.size > top_k:
-        sorted_desc = np.sort(scores_arr)[::-1]
-        topk_bound = float(0.5 * (sorted_desc[top_k - 1] + sorted_desc[top_k]))
+        topk_bound = float(0.5 * (sorted_desc_all[top_k - 1] + sorted_desc_all[top_k]))
 
     floor_val = max(float(min_threshold), float(user_threshold))
 
@@ -1345,18 +1363,19 @@ def compute_dynamic_effective_threshold(
             f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, Golden_Med={g_med:.4f}]"
         )
     elif mode == "percentile":
-        eff = max(float(min_threshold), min(p_val_raw, golden_safety_cap), topk_bound)
-        desc = f"Auto-P{auto_percentile:g} 動態分位數門檻 = {eff:.4f}"
+        eff = max(float(min_threshold), raw_pct_floor, topk_bound)
+        desc = f"Auto-P{auto_percentile:g} 嚴格上限分位數門檻 (最多抓 {100.0 - p_clip:g}%) = {eff:.4f} [Raw_P{auto_percentile:g}={p_val_raw:.4f}]"
     elif mode == "top_k":
         eff = max(float(min_threshold), topk_bound if top_k > 0 else calibrated_bound)
         desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f}"
     else:
-        hybrid_stat = max(floor_val, calibrated_bound, min(p_val_core, golden_safety_cap))
+        # 方案 A：使用 raw_pct_floor (全池 P95 嚴格保底) 納入 max()，確保異常比例絕對 <= (100 - auto_percentile)% = 5%
+        hybrid_stat = max(floor_val, calibrated_bound, raw_pct_floor)
         eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
         desc = (
-            f"Hybrid 真無GT雙重校準動態門檻 = {eff:.4f} "
+            f"Hybrid 真無GT雙重校準動態門檻 (嚴格上限<={100.0 - p_clip:g}%) = {eff:.4f} "
             f"[未見過正常核心上界(mu+{eff_sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
-            f"Golden基準上界={golden_ref_bound:.4f}, Core_P{auto_percentile:g}={p_val_core:.4f}, "
+            f"Golden基準上界={golden_ref_bound:.4f}, Raw_P{auto_percentile:g}保底={raw_pct_floor:.4f} (Core_P{auto_percentile:g}={p_val_core:.4f}), "
             f"MinFloor={floor_val:.4f}"
             f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
         )
@@ -1378,9 +1397,9 @@ def evaluate_overfitting_diagnostics(
     if overfit_ratio >= 1.45 and golden_gap >= 0.040:
         status_badge = "🟡 注意: 偵測到 Golden 記憶效應或跨批號微偏移 (已由 Unseen-Normal 左半核心自動校準補償)"
         advice_msg = (
-            f"  [ℹ️ 記憶效應/批次偏移自動補償] 未見過正常核心中位數 ({ng_med:.4f}) 高於 Golden 訓練圖平均 ({g_mean:.4f}) "
+            f" [ℹ️ 記憶效應/批次偏移自動補償] 未見過正常核心中位數 ({ng_med:.4f}) 高於 Golden 訓練圖平均 ({g_mean:.4f}) "
             f"[Ratio={overfit_ratio:.2f}x, Gap=+{golden_gap:.4f}]。\n"
-            f"                                系統已自動將動態門檻錨點切換至「未見過正常核心 (Unseen-Normal Core)」，避免誤殺正常樣本。"
+            f" 系統已自動將動態門檻錨點切換至「未見過正常核心 (Unseen-Normal Core)」並結合 Raw_P95 保底，避免誤殺正常樣本。"
         )
     elif overfit_ratio >= 1.25 and golden_gap >= 0.025:
         status_badge = "🟢 穩定: 輕微批次偏移傾向 (已由左半核心動態門檻自動補償)"
@@ -1619,7 +1638,7 @@ def stitch_and_filter_anomalies(
 
     log_and_print(
         f"[Step 3.2] 異常判定門檻設定: {thresh_mode_str}\n"
-        f"           (計分模式={score_mode_code}, "
+        f" (計分模式={score_mode_code}, "
         f"圓周邊緣抑制={'OFF(Raw)' if raw_score_mode else wafer_edge_mode}, "
         f"邊界縮減={0.0 if raw_score_mode else wafer_edge_margin*100:.1f}%)\n"
         f"[Step 3.2b] 過擬合自檢診斷 : {overfit_badge} "
@@ -1834,14 +1853,14 @@ def stitch_and_filter_anomalies(
     filt_std_s = float(np.std(filt_dist_scores))
 
     dist_summary_lines = (
-        f"      📊 盲池正常核心分數分佈 ({score_mode_code}) : "
+        f" 📊 盲池正常核心分數分佈 ({score_mode_code}) : "
         f"Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}\n"
-        f"      📐 盲池正常核心門檻參考值      : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
-        f"      🔬 濾波前後正常圖對照 (Ablation): "
-        f"[未濾波 Raw] Max={raw_max_s:.4f}, Mean={raw_mean_s:.4f}, Std={raw_std_s:.4f}  vs  "
+        f" 📐 盲池正常核心門檻參考值 : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
+        f" 🔬 濾波前後正常圖對照 (Ablation): "
+        f"[未濾波 Raw] Max={raw_max_s:.4f}, Mean={raw_mean_s:.4f}, Std={raw_std_s:.4f} vs "
         f"[當前模式] Max={filt_max_s:.4f}, Mean={filt_mean_s:.4f}, Std={filt_std_s:.4f}\n"
-        f"      🩺 模型過擬合自檢 (Overfit)    : {overfit_badge}\n"
-        f"                                       [Golden平均={g_mean_score:.4f} vs 盲池正常中位數={median_s:.4f} | Overfit_Ratio={overfit_ratio:.2f}x | Gap={golden_gap:+.4f}]"
+        f" 🩺 模型過擬合自檢 (Overfit) : {overfit_badge}\n"
+        f" [Golden平均={g_mean_score:.4f} vs 盲池正常中位數={median_s:.4f} | Overfit_Ratio={overfit_ratio:.2f}x | Gap={golden_gap:+.4f}]"
     )
     if overfit_advice:
         dist_summary_lines += f"\n{overfit_advice}"
@@ -1859,14 +1878,14 @@ def stitch_and_filter_anomalies(
             f"Skipped Normal Images: {skipped_normal_count}\n"
             f"Blind Normal Core Score Dist: Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | "
             f"Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}\n"
-            f"Ablation Compare (Normal)   : Raw_Max={raw_max_s:.4f}, Raw_Mean={raw_mean_s:.4f} vs "
+            f"Ablation Compare (Normal) : Raw_Max={raw_max_s:.4f}, Raw_Mean={raw_mean_s:.4f} vs "
             f"Filtered_Max={filt_max_s:.4f}, Filtered_Mean={filt_mean_s:.4f}\n"
-            f"Threshold Ref (Mean+k*Std)  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
-            f"Overfit Diagnostic          : {overfit_badge} "
+            f"Threshold Ref (Mean+k*Std) : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
+            f"Overfit Diagnostic : {overfit_badge} "
             f"(Golden_Mean={g_mean_score:.4f}, BlindNormal_Med={median_s:.4f}, Ratio={overfit_ratio:.2f}x, Gap={golden_gap:+.4f})\n"
         )
         if ext_golden_score_logs:
-            f.write(f"External Golden Ref Scores  : {', '.join(ext_golden_score_logs)}\n")
+            f.write(f"External Golden Ref Scores : {', '.join(ext_golden_score_logs)}\n")
         f.write("-" * 145 + "\n")
         f.write(
             f"{'Rank':<5} | {'Original_Filename':<26} | {'Status':<19} | {'Max_Score':<9} | "
@@ -2192,33 +2211,33 @@ def main():
         f"\n{'='*75}\n"
         f" [✅ 推論階段完成 ({args.data_name} / {args.category}) — 整體時間與所有檔案儲存位置總覽]\n"
         f"{'-'*75}\n"
-        f"  [1] 紀錄之訓練階段耗時 (Recorded Train Time)  : {format_duration(recorded_train_time)} (ckpt_step={actual_step})\n"
+        f" [1] 紀錄之訓練階段耗時 (Recorded Train Time) : {format_duration(recorded_train_time)} (ckpt_step={actual_step})\n"
         f"{'-'*75}\n"
-        f"  [2] 整體推論階段總時間 (Total Inference Time) : {format_duration(total_infer_time)}\n"
-        f"      ├─ Step 2.1 測試池圖塊準備 ({total_test_tiles} 塊, trigger={args.min_tile_trigger}px) : {format_duration(test_tile_sec)}"
+        f" [2] 整體推論階段總時間 (Total Inference Time) : {format_duration(total_infer_time)}\n"
+        f" ├─ Step 2.1 測試池圖塊準備 ({total_test_tiles} 塊, trigger={args.min_tile_trigger}px) : {format_duration(test_tile_sec)}"
         f"{' (Cached)' if used_png_tile_cache else ''}\n"
-        f"      ├─ Step 2.2 FoundAD 模型推論               : {format_duration(model_infer_sec)}\n"
-        f"      ├─ Step 3 RAM 縫合銷毀碎片與{mode_summary_str}畫框 : {format_duration(stitch_vis_sec)}\n"
-        f"      └─ 平均每張原圖推論耗時 ({num_test_images} 張原圖)         : {avg_infer_per_img:.2f} 秒/張\n"
+        f" ├─ Step 2.2 FoundAD 模型推論 : {format_duration(model_infer_sec)}\n"
+        f" ├─ Step 3 RAM 縫合銷毀碎片與{mode_summary_str}畫框 : {format_duration(stitch_vis_sec)}\n"
+        f" └─ 平均每張原圖推論耗時 ({num_test_images} 張原圖) : {avg_infer_per_img:.2f} 秒/張\n"
         f"{'-'*75}\n"
-        f"  [3] 本次推論腳本總執行時間 (Total Wall Time)  : {format_duration(total_wall_time)}\n"
+        f" [3] 本次推論腳本總執行時間 (Total Wall Time) : {format_duration(total_wall_time)}\n"
         f"{'-'*75}\n"
-        f"  [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score={mode_summary_str}, Mode={args.thresh_mode}, Eff_Thresh={eff_thresh:.4f}):\n"
-        f"      🚨 超過門檻判定異常並畫框輸出 : {anomaly_count} 張\n"
-        f"      ✅ 未達門檻或微塵濾除直接略過 : {skipped_count} 張 (不輸出圖片)\n"
+        f" [4] 門檻篩選統計、分數分佈與過擬合自檢 (Score={mode_summary_str}, Mode={args.thresh_mode}, Eff_Thresh={eff_thresh:.4f}):\n"
+        f" 🚨 超過門檻判定異常並畫框輸出 : {anomaly_count} 張\n"
+        f" ✅ 未達門檻或微塵濾除直接略過 : {skipped_count} 張 (不輸出圖片)\n"
         f"{dist_summary_lines}\n"
         f"{'-'*75}\n"
-        f"  [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):\n"
-        f"      📦 使用之訓練權重資料夾       : {ckpt_dirs[0]}\n"
-        f"      🏆 指定之 Golden 來源         : {args.golden_src if args.golden_src else shot_dir}\n"
-        f"      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)\n"
-        f"      📂 本次時間戳記推論主資料夾   : {run_out_dir}\n"
-        f"          ├── 異常紅框三合一對照圖  : {anomaly_dir}\n"
-        f"          ├── 異常1:1全解析度紅框圖 : {anomaly_fullres_bbox_dir}\n"
-        f"          ├── 整張Wafer熱力圖(.npy) : {amap_dump_dir}\n"
-        f"          ├── 完整排名報表 (TXT)    : {report_txt_path}\n"
-        f"          ├── 完整排名報表 (CSV)    : {report_csv_path}\n"
-        f"          └── 本次執行日誌 (log.txt): {fixed_log_txt}\n"
+        f" [5] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):\n"
+        f" 📦 使用之訓練權重資料夾 : {ckpt_dirs[0]}\n"
+        f" 🏆 指定之 Golden 來源 : {args.golden_src if args.golden_src else shot_dir}\n"
+        f" 🧹 子圖塊碎片 Tile .npy 狀態 : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)\n"
+        f" 📂 本次時間戳記推論主資料夾 : {run_out_dir}\n"
+        f" ├── 異常紅框三合一對照圖 : {anomaly_dir}\n"
+        f" ├── 異常1:1全解析度紅框圖 : {anomaly_fullres_bbox_dir}\n"
+        f" ├── 整張Wafer熱力圖(.npy) : {amap_dump_dir}\n"
+        f" ├── 完整排名報表 (TXT) : {report_txt_path}\n"
+        f" ├── 完整排名報表 (CSV) : {report_csv_path}\n"
+        f" └── 本次執行日誌 (log.txt): {fixed_log_txt}\n"
         f"{'='*75}"
     )
     log_and_print(infer_done_summary, log_files)

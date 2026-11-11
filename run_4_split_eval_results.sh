@@ -21,20 +21,23 @@ COUNTS="${5:-}"              # 選擇每包 Eval 的圖片數量：例如填 "50
 RATIOS="1:1:1"               # 若 COUNTS 留空 ""，才會改用比例拆分
 
 # [功能 3] 固定亂數種子確保結果 100% 可復現 (預設指定為 random_seed=42，亦可由第 6 個參數傳入)
+# 支援從命令列第 6 個參數指定亂數種子、第 7 個參數指定抽樣模式，或直接修改下方預設值：
+# 範例 (使用 random 隨機抽樣並指定 seed=123):
+#   bash run_4_split_eval_results.sh "" "" "/abs/path/escape_ranking_report.csv" 3 "700,700,600" 123 "random"
 RANDOM_SEED="${6:-42}"
 SEED="${RANDOM_SEED}"
+SPLIT_ORDER="${7:-stratified}"       # 支援: "random"(隨機抽樣，受 RANDOM_SEED 控制)、"stratified"(分層抽樣確保異常/正常比例一致)、"rank"(依分數排名分段)、"filename"(依檔名)
 
 # 拆分後輸出目錄 (留空 "" 則預設輸出在該次時間戳記目錄下的 split_eval_${NUM_PACKS}packs/)
 OUT_DIR=""
 
 # 各包獨立重算動態門檻開關
-RECOMPUTE_PACK_THRESH="--recompute_pack_thresh" # 設為 "--recompute_pack_thresh" 讓每包獨立重算動態門檻；設為 "" 則沿用全池統一門檻
+RECOMPUTE_PACK_THRESH="" # 設為 "--recompute_pack_thresh" 讓每包獨立重算動態門檻；設為 "" 則沿用全池統一門檻，確保切分前後瑕疵判定與總數 100% 一致
 SIGMA_K=3.5                  # 各包獨立重算門檻時的標準差倍數 k (與 Step 3 一致)
 AUTO_PERCENTILE=95.0         # 各包獨立重算門檻時的分位數 (如 95.0 代表 P95)
 MIN_THRESHOLD=0.0            # 動態門檻最低安全底線
 
-# 抽樣與檔案處理策略
-SPLIT_ORDER="stratified"     # 支援: "stratified"(分層抽樣確保異常/正常比例一致)、"random"(隨機)、"rank"(依分數排名分段)、"filename"(依檔名)
+# 檔案處理策略
 EXCLUDE_GOLDEN=""            # 若想在拆分前先排除 Golden 訓練圖 (只拆非 Golden 測試圖)，設為 "--exclude_golden"
 USE_SYMLINK=""               # 若想用軟連結取代實體複製圖片與 .npy 以節省空間，設為 "--symlink"
 # ==============================================================================

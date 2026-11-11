@@ -234,20 +234,35 @@ def _print_inline_progress(
 def prepare_ckpt_for_demo(
     data_name: str, diy_name: str, req_step: int, log_files: List[str]
 ) -> Tuple[int, List[str], List[str]]:
-    """確認權重已存在並複製為 pretrained.pth.tar，回傳 (步數, 權重資料夾清單, 權重檔案清單)。"""
-    log_dirs = glob.glob(f"./logs/{data_name}/*{diy_name}*") or glob.glob(f"./logs/{data_name}/*")
-    chosen_step = req_step
+    """確認權重已存在並複製為 pretrained.pth.tar，支援遞迴搜尋與直接傳入路徑。"""
+    search_roots = [
+        f"./logs/{data_name}",
+        data_name,  # 容錯：若使用者直接傳入完整或相對路徑
+    ]
+    step_files = []
+    for root in search_roots:
+        if os.path.isdir(root):
+            step_files.extend(glob.glob(os.path.join(root, "**", "train-step*.pth.tar"), recursive=True))
+    
+    # 若有指定 diy_name，優先過濾路徑中包含 diy_name 的權重
+    if diy_name and any(diy_name in f for f in step_files):
+        step_files = [f for f in step_files if diy_name in f]
+
     ckpt_dirs = []
     ckpt_files = []
+    chosen_step = req_step
 
-    for d in log_dirs:
-        if not os.path.isdir(d):
-            continue
+    # 依資料夾分組處理
+    dir_map = {}
+    for f in step_files:
+        d = os.path.dirname(f)
+        dir_map.setdefault(d, []).append(f)
+
+    for d, files in dir_map.items():
         target_ckpt = os.path.join(d, f"train-step{req_step}.pth.tar")
         if not os.path.exists(target_ckpt):
-            step_files = glob.glob(os.path.join(d, "train-step*.pth.tar"))
-            if step_files:
-                steps = [int(re.search(r"train-step(\d+)", f).group(1)) for f in step_files]
+            steps = [int(re.search(r"train-step(\d+)", f).group(1)) for f in files if re.search(r"train-step(\d+)", f)]
+            if steps:
                 chosen_step = max(steps)
                 target_ckpt = os.path.join(d, f"train-step{chosen_step}.pth.tar")
 
@@ -263,7 +278,7 @@ def prepare_ckpt_for_demo(
 
     if not ckpt_dirs:
         raise FileNotFoundError(
-            f"在 ./logs/{data_name}/ 下找不到任何 train-step*.pth.tar 權重檔！請確認權重路徑是否正確。"
+            f"在 ./logs/{data_name}/ (當前工作目錄: {os.getcwd()}) 下找不到任何 train-step*.pth.tar 權重檔！"
         )
     return chosen_step, ckpt_dirs, ckpt_files
 
