@@ -23,6 +23,13 @@ bash run_2_train_fab_no_gt.sh "這次的DATASET名稱" "與第一次相同的LAY
 
 
 
+run_3_infer_fab_no_gt_old.sh用法介紹:
+(用於推論已有"golden image和訓練權重檔"的資料集)
+
+指令說明:
+bash run_3_infer_fab_no_gt_old.sh   "datetime"   "layer name"   "要被推論的資料集路徑"   "原golden image位置(資料夾)"   "權重檔位置(檔案)"
+
+
 run_3_infer_fab_no_gt.sh用法介紹:
 (用於推論已有"golden image和訓練權重檔"的資料集)
 
