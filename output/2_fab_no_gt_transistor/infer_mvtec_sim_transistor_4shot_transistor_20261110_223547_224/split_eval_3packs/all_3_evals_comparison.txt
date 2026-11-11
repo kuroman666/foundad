@@ -1,0 +1,33 @@
+===================================================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All 3 Split Evaluations Comparison)]
+-------------------------------------------------------------------------------------------------------------------
+  📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224
+  📂 拆分結果根目錄   : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs
+  🖼️ 拆分數量核對     : 各包張數 [23, 23, 22] (加總=68 張 / 資料集總數=68 張)
+  🎚️ 門檻判定策略     : 各包獨立重算動態門檻 (PACK_LOCAL_RECOMPUTED) | 全池基準門檻=0.1862 (Mode: hybrid, Score: MICRO_DEFECT_SENSITIVE)
+-------------------------------------------------------------------------------------------------------------------
+Eval包名稱      | 總張數    | 非Golden正常    | 實際採用門檻       | 本包獨立門檻       | 正常誤報(FPR)        | 抓出Escape瑕疵      | Normal Mean±Std  | mean+3*std
+-------------------------------------------------------------------------------------------------------------------
+eval_pack_1  | 23     | 20           | 0.1900       | 0.1900       | 5/20 (25.0%)     | 1/2 (50.0%)     | 0.1647±0.0634    | 0.3551
+eval_pack_2  | 23     | 17           | 0.1721       | 0.1721       | 3/17 (17.6%)     | 5/5 (100.0%)    | 0.1493±0.0247    | 0.2233
+eval_pack_3  | 22     | 20           | 0.1762       | 0.1762       | 3/20 (15.0%)     | 1/1 (100.0%)    | 0.1464±0.0281    | 0.2308
+-------------------------------------------------------------------------------------------------------------------
+  🔹 [eval_pack_1] (共 23 張, 輸出異常紅框圖 6 張)
+     ├── 門檻對照       : 實際採用=0.1900 | 本包獨立重算(Local)=0.1900 | 全池統一(Global)=0.1862
+     ├── 正常圖分數分佈 : Max=0.3776 | P99=0.3568 | P95=0.2736 | Median=0.1500 | Mean=0.1647 | Std=0.0634
+     ├── 門檻參考值     : mean+1*std=0.2282 | mean+2*std=0.2916 | mean+3*std=0.3551
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs/eval_pack_1/anomaly_images
+  🔹 [eval_pack_2] (共 23 張, 輸出異常紅框圖 6 張)
+     ├── 門檻對照       : 實際採用=0.1721 | 本包獨立重算(Local)=0.1721 | 全池統一(Global)=0.1862
+     ├── 正常圖分數分佈 : Max=0.2053 | P99=0.2006 | P95=0.1818 | Median=0.1436 | Mean=0.1493 | Std=0.0247
+     ├── 門檻參考值     : mean+1*std=0.1740 | mean+2*std=0.1986 | mean+3*std=0.2233
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs/eval_pack_2/anomaly_images
+  🔹 [eval_pack_3] (共 22 張, 輸出異常紅框圖 2 張)
+     ├── 門檻對照       : 實際採用=0.1762 | 本包獨立重算(Local)=0.1762 | 全池統一(Global)=0.1862
+     ├── 正常圖分數分佈 : Max=0.2037 | P99=0.1999 | P95=0.1847 | Median=0.1494 | Mean=0.1464 | Std=0.0281
+     ├── 門檻參考值     : mean+1*std=0.1745 | mean+2*std=0.2026 | mean+3*std=0.2308
+     ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+     └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor/infer_mvtec_sim_transistor_4shot_transistor_20261110_223547_224/split_eval_3packs/eval_pack_3/anomaly_images
+===================================================================================================================

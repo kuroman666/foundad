@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/3_infer_fab_no_gt_old.py (純推論精簡版 - 全選覆蓋並存檔)
+# 檔案位置: FoundAD/3_infer_fab_no_gt_old.py (僅保留 Inference 流程精簡版，原始檔案為 2_run_fab_no_gt.py(date:1105))
 import importlib
 import shlex
 import os
