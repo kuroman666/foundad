@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# 檔案位置: FoundAD/run_1_fab_auto_golden.sh
-# 用途: 單獨呼叫 fab_tools/auto_golden.py 執行 Medoid Centrality 挑選 Golden 原圖
+# 檔案位置: FoundAD/run_1_auto_golden_old.sh
+# 用途: 單獨呼叫 1_auto_golden_old.py 執行 Medoid Centrality 挑選 Golden 原圖
+# 用法: bash run_1_auto_golden_old.sh [DATASET_ID] [LAYER_ID] [WAFER_POOL_DIR]
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================
@@ -16,13 +17,13 @@ REPORT_DIR="${FAB_RESULT_DIR}/golden_reports"
 # 公司內部的本地 DINOv3 或 DINOv2 .pth 權重路徑 (外部測試可改為 "auto" 自動搜尋快取)
 COMPANY_DINO_CKPT="/workspace/model_weight/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
 
-# Golden 挑選參數 (對應 fab_tools/auto_golden.py 之 select_golden_images 介面)
+# Golden 挑選參數 (對應 1_auto_golden_old.py 之 select_golden_images 介面)
 CATEGORY="wafer"
 SHOTS=4                  # 挑選的 Golden 原圖張數
 DATA_NAME="wafer_${LAYER_ID}_${SHOTS}shot"
 OUT_DIR="${DATASETS_DIR}/${DATA_NAME}"
 
-# 流程控制旗標 (因為 fab_tools/auto_golden.py 本身每次都會刪除舊資料夾重跑，此處由 Shell 層提供防呆)
+# 流程控制旗標 (因為 1_auto_golden_old.py 本身每次都會刪除舊資料夾重跑，此處由 Shell 層提供防呆)
 REBUILD_GOLDEN="0"       # 0: 若已存在挑好的 Golden 則自動略過；1: 強制重跑覆蓋
 # ==============================================================================
 
@@ -61,7 +62,7 @@ if [ "${REBUILD_GOLDEN}" != "1" ] && [ -d "${TARGET_TRAIN_DIR}" ]; then
     fi
 fi
 
-# 由於 fab_tools/auto_golden.py 為純函式模組 (無 main CLI)，透過 python -c 傳參呼叫
+# 由於 1_auto_golden.py 為純函式模組 (無 main CLI)，透過 python -c 傳參呼叫
 CKPT_ARG="${COMPANY_DINO_CKPT}"
 if [ "${CKPT_ARG}" = "auto" ]; then
     CKPT_ARG=""

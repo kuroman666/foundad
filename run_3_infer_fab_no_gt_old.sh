@@ -2,6 +2,7 @@
 # ==============================================================================
 # 檔案位置: FoundAD/run_3_infer_fab_no_gt_old.sh
 # 用途: 執行 3_infer_fab_no_gt_old.py (FoundAD 無 GT 盲池高解析度純推論與防誤報篩選流程)
+# 用法: bash run_3_infer_fab_no_gt_old.sh [POOL_DIR] [OUT_DIR] [DATASETS_DIR] [DATA_NAME] [DIY_NAME] [CKPT_STEP]
 # 使用方式:
 #   1. 直接使用預設參數執行:
 #      bash run_3_infer_fab_no_gt_old.sh
@@ -27,13 +28,13 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 # ------------------------------------------------------------------------------
 POOL_DIR="${POOL_DIR:-./datasets/mock_unlabeled_pool}"       # 無 GT 測試盲池圖片資料夾
 MOCK_FROM_MVTEC="${MOCK_FROM_MVTEC:-}"                       # 若需自動從 MVTec 建立模擬盲池可填路徑 (如 ./datasets/mvtec/transistor)，留空則直接讀 POOL_DIR
-OUT_DIR="${OUT_DIR:-./output/3_infer_fab_no_gt_old}"         # 推論結果輸出主目錄 (程式內會自動建立時間戳記子目錄)
+OUT_DIR="${OUT_DIR:-./wafer_escape_results}"                 # 推論結果輸出主目錄 (程式內會自動建立時間戳記子目錄)
 DATASETS_DIR="${DATASETS_DIR:-./datasets}"                   # 資料集與切塊快取根目錄
 DATA_NAME="${DATA_NAME:-mvtec_sim_4shot}"                    # 對應 logs/<DATA_NAME> 與 datasets/<DATA_NAME> 的實驗名稱
 CATEGORY="${CATEGORY:-auto}"                                 # 產品/晶圓類別 (預設 auto 自動依路徑推斷)
 APP_TEST="${APP_TEST:-test}"                                 # FoundAD 推論設定檔模式
 DIY_NAME="${DIY_NAME:-sim_escape}"                           # 訓練實驗自訂後綴名稱
-CKPT_STEP="${CKPT_STEP:}"                               # 欲載入的訓練權重步數 (若不存在會自動抓取最大 step)
+CKPT_STEP="${CKPT_STEP:}"                                    # 欲載入的訓練權重步數 (若不存在會自動抓取最大 step)
 
 # ------------------------------------------------------------------------------
 # 2. 高解析度切塊 (Tiling) 與批次推論參數
@@ -49,8 +50,8 @@ DISABLE_TILING="${DISABLE_TILING:-0}"                        # 設為 1 則附�
 #    可選模式: hybrid | mean_std | percentile | top_k | fixed
 # ------------------------------------------------------------------------------
 THRESH_MODE="${THRESH_MODE:-hybrid}"                         # 異常門檻決定模式
-THRESHOLD="${THRESHOLD:-0.25}"                               # fixed 模式固定門檻 / hybrid 模式保底下限之一
-MIN_THRESHOLD="${MIN_THRESHOLD:-0.27}"                       # 動態門檻絕對最低安全底線 (適用於 hybrid / percentile / top_k)
+THRESHOLD="${THRESHOLD:-0}"                                  # fixed 模式固定門檻 / hybrid 模式保底下限之一
+MIN_THRESHOLD="${MIN_THRESHOLD:-0}"                          # 動態門檻絕對最低安全底線 (適用於 hybrid / percentile / top_k)
 AUTO_PERCENTILE="${AUTO_PERCENTILE:-95.0}"                   # 盲池分位數 (如 95.0 代表 P95)
 TOP_K="${TOP_K:-0}"                                          # 若 > 0 則限制最多只輸出前 K 高分可疑圖片
 SIGMA_K="${SIGMA_K:-3.5}"                                    # mean_std 或 hybrid 模式之標準差倍數 k

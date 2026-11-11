@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_1_auto_golden.sh
 # 用途: 單獨執行 1_auto_golden.py (Stage 1 挑選 Golden 原圖 + Stage 2 圖塊級二次純化)
+# 用法: bash run_1_auto_golden.sh [DATASET_ID] [LAYER_ID] [WAFER_POOL_DIR]
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================

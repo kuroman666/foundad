@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_2_train_fab_no_gt_old.sh
 # 用途: 單獨執行 2_train_fab_no_gt_old.py (舊版無GT訓練腳本：含自動挑 Golden 圖、切塊與 FoundAD 訓練)
+# 用法: bash run_2_train_fab_no_gt_old.sh [DATASET_ID] [LAYER_ID] [WAFER_POOL_DIR]
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================

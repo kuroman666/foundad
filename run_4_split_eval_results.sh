@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_4_split_eval_results.sh (相容 run_3_split_eval_results.sh)
 # 用途: 單獨執行 4_split_eval_results.py (支援指定拆分成幾包、每包張數、總數不符嚴格報錯，以及各包獨立重算動態門檻)
+# 用法: bash run_4_split_eval_results.sh [DATASET_ID] [LAYER_ID] [SRC_INPUT] [NUM_PACKS] [COUNTS] [RANDOM_SEED] [SPLIT_ORDER]
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================

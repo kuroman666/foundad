@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_2a_train_fab_no_gt.sh
 # 用途: 單獨執行 2a_train_fab_no_gt.py (負責載入/準備 Golden 資料集與執行 FoundAD 模型訓練)
+# 用法: bash run_2a_train_fab_no_gt.sh [DATASET_ID] [LAYER_ID] [WAFER_POOL_DIR]
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================

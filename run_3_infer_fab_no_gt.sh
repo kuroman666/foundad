@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_2b_infer_fab_no_gt.sh (或 FoundAD/run_3_infer_fab_no_gt.sh)
 # 用途: 單獨執行 3_infer_fab_no_gt.py (支援直接指定舊資料集挑過的 Golden Image 與訓練權重檔推論新資料集)
+# 用法: bash run_2b_infer_fab_no_gt.sh [POOL_DIR] [OUT_DIR] [DATASETS_DIR] [DATA_NAME] [DIY_NAME] [CKPT_STEP]
 set -e
 
 # ===================== [參數設定區：支援命令列傳入或預設值] =====================

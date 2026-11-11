@@ -6,7 +6,7 @@
 set -e
 
 # ===================== [可自由修改的參數區] =====================
-OUTPUT_ROOT="./output"
+OUTPUT_ROOT="./wafer_escape_results"
 DATASETS_DIR="./datasets"
 DINO_CKPT_PATH="auto" # 自動從 ~/.cache/torch/hub 或 ./hub_cache 離線搜尋 DINOv3/v2 權重
 
