@@ -106,8 +106,7 @@ python 4_split_eval_results.py \
     --split_order "${SPLIT_ORDER}" \
     --seed "${RANDOM_SEED}" \
     --sigma_k "${SIGMA_K}" \
-    --auto_percentile
-    "${AUTO_PERCENTILE}" \
+    --auto_percentile "${AUTO_PERCENTILE}" \
     --min_threshold "${MIN_THRESHOLD}" \
     "${EXTRA_ARGS[@]}" \
     ${RECOMPUTE_PACK_THRESH} ${EXCLUDE_GOLDEN} ${USE_SYMLINK}
