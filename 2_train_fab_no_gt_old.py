@@ -1,4 +1,5 @@
 # 檔案位置: FoundAD/2_train_fab_no_gt_old.py (僅保留 Training 流程精簡版，原始檔案為 2_run_fab_no_gt.py(1105))
+import importlib
 import shlex
 import os
 import re
@@ -19,7 +20,10 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from fab_tools.auto_golden import select_golden_images, scan_pool_images, IMG_EXTENSIONS
+_ag = importlib.import_module("1_auto_golden_old")
+IMG_EXTENSIONS = _ag.IMG_EXTENSIONS
+scan_pool_images = _ag.scan_pool_images
+select_golden_images = _ag.select_golden_images
 
 
 def format_duration(seconds: float) -> str:
@@ -489,7 +493,7 @@ def main():
     golden_select_sec = 0.0
     train_tile_sec = 0.0
 
-    if args.skip_train and os.path.isfile(golden_meta_path):
+    if os.path.isfile(golden_meta_path):
         try:
             with open(golden_meta_path, "r", encoding="utf-8") as f:
                 g_meta = json.load(f)
@@ -508,32 +512,50 @@ def main():
                     safe_copy(rec_src, os.path.join(run_out_dir, f"selected_{args.shots}_golden_images.txt"))
                 used_golden_cache = True
                 log_and_print(
-                    f"[⚡ Golden 快取命中] 已設定 --skip_train，直接沿用已挑選之 {len(golden_filenames)} 張 Golden Image "
-                    f"({', '.join(golden_filenames)}) (0.00 秒)",
+                    f"[⚡ Golden 快取命中] 直接沿用已挑選並切塊之 {len(golden_filenames)} 張 Golden Image "
+                    f"(共 {num_train_samples} 張訓練圖塊) (0.00 秒)",
                     log_files,
                 )
         except Exception:
             used_golden_cache = False
 
     if not used_golden_cache:
-        safe_rmtree(shot_dir)
-        t_golden_start = time.perf_counter()
-        golden_paths = select_golden_images(
-            pool_dir=args.pool_dir,
-            ckpt_path=args.ckpt,
-            out_dir=shot_dir,
-            category=args.category,
-            shots=args.shots,
-            report_dir=run_out_dir,
-        )
-        golden_select_sec = time.perf_counter() - t_golden_start
-        golden_filenames = [
-            os.path.relpath(p, args.pool_dir).replace("\\", "/") for p in golden_paths
-        ]
-        log_and_print(
-            f"[⏱️ 計時] Step 1 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
-            log_files,
-        )
+        cat_train_dir = os.path.join(shot_dir, "train", args.category)
+        existing_raw_goldens = []
+        if os.path.isdir(cat_train_dir):
+            existing_raw_goldens = sorted([
+                os.path.join(cat_train_dir, f) for f in os.listdir(cat_train_dir)
+                if f.lower().endswith(IMG_EXTENSIONS) and "_tile_" not in f
+            ])
+
+        if len(existing_raw_goldens) == args.shots:
+            golden_filenames = [os.path.basename(p) for p in existing_raw_goldens]
+            rec_src = os.path.join(shot_dir, f"selected_{args.shots}_golden_images.txt")
+            if os.path.exists(rec_src):
+                safe_copy(rec_src, os.path.join(run_out_dir, f"selected_{args.shots}_golden_images.txt"))
+            log_and_print(
+                f"[⚡ Step 1 外部已挑選] 偵測到 {cat_train_dir} 已有 {len(existing_raw_goldens)} 張 Golden 原圖，直接進入切塊！",
+                log_files,
+            )
+        else:
+            safe_rmtree(shot_dir)
+            t_golden_start = time.perf_counter()
+            golden_paths = select_golden_images(
+                pool_dir=args.pool_dir,
+                ckpt_path=args.ckpt,
+                out_dir=shot_dir,
+                category=args.category,
+                shots=args.shots,
+                report_dir=run_out_dir,
+            )
+            golden_select_sec = time.perf_counter() - t_golden_start
+            golden_filenames = [
+                os.path.relpath(p, args.pool_dir).replace("\\", "/") for p in golden_paths
+            ]
+            log_and_print(
+                f"[⏱️ 計時] Step 1 自動挑選 {len(golden_filenames)} 張 Golden Image 耗時: {format_duration(golden_select_sec)}",
+                log_files,
+            )
 
         t_train_tile_start = time.perf_counter()
         if not args.disable_tiling:

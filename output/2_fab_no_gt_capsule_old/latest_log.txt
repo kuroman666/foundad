@@ -1,0 +1,2343 @@
+
+===========================================================================
+[Task 2 無GT訓練啟動時間] 2026-11-11 21:01:33
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_210133
+===========================================================================
+[⚡ Step 1 外部已挑選] 偵測到 /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old/train/capsule 已有 4 張 Golden 原圖，直接進入切塊！
+[Tiling-Train] 已將 4 張 (1000x1000) Golden 大圖無損切分為 27 張 (512x512) 高解析度代表性訓練圖塊 (已啟用跨片離群瑕疵過濾) -> /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old/train/capsule
+
+[Step 2] 執行 FoundAD 高解析度圖塊訓練 (train_tiles=27, batch_size=8, iters_per_epoch=4, epochs=500, total_updates=2000):
+
+============================================================
+[CMD] python foundad/main.py mode=train data.batch_size=8 data.dataset=mvtec data.data_name=mvtec_sim_capsule_4shot_old data.data_path=/home/kenny/project/FoundAD/data data.train_root=/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old data.mvtec_classnames='[capsule]' optimization.epochs=500 diy_name=sim_escape_capsule_old app=train_dinov3 (PORT=33679)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=124423809931072>,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_capsule_4shot_old',
+            'data_path': '/home/kenny/project/FoundAD/data',
+            'dataset': 'mvtec',
+            'mvtec_classnames': ['capsule'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/path/to/dataset',
+            'train_root': '/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 33679},
+  'diy_name': 'sim_escape_capsule_old',
+  'logging': { 'folder': 'logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old',
+               'write_tag': 'train'},
+  'meta': { 'crop_size': 512,
+            'feat_normed': False,
+            'if_pred_pe': False,
+            'loss_mode': 'l2',
+            'model': 'dinov3',
+            'n_layer': 3,
+            'pred_depth': 6,
+            'pred_emb_dim': 384,
+            'use_bfloat16': False},
+  'mode': 'train',
+  'optimization': { 'epochs': 500,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+Config saved to logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/params.yaml
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+INFO:src.train:Loss mode l2
+Totally 27 will be trained..
+INFO:root:Using AdamW
+INFO:root:Constant lr, lr=0.001
+INFO:src.train:Epoch 1
+/home/kenny/project/FoundAD/foundad/src/train.py:122: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(dtype=torch.bfloat16, enabled=self.use_bf16):
+INFO:src.train:[E 1 I 0] loss 1.078493 (avg 1.078493) mem 4995.05MB (587.8ms)
+INFO:src.train:    grad: [2.33e-02 2.23e-02] (2.23e-02 7.05e-01)
+INFO:src.train:Epoch 1 complete. Avg loss 0.829930, lr 0.001000
+INFO:src.train:Epoch 2
+INFO:src.train:[E 2 I 0] loss 0.544185 (avg 0.544185) mem 5084.96MB (106.5ms)
+INFO:src.train:    grad: [4.50e-03 4.55e-03] (4.33e-03 5.08e-01)
+INFO:src.train:Epoch 2 complete. Avg loss 0.511255, lr 0.001000
+INFO:src.train:Epoch 3
+INFO:src.train:[E 3 I 0] loss 0.442103 (avg 0.442103) mem 5084.96MB (106.5ms)
+INFO:src.train:    grad: [7.18e-03 3.57e-03] (3.57e-03 3.67e-01)
+INFO:src.train:Epoch 3 complete. Avg loss 0.423394, lr 0.001000
+INFO:src.train:Epoch 4
+INFO:src.train:[E 4 I 0] loss 0.381262 (avg 0.381262) mem 5084.96MB (106.6ms)
+INFO:src.train:    grad: [4.45e-03 2.52e-03] (2.26e-03 3.22e-01)
+INFO:src.train:Epoch 4 complete. Avg loss 0.356153, lr 0.001000
+INFO:src.train:Epoch 5
+INFO:src.train:[E 5 I 0] loss 0.319354 (avg 0.319354) mem 5084.96MB (106.7ms)
+INFO:src.train:    grad: [5.41e-03 2.39e-03] (2.14e-03 2.83e-01)
+
+===========================================================================
+[Task 2 無GT訓練啟動時間] 2026-11-11 21:04:09
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_210409
+===========================================================================
+[⚡ Golden 快取命中] 直接沿用已挑選並切塊之 4 張 Golden Image (共 27 張訓練圖塊) (0.00 秒)
+
+[Step 2] 執行 FoundAD 高解析度圖塊訓練 (train_tiles=27, batch_size=8, iters_per_epoch=4, epochs=500, total_updates=2000):
+
+============================================================
+[CMD] python foundad/main.py mode=train data.batch_size=8 data.dataset=mvtec data.data_name=mvtec_sim_capsule_4shot_old data.data_path=/home/kenny/project/FoundAD/data data.train_root=/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old data.mvtec_classnames='[capsule]' optimization.epochs=500 diy_name=sim_escape_capsule_old app=train_dinov3 (PORT=54959)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=140226582437952>,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_capsule_4shot_old',
+            'data_path': '/home/kenny/project/FoundAD/data',
+            'dataset': 'mvtec',
+            'mvtec_classnames': ['capsule'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/path/to/dataset',
+            'train_root': '/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 54959},
+  'diy_name': 'sim_escape_capsule_old',
+  'logging': { 'folder': 'logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old',
+               'write_tag': 'train'},
+  'meta': { 'crop_size': 512,
+            'feat_normed': False,
+            'if_pred_pe': False,
+            'loss_mode': 'l2',
+            'model': 'dinov3',
+            'n_layer': 3,
+            'pred_depth': 6,
+            'pred_emb_dim': 384,
+            'use_bfloat16': False},
+  'mode': 'train',
+  'optimization': { 'epochs': 500,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+Config saved to logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/params.yaml
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+INFO:src.train:Loss mode l2
+Totally 27 will be trained..
+INFO:root:Using AdamW
+INFO:root:Constant lr, lr=0.001
+INFO:src.train:Epoch 1
+/home/kenny/project/FoundAD/foundad/src/train.py:122: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(dtype=torch.bfloat16, enabled=self.use_bf16):
+INFO:src.train:[E 1 I 0] loss 1.078493 (avg 1.078493) mem 4995.05MB (527.9ms)
+INFO:src.train:    grad: [2.33e-02 2.23e-02] (2.23e-02 7.05e-01)
+INFO:src.train:Epoch 1 complete. Avg loss 0.829930, lr 0.001000
+INFO:src.train:Epoch 2
+INFO:src.train:[E 2 I 0] loss 0.544185 (avg 0.544185) mem 5084.96MB (106.6ms)
+INFO:src.train:    grad: [4.50e-03 4.55e-03] (4.33e-03 5.08e-01)
+INFO:src.train:Epoch 2 complete. Avg loss 0.511255, lr 0.001000
+INFO:src.train:Epoch 3
+INFO:src.train:[E 3 I 0] loss 0.442103 (avg 0.442103) mem 5084.96MB (106.6ms)
+INFO:src.train:    grad: [7.18e-03 3.57e-03] (3.57e-03 3.67e-01)
+INFO:src.train:Epoch 3 complete. Avg loss 0.423394, lr 0.001000
+INFO:src.train:Epoch 4
+INFO:src.train:[E 4 I 0] loss 0.381262 (avg 0.381262) mem 5084.96MB (106.7ms)
+INFO:src.train:    grad: [4.45e-03 2.52e-03] (2.26e-03 3.22e-01)
+INFO:src.train:Epoch 4 complete. Avg loss 0.356153, lr 0.001000
+INFO:src.train:Epoch 5
+INFO:src.train:[E 5 I 0] loss 0.319354 (avg 0.319354) mem 5084.96MB (106.6ms)
+INFO:src.train:    grad: [5.41e-03 2.39e-03] (2.14e-03 2.83e-01)
+INFO:src.train:Epoch 5 complete. Avg loss 0.304033, lr 0.001000
+INFO:src.train:Epoch 6
+INFO:src.train:[E 6 I 0] loss 0.290996 (avg 0.290996) mem 5084.96MB (106.7ms)
+INFO:src.train:    grad: [3.11e-03 1.68e-03] (1.40e-03 2.59e-01)
+INFO:src.train:Epoch 6 complete. Avg loss 0.274325, lr 0.001000
+INFO:src.train:Epoch 7
+INFO:src.train:[E 7 I 0] loss 0.256031 (avg 0.256031) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.41e-03 1.23e-03] (1.13e-03 2.25e-01)
+INFO:src.train:Epoch 7 complete. Avg loss 0.246306, lr 0.001000
+INFO:src.train:Epoch 8
+INFO:src.train:[E 8 I 0] loss 0.226563 (avg 0.226563) mem 5084.96MB (106.7ms)
+INFO:src.train:    grad: [2.06e-03 1.24e-03] (1.17e-03 1.97e-01)
+INFO:src.train:Epoch 8 complete. Avg loss 0.213612, lr 0.001000
+INFO:src.train:Epoch 9
+INFO:src.train:[E 9 I 0] loss 0.199974 (avg 0.199974) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.76e-03 9.52e-04] (8.63e-04 1.68e-01)
+INFO:src.train:Epoch 9 complete. Avg loss 0.197070, lr 0.001000
+INFO:src.train:Epoch 10
+INFO:src.train:[E 10 I 0] loss 0.186443 (avg 0.186443) mem 5084.96MB (106.7ms)
+INFO:src.train:    grad: [2.39e-03 1.35e-03] (1.29e-03 1.51e-01)
+INFO:src.train:Epoch 10 complete. Avg loss 0.179359, lr 0.001000
+INFO:src.train:Epoch 11
+INFO:src.train:[E 11 I 0] loss 0.165241 (avg 0.165241) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.38e-03 1.16e-03] (1.02e-03 1.30e-01)
+INFO:src.train:Epoch 11 complete. Avg loss 0.160978, lr 0.001000
+INFO:src.train:Epoch 12
+INFO:src.train:[E 12 I 0] loss 0.158839 (avg 0.158839) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.99e-03 1.18e-03] (1.14e-03 1.22e-01)
+INFO:src.train:Epoch 12 complete. Avg loss 0.150910, lr 0.001000
+INFO:src.train:Epoch 13
+INFO:src.train:[E 13 I 0] loss 0.147606 (avg 0.147606) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.56e-03 1.75e-03] (1.16e-03 9.52e-02)
+INFO:src.train:Epoch 13 complete. Avg loss 0.143603, lr 0.001000
+INFO:src.train:Epoch 14
+INFO:src.train:[E 14 I 0] loss 0.150685 (avg 0.150685) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.91e-03 1.11e-03] (9.25e-04 8.18e-02)
+INFO:src.train:Epoch 14 complete. Avg loss 0.130709, lr 0.001000
+INFO:src.train:Epoch 15
+INFO:src.train:[E 15 I 0] loss 0.138612 (avg 0.138612) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [5.89e-03 2.65e-03] (1.86e-03 7.44e-02)
+INFO:src.train:Epoch 15 complete. Avg loss 0.131259, lr 0.001000
+INFO:src.train:Epoch 16
+INFO:src.train:[E 16 I 0] loss 0.115183 (avg 0.115183) mem 5084.96MB (118.2ms)
+INFO:src.train:    grad: [2.78e-03 1.02e-03] (9.35e-04 5.83e-02)
+INFO:src.train:Epoch 16 complete. Avg loss 0.111208, lr 0.001000
+INFO:src.train:Epoch 17
+INFO:src.train:[E 17 I 0] loss 0.098167 (avg 0.098167) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.99e-03 6.72e-04] (6.72e-04 5.01e-02)
+INFO:src.train:Epoch 17 complete. Avg loss 0.111499, lr 0.001000
+INFO:src.train:Epoch 18
+INFO:src.train:[E 18 I 0] loss 0.092390 (avg 0.092390) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.72e-03 7.67e-04] (7.67e-04 4.92e-02)
+INFO:src.train:Epoch 18 complete. Avg loss 0.100192, lr 0.001000
+INFO:src.train:Epoch 19
+INFO:src.train:[E 19 I 0] loss 0.122236 (avg 0.122236) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [6.57e-03 1.45e-03] (1.29e-03 6.97e-02)
+INFO:src.train:Epoch 19 complete. Avg loss 0.112760, lr 0.001000
+INFO:src.train:Epoch 20
+INFO:src.train:[E 20 I 0] loss 0.090663 (avg 0.090663) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [8.46e-03 1.64e-03] (1.45e-03 5.53e-02)
+INFO:src.train:Epoch 20 complete. Avg loss 0.093327, lr 0.001000
+INFO:src.train:Epoch 21
+INFO:src.train:[E 21 I 0] loss 0.092401 (avg 0.092401) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [6.65e-03 1.22e-03] (1.13e-03 5.06e-02)
+INFO:src.train:Epoch 21 complete. Avg loss 0.101227, lr 0.001000
+INFO:src.train:Epoch 22
+INFO:src.train:[E 22 I 0] loss 0.083974 (avg 0.083974) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.89e-03 8.83e-04] (8.11e-04 3.78e-02)
+INFO:src.train:Epoch 22 complete. Avg loss 0.087211, lr 0.001000
+INFO:src.train:Epoch 23
+INFO:src.train:[E 23 I 0] loss 0.096254 (avg 0.096254) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.83e-03 1.21e-03] (1.18e-03 4.24e-02)
+INFO:src.train:Epoch 23 complete. Avg loss 0.088991, lr 0.001000
+INFO:src.train:Epoch 24
+INFO:src.train:[E 24 I 0] loss 0.091729 (avg 0.091729) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.99e-03 1.09e-03] (9.75e-04 4.77e-02)
+INFO:src.train:Epoch 24 complete. Avg loss 0.093867, lr 0.001000
+INFO:src.train:Epoch 25
+INFO:src.train:[E 25 I 0] loss 0.091959 (avg 0.091959) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.33e-03 1.83e-03] (1.12e-03 3.90e-02)
+INFO:src.train:Epoch 25 complete. Avg loss 0.097916, lr 0.001000
+INFO:src.train:Epoch 26
+INFO:src.train:[E 26 I 0] loss 0.087857 (avg 0.087857) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.58e-03 1.03e-03] (8.69e-04 4.11e-02)
+INFO:src.train:Epoch 26 complete. Avg loss 0.085168, lr 0.001000
+INFO:src.train:Epoch 27
+INFO:src.train:[E 27 I 0] loss 0.082576 (avg 0.082576) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.13e-03 9.83e-04] (7.67e-04 3.69e-02)
+INFO:src.train:Epoch 27 complete. Avg loss 0.081480, lr 0.001000
+INFO:src.train:Epoch 28
+INFO:src.train:[E 28 I 0] loss 0.085720 (avg 0.085720) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.49e-03 1.27e-03] (1.01e-03 4.08e-02)
+INFO:src.train:Epoch 28 complete. Avg loss 0.089667, lr 0.001000
+INFO:src.train:Epoch 29
+INFO:src.train:[E 29 I 0] loss 0.087254 (avg 0.087254) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.10e-03 9.29e-04] (7.68e-04 3.54e-02)
+INFO:src.train:Epoch 29 complete. Avg loss 0.083386, lr 0.001000
+INFO:src.train:Epoch 30
+INFO:src.train:[E 30 I 0] loss 0.070171 (avg 0.070171) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.96e-03 7.40e-04] (6.68e-04 3.70e-02)
+INFO:src.train:Epoch 30 complete. Avg loss 0.081003, lr 0.001000
+INFO:src.train:Epoch 31
+INFO:src.train:[E 31 I 0] loss 0.081787 (avg 0.081787) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.70e-03 1.18e-03] (9.79e-04 4.41e-02)
+INFO:src.train:Epoch 31 complete. Avg loss 0.077401, lr 0.001000
+INFO:src.train:Epoch 32
+INFO:src.train:[E 32 I 0] loss 0.081048 (avg 0.081048) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.81e-03 1.33e-03] (1.18e-03 4.42e-02)
+INFO:src.train:Epoch 32 complete. Avg loss 0.080632, lr 0.001000
+INFO:src.train:Epoch 33
+INFO:src.train:[E 33 I 0] loss 0.089217 (avg 0.089217) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.93e-03 1.04e-03] (8.82e-04 3.92e-02)
+INFO:src.train:Epoch 33 complete. Avg loss 0.083788, lr 0.001000
+INFO:src.train:Epoch 34
+INFO:src.train:[E 34 I 0] loss 0.072350 (avg 0.072350) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.96e-03 2.50e-03] (1.43e-03 4.17e-02)
+INFO:src.train:Epoch 34 complete. Avg loss 0.075333, lr 0.001000
+INFO:src.train:Epoch 35
+INFO:src.train:[E 35 I 0] loss 0.079112 (avg 0.079112) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.85e-03 1.65e-03] (1.30e-03 4.16e-02)
+INFO:src.train:Epoch 35 complete. Avg loss 0.071586, lr 0.001000
+INFO:src.train:Epoch 36
+INFO:src.train:[E 36 I 0] loss 0.070718 (avg 0.070718) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.74e-03 1.05e-03] (8.93e-04 3.86e-02)
+INFO:src.train:Epoch 36 complete. Avg loss 0.080645, lr 0.001000
+INFO:src.train:Epoch 37
+INFO:src.train:[E 37 I 0] loss 0.061643 (avg 0.061643) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.06e-03 1.03e-03] (8.58e-04 3.71e-02)
+INFO:src.train:Epoch 37 complete. Avg loss 0.074748, lr 0.001000
+INFO:src.train:Epoch 38
+INFO:src.train:[E 38 I 0] loss 0.081009 (avg 0.081009) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.88e-03 1.22e-03] (1.10e-03 4.32e-02)
+INFO:src.train:Epoch 38 complete. Avg loss 0.073048, lr 0.001000
+INFO:src.train:Epoch 39
+INFO:src.train:[E 39 I 0] loss 0.077485 (avg 0.077485) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.32e-03 1.42e-03] (1.19e-03 3.74e-02)
+INFO:src.train:Epoch 39 complete. Avg loss 0.072826, lr 0.001000
+INFO:src.train:Epoch 40
+INFO:src.train:[E 40 I 0] loss 0.067285 (avg 0.067285) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.34e-03 1.26e-03] (1.02e-03 3.87e-02)
+INFO:src.train:Epoch 40 complete. Avg loss 0.075830, lr 0.001000
+INFO:src.train:Epoch 41
+INFO:src.train:[E 41 I 0] loss 0.076337 (avg 0.076337) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.93e-03 2.08e-03] (1.67e-03 5.14e-02)
+INFO:src.train:Epoch 41 complete. Avg loss 0.077566, lr 0.001000
+INFO:src.train:Epoch 42
+INFO:src.train:[E 42 I 0] loss 0.082157 (avg 0.082157) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.58e-03 1.47e-03] (1.23e-03 4.28e-02)
+INFO:src.train:Epoch 42 complete. Avg loss 0.068695, lr 0.001000
+INFO:src.train:Epoch 43
+INFO:src.train:[E 43 I 0] loss 0.057535 (avg 0.057535) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.41e-03 1.15e-03] (9.74e-04 3.87e-02)
+INFO:src.train:Epoch 43 complete. Avg loss 0.061128, lr 0.001000
+INFO:src.train:Epoch 44
+INFO:src.train:[E 44 I 0] loss 0.055761 (avg 0.055761) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.88e-03 1.36e-03] (1.17e-03 3.88e-02)
+INFO:src.train:Epoch 44 complete. Avg loss 0.062775, lr 0.001000
+INFO:src.train:Epoch 45
+INFO:src.train:[E 45 I 0] loss 0.056130 (avg 0.056130) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.84e-03 1.20e-03] (1.02e-03 3.83e-02)
+INFO:src.train:Epoch 45 complete. Avg loss 0.061625, lr 0.001000
+INFO:src.train:Epoch 46
+INFO:src.train:[E 46 I 0] loss 0.069020 (avg 0.069020) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.34e-03 1.30e-03] (1.12e-03 4.41e-02)
+INFO:src.train:Epoch 46 complete. Avg loss 0.076142, lr 0.001000
+INFO:src.train:Epoch 47
+INFO:src.train:[E 47 I 0] loss 0.071119 (avg 0.071119) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.63e-03 2.15e-03] (1.63e-03 4.59e-02)
+INFO:src.train:Epoch 47 complete. Avg loss 0.070418, lr 0.001000
+INFO:src.train:Epoch 48
+INFO:src.train:[E 48 I 0] loss 0.056768 (avg 0.056768) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [5.76e-03 2.87e-03] (2.01e-03 5.73e-02)
+INFO:src.train:Epoch 48 complete. Avg loss 0.062914, lr 0.001000
+INFO:src.train:Epoch 49
+INFO:src.train:[E 49 I 0] loss 0.076408 (avg 0.076408) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [6.29e-03 2.72e-03] (2.09e-03 6.20e-02)
+INFO:src.train:Epoch 49 complete. Avg loss 0.070752, lr 0.001000
+INFO:src.train:Epoch 50
+INFO:src.train:[E 50 I 0] loss 0.062028 (avg 0.062028) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.09e-03 1.40e-03] (1.19e-03 4.59e-02)
+INFO:src.train:Epoch 50 complete. Avg loss 0.071878, lr 0.001000
+INFO:src.train:Epoch 51
+INFO:src.train:[E 51 I 0] loss 0.054544 (avg 0.054544) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.94e-03 1.42e-03] (1.18e-03 4.17e-02)
+INFO:src.train:Epoch 51 complete. Avg loss 0.058985, lr 0.001000
+INFO:src.train:Epoch 52
+INFO:src.train:[E 52 I 0] loss 0.079649 (avg 0.079649) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.92e-03 1.29e-03] (1.28e-03 4.70e-02)
+INFO:src.train:Epoch 52 complete. Avg loss 0.066238, lr 0.001000
+INFO:src.train:Epoch 53
+INFO:src.train:[E 53 I 0] loss 0.061497 (avg 0.061497) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.94e-03 9.62e-04] (9.24e-04 4.10e-02)
+INFO:src.train:Epoch 53 complete. Avg loss 0.062009, lr 0.001000
+INFO:src.train:Epoch 54
+INFO:src.train:[E 54 I 0] loss 0.056088 (avg 0.056088) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.35e-03 1.09e-03] (8.86e-04 3.96e-02)
+INFO:src.train:Epoch 54 complete. Avg loss 0.055338, lr 0.001000
+INFO:src.train:Epoch 55
+INFO:src.train:[E 55 I 0] loss 0.067252 (avg 0.067252) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.67e-03 1.14e-03] (1.01e-03 3.61e-02)
+INFO:src.train:Epoch 55 complete. Avg loss 0.063314, lr 0.001000
+INFO:src.train:Epoch 56
+INFO:src.train:[E 56 I 0] loss 0.073198 (avg 0.073198) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [6.49e-03 1.30e-03] (1.30e-03 4.23e-02)
+INFO:src.train:Epoch 56 complete. Avg loss 0.057393, lr 0.001000
+INFO:src.train:Epoch 57
+INFO:src.train:[E 57 I 0] loss 0.068044 (avg 0.068044) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.37e-03 1.20e-03] (1.03e-03 3.64e-02)
+INFO:src.train:Epoch 57 complete. Avg loss 0.067416, lr 0.001000
+INFO:src.train:Epoch 58
+INFO:src.train:[E 58 I 0] loss 0.047634 (avg 0.047634) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [3.67e-03 1.16e-03] (1.12e-03 3.70e-02)
+INFO:src.train:Epoch 58 complete. Avg loss 0.049724, lr 0.001000
+INFO:src.train:Epoch 59
+INFO:src.train:[E 59 I 0] loss 0.080228 (avg 0.080228) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.38e-03 1.08e-03] (1.08e-03 3.96e-02)
+INFO:src.train:Epoch 59 complete. Avg loss 0.062476, lr 0.001000
+INFO:src.train:Epoch 60
+INFO:src.train:[E 60 I 0] loss 0.065085 (avg 0.065085) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.79e-03 1.30e-03] (1.20e-03 4.10e-02)
+INFO:src.train:Epoch 60 complete. Avg loss 0.064775, lr 0.001000
+INFO:src.train:Epoch 61
+INFO:src.train:[E 61 I 0] loss 0.052014 (avg 0.052014) mem 5084.96MB (152.4ms)
+INFO:src.train:    grad: [2.29e-03 1.34e-03] (1.09e-03 3.51e-02)
+INFO:src.train:Epoch 61 complete. Avg loss 0.062174, lr 0.001000
+INFO:src.train:Epoch 62
+INFO:src.train:[E 62 I 0] loss 0.049199 (avg 0.049199) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.71e-03 1.17e-03] (1.12e-03 3.74e-02)
+INFO:src.train:Epoch 62 complete. Avg loss 0.057359, lr 0.001000
+INFO:src.train:Epoch 63
+INFO:src.train:[E 63 I 0] loss 0.058135 (avg 0.058135) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.84e-03 9.99e-04] (9.21e-04 3.19e-02)
+INFO:src.train:Epoch 63 complete. Avg loss 0.060204, lr 0.001000
+INFO:src.train:Epoch 64
+INFO:src.train:[E 64 I 0] loss 0.050141 (avg 0.050141) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.48e-03 1.27e-03] (1.00e-03 3.29e-02)
+INFO:src.train:Epoch 64 complete. Avg loss 0.049531, lr 0.001000
+INFO:src.train:Epoch 65
+INFO:src.train:[E 65 I 0] loss 0.045613 (avg 0.045613) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.83e-03 8.88e-04] (7.86e-04 2.99e-02)
+INFO:src.train:Epoch 65 complete. Avg loss 0.061889, lr 0.001000
+INFO:src.train:Epoch 66
+INFO:src.train:[E 66 I 0] loss 0.052181 (avg 0.052181) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.08e-03 1.42e-03] (1.14e-03 4.07e-02)
+INFO:src.train:Epoch 66 complete. Avg loss 0.049081, lr 0.001000
+INFO:src.train:Epoch 67
+INFO:src.train:[E 67 I 0] loss 0.045315 (avg 0.045315) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.11e-03 1.85e-03] (1.45e-03 4.37e-02)
+INFO:src.train:Epoch 67 complete. Avg loss 0.048409, lr 0.001000
+INFO:src.train:Epoch 68
+INFO:src.train:[E 68 I 0] loss 0.083901 (avg 0.083901) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [9.54e-03 2.05e-03] (1.95e-03 6.69e-02)
+INFO:src.train:Epoch 68 complete. Avg loss 0.059288, lr 0.001000
+INFO:src.train:Epoch 69
+INFO:src.train:[E 69 I 0] loss 0.047854 (avg 0.047854) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.01e-03 1.36e-03] (1.27e-03 3.83e-02)
+INFO:src.train:Epoch 69 complete. Avg loss 0.049488, lr 0.001000
+INFO:src.train:Epoch 70
+INFO:src.train:[E 70 I 0] loss 0.047082 (avg 0.047082) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.94e-03 1.19e-03] (1.10e-03 3.63e-02)
+INFO:src.train:Epoch 70 complete. Avg loss 0.059665, lr 0.001000
+INFO:src.train:Epoch 71
+INFO:src.train:[E 71 I 0] loss 0.064080 (avg 0.064080) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.97e-03 1.61e-03] (1.25e-03 3.71e-02)
+INFO:src.train:Epoch 71 complete. Avg loss 0.054523, lr 0.001000
+INFO:src.train:Epoch 72
+INFO:src.train:[E 72 I 0] loss 0.049954 (avg 0.049954) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.71e-03 1.85e-03] (1.60e-03 4.37e-02)
+INFO:src.train:Epoch 72 complete. Avg loss 0.047570, lr 0.001000
+INFO:src.train:Epoch 73
+INFO:src.train:[E 73 I 0] loss 0.044825 (avg 0.044825) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.94e-03 1.18e-03] (1.03e-03 3.94e-02)
+INFO:src.train:Epoch 73 complete. Avg loss 0.053713, lr 0.001000
+INFO:src.train:Epoch 74
+INFO:src.train:[E 74 I 0] loss 0.071906 (avg 0.071906) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.90e-03 1.46e-03] (1.28e-03 3.74e-02)
+INFO:src.train:Epoch 74 complete. Avg loss 0.068316, lr 0.001000
+INFO:src.train:Epoch 75
+INFO:src.train:[E 75 I 0] loss 0.039857 (avg 0.039857) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.56e-03 1.17e-03] (1.05e-03 3.21e-02)
+INFO:src.train:Epoch 75 complete. Avg loss 0.051504, lr 0.001000
+INFO:src.train:Epoch 76
+INFO:src.train:[E 76 I 0] loss 0.073869 (avg 0.073869) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.11e-03 1.58e-03] (1.41e-03 3.82e-02)
+INFO:src.train:Epoch 76 complete. Avg loss 0.057125, lr 0.001000
+INFO:src.train:Epoch 77
+INFO:src.train:[E 77 I 0] loss 0.055181 (avg 0.055181) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.10e-03 1.32e-03] (1.20e-03 3.67e-02)
+INFO:src.train:Epoch 77 complete. Avg loss 0.049178, lr 0.001000
+INFO:src.train:Epoch 78
+INFO:src.train:[E 78 I 0] loss 0.043833 (avg 0.043833) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.30e-03 1.32e-03] (1.24e-03 3.82e-02)
+INFO:src.train:Epoch 78 complete. Avg loss 0.050061, lr 0.001000
+INFO:src.train:Epoch 79
+INFO:src.train:[E 79 I 0] loss 0.041533 (avg 0.041533) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.30e-03 1.29e-03] (1.18e-03 3.83e-02)
+INFO:src.train:Epoch 79 complete. Avg loss 0.044004, lr 0.001000
+INFO:src.train:Epoch 80
+INFO:src.train:[E 80 I 0] loss 0.041056 (avg 0.041056) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.82e-03 1.58e-03] (1.25e-03 3.93e-02)
+INFO:src.train:Epoch 80 complete. Avg loss 0.046789, lr 0.001000
+INFO:src.train:Epoch 81
+INFO:src.train:[E 81 I 0] loss 0.057911 (avg 0.057911) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.72e-03 1.29e-03] (1.17e-03 3.82e-02)
+INFO:src.train:Epoch 81 complete. Avg loss 0.051691, lr 0.001000
+INFO:src.train:Epoch 82
+INFO:src.train:[E 82 I 0] loss 0.045654 (avg 0.045654) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.08e-03 8.46e-04] (7.94e-04 3.17e-02)
+INFO:src.train:Epoch 82 complete. Avg loss 0.050237, lr 0.001000
+INFO:src.train:Epoch 83
+INFO:src.train:[E 83 I 0] loss 0.050045 (avg 0.050045) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [5.06e-03 1.43e-03] (1.30e-03 3.60e-02)
+INFO:src.train:Epoch 83 complete. Avg loss 0.044535, lr 0.001000
+INFO:src.train:Epoch 84
+INFO:src.train:[E 84 I 0] loss 0.037911 (avg 0.037911) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.84e-03 1.17e-03] (9.49e-04 3.33e-02)
+INFO:src.train:Epoch 84 complete. Avg loss 0.044659, lr 0.001000
+INFO:src.train:Epoch 85
+INFO:src.train:[E 85 I 0] loss 0.046804 (avg 0.046804) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.16e-03 1.60e-03] (1.34e-03 4.07e-02)
+INFO:src.train:Epoch 85 complete. Avg loss 0.053185, lr 0.001000
+INFO:src.train:Epoch 86
+INFO:src.train:[E 86 I 0] loss 0.040324 (avg 0.040324) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.76e-03 1.44e-03] (1.18e-03 3.60e-02)
+INFO:src.train:Epoch 86 complete. Avg loss 0.049612, lr 0.001000
+INFO:src.train:Epoch 87
+INFO:src.train:[E 87 I 0] loss 0.041982 (avg 0.041982) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.69e-03 1.06e-03] (1.06e-03 3.44e-02)
+INFO:src.train:Epoch 87 complete. Avg loss 0.041085, lr 0.001000
+INFO:src.train:Epoch 88
+INFO:src.train:[E 88 I 0] loss 0.045126 (avg 0.045126) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.96e-03 1.14e-03] (1.09e-03 3.70e-02)
+INFO:src.train:Epoch 88 complete. Avg loss 0.045608, lr 0.001000
+INFO:src.train:Epoch 89
+INFO:src.train:[E 89 I 0] loss 0.046396 (avg 0.046396) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.91e-03 1.20e-03] (1.15e-03 3.41e-02)
+INFO:src.train:Epoch 89 complete. Avg loss 0.047106, lr 0.001000
+INFO:src.train:Epoch 90
+INFO:src.train:[E 90 I 0] loss 0.065979 (avg 0.065979) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [5.51e-03 1.18e-03] (1.18e-03 3.93e-02)
+INFO:src.train:Epoch 90 complete. Avg loss 0.051649, lr 0.001000
+INFO:src.train:Epoch 91
+INFO:src.train:[E 91 I 0] loss 0.065143 (avg 0.065143) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [6.69e-03 1.39e-03] (1.39e-03 4.61e-02)
+INFO:src.train:Epoch 91 complete. Avg loss 0.056325, lr 0.001000
+INFO:src.train:Epoch 92
+INFO:src.train:[E 92 I 0] loss 0.041761 (avg 0.041761) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.72e-03 1.38e-03] (1.38e-03 3.87e-02)
+INFO:src.train:Epoch 92 complete. Avg loss 0.045130, lr 0.001000
+INFO:src.train:Epoch 93
+INFO:src.train:[E 93 I 0] loss 0.060469 (avg 0.060469) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.70e-03 1.38e-03] (1.38e-03 3.87e-02)
+INFO:src.train:Epoch 93 complete. Avg loss 0.054256, lr 0.001000
+INFO:src.train:Epoch 94
+INFO:src.train:[E 94 I 0] loss 0.056246 (avg 0.056246) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.85e-03 1.29e-03] (1.27e-03 3.73e-02)
+INFO:src.train:Epoch 94 complete. Avg loss 0.048824, lr 0.001000
+INFO:src.train:Epoch 95
+INFO:src.train:[E 95 I 0] loss 0.053168 (avg 0.053168) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [4.06e-03 2.01e-03] (1.43e-03 4.05e-02)
+INFO:src.train:Epoch 95 complete. Avg loss 0.044138, lr 0.001000
+INFO:src.train:Epoch 96
+INFO:src.train:[E 96 I 0] loss 0.040505 (avg 0.040505) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.22e-03 1.47e-03] (1.26e-03 3.75e-02)
+INFO:src.train:Epoch 96 complete. Avg loss 0.042837, lr 0.001000
+INFO:src.train:Epoch 97
+INFO:src.train:[E 97 I 0] loss 0.040758 (avg 0.040758) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.93e-03 1.19e-03] (1.11e-03 3.55e-02)
+INFO:src.train:Epoch 97 complete. Avg loss 0.040139, lr 0.001000
+INFO:src.train:Epoch 98
+INFO:src.train:[E 98 I 0] loss 0.033119 (avg 0.033119) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.47e-03 1.10e-03] (9.92e-04 3.15e-02)
+INFO:src.train:Epoch 98 complete. Avg loss 0.043773, lr 0.001000
+INFO:src.train:Epoch 99
+INFO:src.train:[E 99 I 0] loss 0.047991 (avg 0.047991) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.83e-03 1.31e-03] (1.07e-03 3.25e-02)
+INFO:src.train:Epoch 99 complete. Avg loss 0.040809, lr 0.001000
+INFO:src.train:Epoch 100
+INFO:src.train:[E 100 I 0] loss 0.050164 (avg 0.050164) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.34e-03 9.39e-04] (9.39e-04 3.05e-02)
+INFO:src.train:Epoch 100 complete. Avg loss 0.058017, lr 0.001000
+INFO:src.train:Epoch 101
+INFO:src.train:[E 101 I 0] loss 0.050655 (avg 0.050655) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.04e-03 1.02e-03] (9.97e-04 2.87e-02)
+INFO:src.train:Epoch 101 complete. Avg loss 0.043834, lr 0.001000
+INFO:src.train:Epoch 102
+INFO:src.train:[E 102 I 0] loss 0.035914 (avg 0.035914) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.13e-03 1.18e-03] (8.58e-04 2.91e-02)
+INFO:src.train:Epoch 102 complete. Avg loss 0.035609, lr 0.001000
+INFO:src.train:Epoch 103
+INFO:src.train:[E 103 I 0] loss 0.036349 (avg 0.036349) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.50e-03 1.03e-03] (8.31e-04 2.77e-02)
+INFO:src.train:Epoch 103 complete. Avg loss 0.039187, lr 0.001000
+INFO:src.train:Epoch 104
+INFO:src.train:[E 104 I 0] loss 0.037601 (avg 0.037601) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.41e-03 9.23e-04] (8.05e-04 2.56e-02)
+INFO:src.train:Epoch 104 complete. Avg loss 0.045312, lr 0.001000
+INFO:src.train:Epoch 105
+INFO:src.train:[E 105 I 0] loss 0.036155 (avg 0.036155) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.75e-03 1.17e-03] (9.09e-04 3.20e-02)
+INFO:src.train:Epoch 105 complete. Avg loss 0.041501, lr 0.001000
+INFO:src.train:Epoch 106
+INFO:src.train:[E 106 I 0] loss 0.034075 (avg 0.034075) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.01e-03 1.21e-03] (8.99e-04 2.98e-02)
+INFO:src.train:Epoch 106 complete. Avg loss 0.035821, lr 0.001000
+INFO:src.train:Epoch 107
+INFO:src.train:[E 107 I 0] loss 0.052126 (avg 0.052126) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.93e-03 9.73e-04] (9.17e-04 2.60e-02)
+INFO:src.train:Epoch 107 complete. Avg loss 0.040938, lr 0.001000
+INFO:src.train:Epoch 108
+INFO:src.train:[E 108 I 0] loss 0.037218 (avg 0.037218) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.43e-03 7.69e-04] (7.15e-04 2.47e-02)
+INFO:src.train:Epoch 108 complete. Avg loss 0.036058, lr 0.001000
+INFO:src.train:Epoch 109
+INFO:src.train:[E 109 I 0] loss 0.032574 (avg 0.032574) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.43e-03 7.17e-04] (6.58e-04 2.37e-02)
+INFO:src.train:Epoch 109 complete. Avg loss 0.040816, lr 0.001000
+INFO:src.train:Epoch 110
+INFO:src.train:[E 110 I 0] loss 0.046433 (avg 0.046433) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.49e-03 9.87e-04] (9.21e-04 2.92e-02)
+INFO:src.train:Epoch 110 complete. Avg loss 0.039995, lr 0.001000
+INFO:src.train:Epoch 111
+INFO:src.train:[E 111 I 0] loss 0.036918 (avg 0.036918) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.10e-03 1.19e-03] (8.80e-04 3.05e-02)
+INFO:src.train:Epoch 111 complete. Avg loss 0.042606, lr 0.001000
+INFO:src.train:Epoch 112
+INFO:src.train:[E 112 I 0] loss 0.047882 (avg 0.047882) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.04e-03 8.83e-04] (8.83e-04 3.27e-02)
+INFO:src.train:Epoch 112 complete. Avg loss 0.046990, lr 0.001000
+INFO:src.train:Epoch 113
+INFO:src.train:[E 113 I 0] loss 0.037482 (avg 0.037482) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.13e-03 1.11e-03] (1.00e-03 3.42e-02)
+INFO:src.train:Epoch 113 complete. Avg loss 0.040362, lr 0.001000
+INFO:src.train:Epoch 114
+INFO:src.train:[E 114 I 0] loss 0.031802 (avg 0.031802) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.45e-03 1.11e-03] (8.26e-04 3.09e-02)
+INFO:src.train:Epoch 114 complete. Avg loss 0.033254, lr 0.001000
+INFO:src.train:Epoch 115
+INFO:src.train:[E 115 I 0] loss 0.029923 (avg 0.029923) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.33e-03 9.85e-04] (7.35e-04 2.74e-02)
+INFO:src.train:Epoch 115 complete. Avg loss 0.037005, lr 0.001000
+INFO:src.train:Epoch 116
+INFO:src.train:[E 116 I 0] loss 0.038913 (avg 0.038913) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.36e-03 1.47e-03] (1.15e-03 3.30e-02)
+INFO:src.train:Epoch 116 complete. Avg loss 0.043065, lr 0.001000
+INFO:src.train:Epoch 117
+INFO:src.train:[E 117 I 0] loss 0.050680 (avg 0.050680) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [4.28e-03 1.16e-03] (1.07e-03 3.11e-02)
+INFO:src.train:Epoch 117 complete. Avg loss 0.055743, lr 0.001000
+INFO:src.train:Epoch 118
+INFO:src.train:[E 118 I 0] loss 0.038178 (avg 0.038178) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.75e-03 1.72e-03] (1.49e-03 3.89e-02)
+INFO:src.train:Epoch 118 complete. Avg loss 0.041192, lr 0.001000
+INFO:src.train:Epoch 119
+INFO:src.train:[E 119 I 0] loss 0.046379 (avg 0.046379) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.63e-03 1.23e-03] (1.23e-03 3.25e-02)
+INFO:src.train:Epoch 119 complete. Avg loss 0.041131, lr 0.001000
+INFO:src.train:Epoch 120
+INFO:src.train:[E 120 I 0] loss 0.038812 (avg 0.038812) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.11e-03 1.65e-03] (1.42e-03 3.82e-02)
+INFO:src.train:Epoch 120 complete. Avg loss 0.038441, lr 0.001000
+INFO:src.train:Epoch 121
+INFO:src.train:[E 121 I 0] loss 0.033499 (avg 0.033499) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.38e-03 1.21e-03] (1.16e-03 3.15e-02)
+INFO:src.train:Epoch 121 complete. Avg loss 0.042990, lr 0.001000
+INFO:src.train:Epoch 122
+INFO:src.train:[E 122 I 0] loss 0.034222 (avg 0.034222) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.02e-03 1.27e-03] (1.10e-03 3.27e-02)
+INFO:src.train:Epoch 122 complete. Avg loss 0.039674, lr 0.001000
+INFO:src.train:Epoch 123
+INFO:src.train:[E 123 I 0] loss 0.044813 (avg 0.044813) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.03e-03 1.01e-03] (9.54e-04 2.83e-02)
+INFO:src.train:Epoch 123 complete. Avg loss 0.040744, lr 0.001000
+INFO:src.train:Epoch 124
+INFO:src.train:[E 124 I 0] loss 0.046663 (avg 0.046663) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.77e-03 1.07e-03] (1.03e-03 3.16e-02)
+INFO:src.train:Epoch 124 complete. Avg loss 0.044382, lr 0.001000
+INFO:src.train:Epoch 125
+INFO:src.train:[E 125 I 0] loss 0.047061 (avg 0.047061) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.37e-03 1.14e-03] (1.13e-03 3.20e-02)
+INFO:src.train:Epoch 125 complete. Avg loss 0.038746, lr 0.001000
+INFO:src.train:Epoch 126
+INFO:src.train:[E 126 I 0] loss 0.033177 (avg 0.033177) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.62e-03 1.14e-03] (9.05e-04 3.02e-02)
+INFO:src.train:Epoch 126 complete. Avg loss 0.047338, lr 0.001000
+INFO:src.train:Epoch 127
+INFO:src.train:[E 127 I 0] loss 0.034864 (avg 0.034864) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.33e-03 1.77e-03] (1.18e-03 3.32e-02)
+INFO:src.train:Epoch 127 complete. Avg loss 0.045278, lr 0.001000
+INFO:src.train:Epoch 128
+INFO:src.train:[E 128 I 0] loss 0.032883 (avg 0.032883) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.24e-03 1.28e-03] (1.02e-03 2.96e-02)
+INFO:src.train:Epoch 128 complete. Avg loss 0.041703, lr 0.001000
+INFO:src.train:Epoch 129
+INFO:src.train:[E 129 I 0] loss 0.042109 (avg 0.042109) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.20e-03 1.09e-03] (1.03e-03 2.83e-02)
+INFO:src.train:Epoch 129 complete. Avg loss 0.045640, lr 0.001000
+INFO:src.train:Epoch 130
+INFO:src.train:[E 130 I 0] loss 0.035433 (avg 0.035433) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.89e-03 1.01e-03] (1.01e-03 2.97e-02)
+INFO:src.train:Epoch 130 complete. Avg loss 0.038944, lr 0.001000
+INFO:src.train:Epoch 131
+INFO:src.train:[E 131 I 0] loss 0.033075 (avg 0.033075) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.88e-03 1.15e-03] (1.12e-03 2.83e-02)
+INFO:src.train:Epoch 131 complete. Avg loss 0.031905, lr 0.001000
+INFO:src.train:Epoch 132
+INFO:src.train:[E 132 I 0] loss 0.046434 (avg 0.046434) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.92e-03 1.51e-03] (1.50e-03 3.35e-02)
+INFO:src.train:Epoch 132 complete. Avg loss 0.046574, lr 0.001000
+INFO:src.train:Epoch 133
+INFO:src.train:[E 133 I 0] loss 0.035849 (avg 0.035849) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.70e-03 1.58e-03] (1.40e-03 3.74e-02)
+INFO:src.train:Epoch 133 complete. Avg loss 0.034474, lr 0.001000
+INFO:src.train:Epoch 134
+INFO:src.train:[E 134 I 0] loss 0.035737 (avg 0.035737) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.32e-03 1.25e-03] (1.17e-03 3.24e-02)
+INFO:src.train:Epoch 134 complete. Avg loss 0.034696, lr 0.001000
+INFO:src.train:Epoch 135
+INFO:src.train:[E 135 I 0] loss 0.032265 (avg 0.032265) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.03e-03 1.36e-03] (1.04e-03 2.97e-02)
+INFO:src.train:Epoch 135 complete. Avg loss 0.040804, lr 0.001000
+INFO:src.train:Epoch 136
+INFO:src.train:[E 136 I 0] loss 0.031167 (avg 0.031167) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.04e-03 1.33e-03] (1.19e-03 3.25e-02)
+INFO:src.train:Epoch 136 complete. Avg loss 0.031036, lr 0.001000
+INFO:src.train:Epoch 137
+INFO:src.train:[E 137 I 0] loss 0.037080 (avg 0.037080) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.48e-03 9.96e-04] (8.89e-04 2.94e-02)
+INFO:src.train:Epoch 137 complete. Avg loss 0.032343, lr 0.001000
+INFO:src.train:Epoch 138
+INFO:src.train:[E 138 I 0] loss 0.034780 (avg 0.034780) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.68e-03 1.25e-03] (8.98e-04 2.90e-02)
+INFO:src.train:Epoch 138 complete. Avg loss 0.032447, lr 0.001000
+INFO:src.train:Epoch 139
+INFO:src.train:[E 139 I 0] loss 0.030707 (avg 0.030707) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.81e-03 9.96e-04] (7.96e-04 2.77e-02)
+INFO:src.train:Epoch 139 complete. Avg loss 0.030407, lr 0.001000
+INFO:src.train:Epoch 140
+INFO:src.train:[E 140 I 0] loss 0.031595 (avg 0.031595) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.20e-03 7.38e-04] (6.13e-04 2.67e-02)
+INFO:src.train:Epoch 140 complete. Avg loss 0.036953, lr 0.001000
+INFO:src.train:Epoch 141
+INFO:src.train:[E 141 I 0] loss 0.049063 (avg 0.049063) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.93e-03 9.23e-04] (9.23e-04 2.77e-02)
+INFO:src.train:Epoch 141 complete. Avg loss 0.042715, lr 0.001000
+INFO:src.train:Epoch 142
+INFO:src.train:[E 142 I 0] loss 0.027837 (avg 0.027837) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.62e-03 8.29e-04] (7.02e-04 2.65e-02)
+INFO:src.train:Epoch 142 complete. Avg loss 0.035858, lr 0.001000
+INFO:src.train:Epoch 143
+INFO:src.train:[E 143 I 0] loss 0.046131 (avg 0.046131) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.16e-03 9.10e-04] (9.10e-04 2.67e-02)
+INFO:src.train:Epoch 143 complete. Avg loss 0.043438, lr 0.001000
+INFO:src.train:Epoch 144
+INFO:src.train:[E 144 I 0] loss 0.031069 (avg 0.031069) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.00e-03 9.73e-04] (8.41e-04 2.92e-02)
+INFO:src.train:Epoch 144 complete. Avg loss 0.035862, lr 0.001000
+INFO:src.train:Epoch 145
+INFO:src.train:[E 145 I 0] loss 0.031660 (avg 0.031660) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.85e-03 1.07e-03] (9.01e-04 2.85e-02)
+INFO:src.train:Epoch 145 complete. Avg loss 0.048255, lr 0.001000
+INFO:src.train:Epoch 146
+INFO:src.train:[E 146 I 0] loss 0.032521 (avg 0.032521) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.07e-03 1.42e-03] (1.24e-03 3.57e-02)
+INFO:src.train:Epoch 146 complete. Avg loss 0.038992, lr 0.001000
+INFO:src.train:Epoch 147
+INFO:src.train:[E 147 I 0] loss 0.053868 (avg 0.053868) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.03e-03 1.39e-03] (1.27e-03 3.76e-02)
+INFO:src.train:Epoch 147 complete. Avg loss 0.037881, lr 0.001000
+INFO:src.train:Epoch 148
+INFO:src.train:[E 148 I 0] loss 0.030596 (avg 0.030596) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.11e-03 1.59e-03] (1.08e-03 3.48e-02)
+INFO:src.train:Epoch 148 complete. Avg loss 0.037015, lr 0.001000
+INFO:src.train:Epoch 149
+INFO:src.train:[E 149 I 0] loss 0.034737 (avg 0.034737) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.95e-03 1.56e-03] (1.19e-03 3.58e-02)
+INFO:src.train:Epoch 149 complete. Avg loss 0.036903, lr 0.001000
+INFO:src.train:Epoch 150
+INFO:src.train:[E 150 I 0] loss 0.050820 (avg 0.050820) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.79e-03 1.88e-03] (1.40e-03 4.01e-02)
+INFO:src.train:Epoch 150 complete. Avg loss 0.045857, lr 0.001000
+INFO:src.train:Epoch 151
+INFO:src.train:[E 151 I 0] loss 0.033533 (avg 0.033533) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.38e-03 1.25e-03] (1.15e-03 3.20e-02)
+INFO:src.train:Epoch 151 complete. Avg loss 0.034220, lr 0.001000
+INFO:src.train:Epoch 152
+INFO:src.train:[E 152 I 0] loss 0.029549 (avg 0.029549) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.72e-03 1.08e-03] (8.55e-04 2.99e-02)
+INFO:src.train:Epoch 152 complete. Avg loss 0.037428, lr 0.001000
+INFO:src.train:Epoch 153
+INFO:src.train:[E 153 I 0] loss 0.045183 (avg 0.045183) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [4.42e-03 1.39e-03] (1.12e-03 3.56e-02)
+INFO:src.train:Epoch 153 complete. Avg loss 0.037930, lr 0.001000
+INFO:src.train:Epoch 154
+INFO:src.train:[E 154 I 0] loss 0.050755 (avg 0.050755) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.47e-03 1.61e-03] (1.32e-03 3.37e-02)
+INFO:src.train:Epoch 154 complete. Avg loss 0.037896, lr 0.001000
+INFO:src.train:Epoch 155
+INFO:src.train:[E 155 I 0] loss 0.029935 (avg 0.029935) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.58e-03 9.98e-04] (9.13e-04 2.84e-02)
+INFO:src.train:Epoch 155 complete. Avg loss 0.035581, lr 0.001000
+INFO:src.train:Epoch 156
+INFO:src.train:[E 156 I 0] loss 0.030224 (avg 0.030224) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.78e-03 1.30e-03] (9.40e-04 3.18e-02)
+INFO:src.train:Epoch 156 complete. Avg loss 0.028536, lr 0.001000
+INFO:src.train:Epoch 157
+INFO:src.train:[E 157 I 0] loss 0.030955 (avg 0.030955) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.31e-03 1.17e-03] (9.33e-04 3.20e-02)
+INFO:src.train:Epoch 157 complete. Avg loss 0.035180, lr 0.001000
+INFO:src.train:Epoch 158
+INFO:src.train:[E 158 I 0] loss 0.041104 (avg 0.041104) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.84e-03 1.44e-03] (1.12e-03 3.28e-02)
+INFO:src.train:Epoch 158 complete. Avg loss 0.040742, lr 0.001000
+INFO:src.train:Epoch 159
+INFO:src.train:[E 159 I 0] loss 0.045687 (avg 0.045687) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.21e-02 1.45e-03] (1.19e-03 5.05e-02)
+INFO:src.train:Epoch 159 complete. Avg loss 0.042550, lr 0.001000
+INFO:src.train:Epoch 160
+INFO:src.train:[E 160 I 0] loss 0.037923 (avg 0.037923) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [5.28e-03 1.31e-03] (1.14e-03 3.52e-02)
+INFO:src.train:Epoch 160 complete. Avg loss 0.037835, lr 0.001000
+INFO:src.train:Epoch 161
+INFO:src.train:[E 161 I 0] loss 0.030897 (avg 0.030897) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.18e-03 1.09e-03] (1.07e-03 2.94e-02)
+INFO:src.train:Epoch 161 complete. Avg loss 0.028999, lr 0.001000
+INFO:src.train:Epoch 162
+INFO:src.train:[E 162 I 0] loss 0.027918 (avg 0.027918) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.36e-03 8.58e-04] (8.58e-04 2.88e-02)
+INFO:src.train:Epoch 162 complete. Avg loss 0.035364, lr 0.001000
+INFO:src.train:Epoch 163
+INFO:src.train:[E 163 I 0] loss 0.030149 (avg 0.030149) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.23e-03 1.32e-03] (1.02e-03 3.17e-02)
+INFO:src.train:Epoch 163 complete. Avg loss 0.038963, lr 0.001000
+INFO:src.train:Epoch 164
+INFO:src.train:[E 164 I 0] loss 0.049076 (avg 0.049076) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [6.70e-03 1.86e-03] (1.39e-03 4.72e-02)
+INFO:src.train:Epoch 164 complete. Avg loss 0.046208, lr 0.001000
+INFO:src.train:Epoch 165
+INFO:src.train:[E 165 I 0] loss 0.037629 (avg 0.037629) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.84e-03 1.59e-03] (1.22e-03 3.59e-02)
+INFO:src.train:Epoch 165 complete. Avg loss 0.037869, lr 0.001000
+INFO:src.train:Epoch 166
+INFO:src.train:[E 166 I 0] loss 0.026951 (avg 0.026951) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.97e-03 1.82e-03] (1.16e-03 3.85e-02)
+INFO:src.train:Epoch 166 complete. Avg loss 0.030224, lr 0.001000
+INFO:src.train:Epoch 167
+INFO:src.train:[E 167 I 0] loss 0.028359 (avg 0.028359) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.08e-03 1.31e-03] (9.50e-04 3.64e-02)
+INFO:src.train:Epoch 167 complete. Avg loss 0.030954, lr 0.001000
+INFO:src.train:Epoch 168
+INFO:src.train:[E 168 I 0] loss 0.028481 (avg 0.028481) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.15e-03 1.17e-03] (9.06e-04 3.38e-02)
+INFO:src.train:Epoch 168 complete. Avg loss 0.045885, lr 0.001000
+INFO:src.train:Epoch 169
+INFO:src.train:[E 169 I 0] loss 0.027607 (avg 0.027607) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.97e-03 1.93e-03] (1.26e-03 4.06e-02)
+INFO:src.train:Epoch 169 complete. Avg loss 0.043363, lr 0.001000
+INFO:src.train:Epoch 170
+INFO:src.train:[E 170 I 0] loss 0.034560 (avg 0.034560) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.72e-03 2.33e-03] (1.36e-03 4.21e-02)
+INFO:src.train:Epoch 170 complete. Avg loss 0.033070, lr 0.001000
+INFO:src.train:Epoch 171
+INFO:src.train:[E 171 I 0] loss 0.034076 (avg 0.034076) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.43e-03 2.07e-03] (1.45e-03 3.85e-02)
+INFO:src.train:Epoch 171 complete. Avg loss 0.036645, lr 0.001000
+INFO:src.train:Epoch 172
+INFO:src.train:[E 172 I 0] loss 0.047804 (avg 0.047804) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.41e-03 1.71e-03] (1.57e-03 4.34e-02)
+INFO:src.train:Epoch 172 complete. Avg loss 0.048761, lr 0.001000
+INFO:src.train:Epoch 173
+INFO:src.train:[E 173 I 0] loss 0.031508 (avg 0.031508) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.30e-03 1.76e-03] (1.34e-03 3.99e-02)
+INFO:src.train:Epoch 173 complete. Avg loss 0.033359, lr 0.001000
+INFO:src.train:Epoch 174
+INFO:src.train:[E 174 I 0] loss 0.037618 (avg 0.037618) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.56e-03 1.42e-03] (1.08e-03 3.48e-02)
+INFO:src.train:Epoch 174 complete. Avg loss 0.035561, lr 0.001000
+INFO:src.train:Epoch 175
+INFO:src.train:[E 175 I 0] loss 0.030352 (avg 0.030352) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.97e-03 1.39e-03] (9.88e-04 3.30e-02)
+INFO:src.train:Epoch 175 complete. Avg loss 0.031486, lr 0.001000
+INFO:src.train:Epoch 176
+INFO:src.train:[E 176 I 0] loss 0.029196 (avg 0.029196) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.46e-03 1.20e-03] (8.41e-04 3.02e-02)
+INFO:src.train:Epoch 176 complete. Avg loss 0.037349, lr 0.001000
+INFO:src.train:Epoch 177
+INFO:src.train:[E 177 I 0] loss 0.030126 (avg 0.030126) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.03e-03 1.18e-03] (9.30e-04 3.03e-02)
+INFO:src.train:Epoch 177 complete. Avg loss 0.028676, lr 0.001000
+INFO:src.train:Epoch 178
+INFO:src.train:[E 178 I 0] loss 0.028243 (avg 0.028243) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.00e-03 1.10e-03] (8.08e-04 2.96e-02)
+INFO:src.train:Epoch 178 complete. Avg loss 0.034060, lr 0.001000
+INFO:src.train:Epoch 179
+INFO:src.train:[E 179 I 0] loss 0.030176 (avg 0.030176) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.68e-03 1.26e-03] (1.05e-03 3.58e-02)
+INFO:src.train:Epoch 179 complete. Avg loss 0.030140, lr 0.001000
+INFO:src.train:Epoch 180
+INFO:src.train:[E 180 I 0] loss 0.039348 (avg 0.039348) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.78e-03 1.42e-03] (1.27e-03 3.19e-02)
+INFO:src.train:Epoch 180 complete. Avg loss 0.043277, lr 0.001000
+INFO:src.train:Epoch 181
+INFO:src.train:[E 181 I 0] loss 0.027351 (avg 0.027351) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.92e-03 1.22e-03] (8.56e-04 3.00e-02)
+INFO:src.train:Epoch 181 complete. Avg loss 0.040739, lr 0.001000
+INFO:src.train:Epoch 182
+INFO:src.train:[E 182 I 0] loss 0.049291 (avg 0.049291) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.87e-03 1.06e-03] (1.06e-03 2.88e-02)
+INFO:src.train:Epoch 182 complete. Avg loss 0.042551, lr 0.001000
+INFO:src.train:Epoch 183
+INFO:src.train:[E 183 I 0] loss 0.037480 (avg 0.037480) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.50e-03 1.56e-03] (1.23e-03 3.65e-02)
+INFO:src.train:Epoch 183 complete. Avg loss 0.042690, lr 0.001000
+INFO:src.train:Epoch 184
+INFO:src.train:[E 184 I 0] loss 0.030753 (avg 0.030753) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.92e-03 1.76e-03] (1.03e-03 3.40e-02)
+INFO:src.train:Epoch 184 complete. Avg loss 0.033604, lr 0.001000
+INFO:src.train:Epoch 185
+INFO:src.train:[E 185 I 0] loss 0.028168 (avg 0.028168) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.65e-03 1.45e-03] (7.87e-04 3.00e-02)
+INFO:src.train:Epoch 185 complete. Avg loss 0.038794, lr 0.001000
+INFO:src.train:Epoch 186
+INFO:src.train:[E 186 I 0] loss 0.027712 (avg 0.027712) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.60e-03 1.18e-03] (7.72e-04 3.15e-02)
+INFO:src.train:Epoch 186 complete. Avg loss 0.028066, lr 0.001000
+INFO:src.train:Epoch 187
+INFO:src.train:[E 187 I 0] loss 0.045245 (avg 0.045245) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.42e-03 1.37e-03] (1.07e-03 3.58e-02)
+INFO:src.train:Epoch 187 complete. Avg loss 0.043044, lr 0.001000
+INFO:src.train:Epoch 188
+INFO:src.train:[E 188 I 0] loss 0.027432 (avg 0.027432) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.03e-03 1.35e-03] (9.21e-04 3.42e-02)
+INFO:src.train:Epoch 188 complete. Avg loss 0.038086, lr 0.001000
+INFO:src.train:Epoch 189
+INFO:src.train:[E 189 I 0] loss 0.036672 (avg 0.036672) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.86e-03 1.26e-03] (9.58e-04 3.13e-02)
+INFO:src.train:Epoch 189 complete. Avg loss 0.036723, lr 0.001000
+INFO:src.train:Epoch 190
+INFO:src.train:[E 190 I 0] loss 0.036040 (avg 0.036040) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.32e-03 1.03e-03] (8.22e-04 3.02e-02)
+INFO:src.train:Epoch 190 complete. Avg loss 0.044193, lr 0.001000
+INFO:src.train:Epoch 191
+INFO:src.train:[E 191 I 0] loss 0.042581 (avg 0.042581) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.99e-03 1.18e-03] (1.05e-03 3.01e-02)
+INFO:src.train:Epoch 191 complete. Avg loss 0.032434, lr 0.001000
+INFO:src.train:Epoch 192
+INFO:src.train:[E 192 I 0] loss 0.027141 (avg 0.027141) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.81e-03 1.15e-03] (8.14e-04 3.04e-02)
+INFO:src.train:Epoch 192 complete. Avg loss 0.030053, lr 0.001000
+INFO:src.train:Epoch 193
+INFO:src.train:[E 193 I 0] loss 0.028705 (avg 0.028705) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.96e-03 1.38e-03] (8.22e-04 3.09e-02)
+INFO:src.train:Epoch 193 complete. Avg loss 0.035427, lr 0.001000
+INFO:src.train:Epoch 194
+INFO:src.train:[E 194 I 0] loss 0.035863 (avg 0.035863) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [5.86e-03 1.03e-03] (9.03e-04 3.11e-02)
+INFO:src.train:Epoch 194 complete. Avg loss 0.038090, lr 0.001000
+INFO:src.train:Epoch 195
+INFO:src.train:[E 195 I 0] loss 0.026889 (avg 0.026889) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.89e-03 1.31e-03] (7.94e-04 3.07e-02)
+INFO:src.train:Epoch 195 complete. Avg loss 0.037242, lr 0.001000
+INFO:src.train:Epoch 196
+INFO:src.train:[E 196 I 0] loss 0.030077 (avg 0.030077) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.31e-03 2.04e-03] (1.27e-03 4.17e-02)
+INFO:src.train:Epoch 196 complete. Avg loss 0.029158, lr 0.001000
+INFO:src.train:Epoch 197
+INFO:src.train:[E 197 I 0] loss 0.031452 (avg 0.031452) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.89e-03 2.08e-03] (1.06e-03 3.67e-02)
+INFO:src.train:Epoch 197 complete. Avg loss 0.043469, lr 0.001000
+INFO:src.train:Epoch 198
+INFO:src.train:[E 198 I 0] loss 0.050975 (avg 0.050975) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.51e-03 1.38e-03] (1.09e-03 3.32e-02)
+INFO:src.train:Epoch 198 complete. Avg loss 0.041468, lr 0.001000
+INFO:src.train:Epoch 199
+INFO:src.train:[E 199 I 0] loss 0.029443 (avg 0.029443) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.18e-03 1.25e-03] (1.01e-03 3.10e-02)
+INFO:src.train:Epoch 199 complete. Avg loss 0.038120, lr 0.001000
+INFO:src.train:Epoch 200
+INFO:src.train:[E 200 I 0] loss 0.028426 (avg 0.028426) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.71e-03 1.30e-03] (1.03e-03 3.03e-02)
+INFO:src.train:Epoch 200 complete. Avg loss 0.029440, lr 0.001000
+INFO:src.train:Epoch 201
+INFO:src.train:[E 201 I 0] loss 0.024526 (avg 0.024526) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.53e-03 9.17e-04] (7.06e-04 2.59e-02)
+INFO:src.train:Epoch 201 complete. Avg loss 0.031086, lr 0.001000
+INFO:src.train:Epoch 202
+INFO:src.train:[E 202 I 0] loss 0.028282 (avg 0.028282) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.42e-03 1.07e-03] (7.67e-04 2.79e-02)
+INFO:src.train:Epoch 202 complete. Avg loss 0.031442, lr 0.001000
+INFO:src.train:Epoch 203
+INFO:src.train:[E 203 I 0] loss 0.027601 (avg 0.027601) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.41e-03 1.10e-03] (8.72e-04 3.03e-02)
+INFO:src.train:Epoch 203 complete. Avg loss 0.033527, lr 0.001000
+INFO:src.train:Epoch 204
+INFO:src.train:[E 204 I 0] loss 0.028274 (avg 0.028274) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.39e-03 1.19e-03] (7.69e-04 2.83e-02)
+INFO:src.train:Epoch 204 complete. Avg loss 0.027340, lr 0.001000
+INFO:src.train:Epoch 205
+INFO:src.train:[E 205 I 0] loss 0.046861 (avg 0.046861) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.28e-03 1.14e-03] (1.14e-03 3.21e-02)
+INFO:src.train:Epoch 205 complete. Avg loss 0.033342, lr 0.001000
+INFO:src.train:Epoch 206
+INFO:src.train:[E 206 I 0] loss 0.026504 (avg 0.026504) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.36e-03 9.35e-04] (6.78e-04 2.54e-02)
+INFO:src.train:Epoch 206 complete. Avg loss 0.031010, lr 0.001000
+INFO:src.train:Epoch 207
+INFO:src.train:[E 207 I 0] loss 0.029760 (avg 0.029760) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.60e-03 1.14e-03] (8.03e-04 3.07e-02)
+INFO:src.train:Epoch 207 complete. Avg loss 0.031731, lr 0.001000
+INFO:src.train:Epoch 208
+INFO:src.train:[E 208 I 0] loss 0.043946 (avg 0.043946) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.55e-03 1.45e-03] (9.58e-04 3.23e-02)
+INFO:src.train:Epoch 208 complete. Avg loss 0.042111, lr 0.001000
+INFO:src.train:Epoch 209
+INFO:src.train:[E 209 I 0] loss 0.036002 (avg 0.036002) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.55e-03 1.04e-03] (8.34e-04 2.84e-02)
+INFO:src.train:Epoch 209 complete. Avg loss 0.043978, lr 0.001000
+INFO:src.train:Epoch 210
+INFO:src.train:[E 210 I 0] loss 0.047272 (avg 0.047272) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.73e-03 1.39e-03] (1.02e-03 3.26e-02)
+INFO:src.train:Epoch 210 complete. Avg loss 0.033411, lr 0.001000
+INFO:src.train:Epoch 211
+INFO:src.train:[E 211 I 0] loss 0.027991 (avg 0.027991) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.96e-03 1.33e-03] (8.92e-04 3.02e-02)
+INFO:src.train:Epoch 211 complete. Avg loss 0.027891, lr 0.001000
+INFO:src.train:Epoch 212
+INFO:src.train:[E 212 I 0] loss 0.045336 (avg 0.045336) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [5.82e-03 1.20e-03] (1.10e-03 3.66e-02)
+INFO:src.train:Epoch 212 complete. Avg loss 0.037715, lr 0.001000
+INFO:src.train:Epoch 213
+INFO:src.train:[E 213 I 0] loss 0.028641 (avg 0.028641) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.14e-03 1.15e-03] (8.95e-04 3.09e-02)
+INFO:src.train:Epoch 213 complete. Avg loss 0.032896, lr 0.001000
+INFO:src.train:Epoch 214
+INFO:src.train:[E 214 I 0] loss 0.045386 (avg 0.045386) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.11e-03 1.06e-03] (9.84e-04 3.58e-02)
+INFO:src.train:Epoch 214 complete. Avg loss 0.043441, lr 0.001000
+INFO:src.train:Epoch 215
+INFO:src.train:[E 215 I 0] loss 0.044818 (avg 0.044818) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [4.56e-03 9.62e-04] (9.43e-04 3.24e-02)
+INFO:src.train:Epoch 215 complete. Avg loss 0.032429, lr 0.001000
+INFO:src.train:Epoch 216
+INFO:src.train:[E 216 I 0] loss 0.024591 (avg 0.024591) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.90e-03 1.01e-03] (7.55e-04 2.77e-02)
+INFO:src.train:Epoch 216 complete. Avg loss 0.037845, lr 0.001000
+INFO:src.train:Epoch 217
+INFO:src.train:[E 217 I 0] loss 0.047654 (avg 0.047654) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [6.11e-03 1.12e-03] (9.80e-04 3.33e-02)
+INFO:src.train:Epoch 217 complete. Avg loss 0.033289, lr 0.001000
+INFO:src.train:Epoch 218
+INFO:src.train:[E 218 I 0] loss 0.035359 (avg 0.035359) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.40e-03 1.44e-03] (1.04e-03 3.09e-02)
+INFO:src.train:Epoch 218 complete. Avg loss 0.027813, lr 0.001000
+INFO:src.train:Epoch 219
+INFO:src.train:[E 219 I 0] loss 0.045550 (avg 0.045550) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [4.59e-03 1.52e-03] (1.22e-03 3.31e-02)
+INFO:src.train:Epoch 219 complete. Avg loss 0.031654, lr 0.001000
+INFO:src.train:Epoch 220
+INFO:src.train:[E 220 I 0] loss 0.027365 (avg 0.027365) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.23e-03 1.23e-03] (8.89e-04 2.72e-02)
+INFO:src.train:Epoch 220 complete. Avg loss 0.029948, lr 0.001000
+INFO:src.train:Epoch 221
+INFO:src.train:[E 221 I 0] loss 0.023514 (avg 0.023514) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.54e-03 1.06e-03] (7.97e-04 2.78e-02)
+INFO:src.train:Epoch 221 complete. Avg loss 0.027585, lr 0.001000
+INFO:src.train:Epoch 222
+INFO:src.train:[E 222 I 0] loss 0.030465 (avg 0.030465) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.53e-03 1.24e-03] (9.35e-04 2.58e-02)
+INFO:src.train:Epoch 222 complete. Avg loss 0.029021, lr 0.001000
+INFO:src.train:Epoch 223
+INFO:src.train:[E 223 I 0] loss 0.028910 (avg 0.028910) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.58e-03 1.58e-03] (8.09e-04 2.88e-02)
+INFO:src.train:Epoch 223 complete. Avg loss 0.034159, lr 0.001000
+INFO:src.train:Epoch 224
+INFO:src.train:[E 224 I 0] loss 0.043282 (avg 0.043282) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.89e-03 1.42e-03] (8.77e-04 3.30e-02)
+INFO:src.train:Epoch 224 complete. Avg loss 0.031973, lr 0.001000
+INFO:src.train:Epoch 225
+INFO:src.train:[E 225 I 0] loss 0.039983 (avg 0.039983) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.09e-03 1.59e-03] (1.20e-03 3.44e-02)
+INFO:src.train:Epoch 225 complete. Avg loss 0.034302, lr 0.001000
+INFO:src.train:Epoch 226
+INFO:src.train:[E 226 I 0] loss 0.032945 (avg 0.032945) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.50e-03 1.19e-03] (8.71e-04 3.02e-02)
+INFO:src.train:Epoch 226 complete. Avg loss 0.041329, lr 0.001000
+INFO:src.train:Epoch 227
+INFO:src.train:[E 227 I 0] loss 0.025662 (avg 0.025662) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.75e-03 1.33e-03] (9.88e-04 3.08e-02)
+INFO:src.train:Epoch 227 complete. Avg loss 0.025876, lr 0.001000
+INFO:src.train:Epoch 228
+INFO:src.train:[E 228 I 0] loss 0.026764 (avg 0.026764) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.10e-03 8.90e-04] (7.22e-04 2.51e-02)
+INFO:src.train:Epoch 228 complete. Avg loss 0.028851, lr 0.001000
+INFO:src.train:Epoch 229
+INFO:src.train:[E 229 I 0] loss 0.026355 (avg 0.026355) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.63e-03 1.36e-03] (9.13e-04 2.82e-02)
+INFO:src.train:Epoch 229 complete. Avg loss 0.034222, lr 0.001000
+INFO:src.train:Epoch 230
+INFO:src.train:[E 230 I 0] loss 0.033179 (avg 0.033179) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.32e-03 1.31e-03] (8.93e-04 2.84e-02)
+INFO:src.train:Epoch 230 complete. Avg loss 0.032759, lr 0.001000
+INFO:src.train:Epoch 231
+INFO:src.train:[E 231 I 0] loss 0.044379 (avg 0.044379) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.68e-03 1.04e-03] (9.55e-04 3.19e-02)
+INFO:src.train:Epoch 231 complete. Avg loss 0.033710, lr 0.001000
+INFO:src.train:Epoch 232
+INFO:src.train:[E 232 I 0] loss 0.024218 (avg 0.024218) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.55e-03 1.13e-03] (7.32e-04 2.58e-02)
+INFO:src.train:Epoch 232 complete. Avg loss 0.028560, lr 0.001000
+INFO:src.train:Epoch 233
+INFO:src.train:[E 233 I 0] loss 0.023914 (avg 0.023914) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.57e-03 8.23e-04] (6.19e-04 2.48e-02)
+INFO:src.train:Epoch 233 complete. Avg loss 0.029484, lr 0.001000
+INFO:src.train:Epoch 234
+INFO:src.train:[E 234 I 0] loss 0.033545 (avg 0.033545) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.35e-03 9.09e-04] (7.90e-04 2.73e-02)
+INFO:src.train:Epoch 234 complete. Avg loss 0.026167, lr 0.001000
+INFO:src.train:Epoch 235
+INFO:src.train:[E 235 I 0] loss 0.024393 (avg 0.024393) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.21e-03 8.19e-04] (6.83e-04 2.22e-02)
+INFO:src.train:Epoch 235 complete. Avg loss 0.024995, lr 0.001000
+INFO:src.train:Epoch 236
+INFO:src.train:[E 236 I 0] loss 0.023868 (avg 0.023868) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.26e-03 1.13e-03] (6.55e-04 2.44e-02)
+INFO:src.train:Epoch 236 complete. Avg loss 0.023094, lr 0.001000
+INFO:src.train:Epoch 237
+INFO:src.train:[E 237 I 0] loss 0.021619 (avg 0.021619) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [9.31e-04 9.69e-04] (5.07e-04 2.06e-02)
+INFO:src.train:Epoch 237 complete. Avg loss 0.029822, lr 0.001000
+INFO:src.train:Epoch 238
+INFO:src.train:[E 238 I 0] loss 0.037928 (avg 0.037928) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.49e-03 1.05e-03] (7.70e-04 2.43e-02)
+INFO:src.train:Epoch 238 complete. Avg loss 0.035429, lr 0.001000
+INFO:src.train:Epoch 239
+INFO:src.train:[E 239 I 0] loss 0.024792 (avg 0.024792) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.41e-03 1.10e-03] (7.07e-04 2.37e-02)
+INFO:src.train:Epoch 239 complete. Avg loss 0.024967, lr 0.001000
+INFO:src.train:Epoch 240
+INFO:src.train:[E 240 I 0] loss 0.034942 (avg 0.034942) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.02e-03 1.28e-03] (9.46e-04 2.76e-02)
+INFO:src.train:Epoch 240 complete. Avg loss 0.033527, lr 0.001000
+INFO:src.train:Epoch 241
+INFO:src.train:[E 241 I 0] loss 0.038032 (avg 0.038032) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.07e-03 8.26e-04] (6.86e-04 2.32e-02)
+INFO:src.train:Epoch 241 complete. Avg loss 0.032995, lr 0.001000
+INFO:src.train:Epoch 242
+INFO:src.train:[E 242 I 0] loss 0.048762 (avg 0.048762) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [8.82e-03 1.70e-03] (1.44e-03 4.81e-02)
+INFO:src.train:Epoch 242 complete. Avg loss 0.039433, lr 0.001000
+INFO:src.train:Epoch 243
+INFO:src.train:[E 243 I 0] loss 0.027769 (avg 0.027769) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.60e-03 1.15e-03] (7.57e-04 2.87e-02)
+INFO:src.train:Epoch 243 complete. Avg loss 0.034487, lr 0.001000
+INFO:src.train:Epoch 244
+INFO:src.train:[E 244 I 0] loss 0.022850 (avg 0.022850) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.49e-03 8.94e-04] (7.29e-04 2.82e-02)
+INFO:src.train:Epoch 244 complete. Avg loss 0.028142, lr 0.001000
+INFO:src.train:Epoch 245
+INFO:src.train:[E 245 I 0] loss 0.021293 (avg 0.021293) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.54e-03 1.21e-03] (8.78e-04 2.82e-02)
+INFO:src.train:Epoch 245 complete. Avg loss 0.023639, lr 0.001000
+INFO:src.train:Epoch 246
+INFO:src.train:[E 246 I 0] loss 0.037273 (avg 0.037273) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.24e-03 1.29e-03] (1.07e-03 3.12e-02)
+INFO:src.train:Epoch 246 complete. Avg loss 0.034215, lr 0.001000
+INFO:src.train:Epoch 247
+INFO:src.train:[E 247 I 0] loss 0.025231 (avg 0.025231) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.37e-03 1.31e-03] (8.83e-04 2.68e-02)
+INFO:src.train:Epoch 247 complete. Avg loss 0.024787, lr 0.001000
+INFO:src.train:Epoch 248
+INFO:src.train:[E 248 I 0] loss 0.038108 (avg 0.038108) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.76e-03 1.30e-03] (9.16e-04 2.75e-02)
+INFO:src.train:Epoch 248 complete. Avg loss 0.029022, lr 0.001000
+INFO:src.train:Epoch 249
+INFO:src.train:[E 249 I 0] loss 0.048250 (avg 0.048250) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.85e-03 1.07e-03] (9.93e-04 2.73e-02)
+INFO:src.train:Epoch 249 complete. Avg loss 0.036772, lr 0.001000
+INFO:src.train:Epoch 250
+INFO:src.train:[E 250 I 0] loss 0.041415 (avg 0.041415) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.87e-03 1.17e-03] (1.02e-03 2.69e-02)
+INFO:src.train:Epoch 250 complete. Avg loss 0.034467, lr 0.001000
+INFO:src.train:Epoch 251
+INFO:src.train:[E 251 I 0] loss 0.026407 (avg 0.026407) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.79e-03 1.04e-03] (7.15e-04 2.85e-02)
+INFO:src.train:Epoch 251 complete. Avg loss 0.035394, lr 0.001000
+INFO:src.train:Epoch 252
+INFO:src.train:[E 252 I 0] loss 0.032274 (avg 0.032274) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.01e-03 1.36e-03] (9.36e-04 3.59e-02)
+INFO:src.train:Epoch 252 complete. Avg loss 0.028202, lr 0.001000
+INFO:src.train:Epoch 253
+INFO:src.train:[E 253 I 0] loss 0.022149 (avg 0.022149) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.30e-03 1.07e-03] (6.70e-04 2.54e-02)
+INFO:src.train:Epoch 253 complete. Avg loss 0.024302, lr 0.001000
+INFO:src.train:Epoch 254
+INFO:src.train:[E 254 I 0] loss 0.025366 (avg 0.025366) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.34e-03 1.04e-03] (6.91e-04 2.43e-02)
+INFO:src.train:Epoch 254 complete. Avg loss 0.028017, lr 0.001000
+INFO:src.train:Epoch 255
+INFO:src.train:[E 255 I 0] loss 0.022573 (avg 0.022573) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.14e-03 1.00e-03] (6.15e-04 2.37e-02)
+INFO:src.train:Epoch 255 complete. Avg loss 0.028283, lr 0.001000
+INFO:src.train:Epoch 256
+INFO:src.train:[E 256 I 0] loss 0.047116 (avg 0.047116) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.28e-03 1.13e-03] (1.07e-03 2.61e-02)
+INFO:src.train:Epoch 256 complete. Avg loss 0.032505, lr 0.001000
+INFO:src.train:Epoch 257
+INFO:src.train:[E 257 I 0] loss 0.037154 (avg 0.037154) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.47e-03 1.03e-03] (8.73e-04 2.45e-02)
+INFO:src.train:Epoch 257 complete. Avg loss 0.042478, lr 0.001000
+INFO:src.train:Epoch 258
+INFO:src.train:[E 258 I 0] loss 0.022932 (avg 0.022932) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.25e-03 1.16e-03] (8.06e-04 2.71e-02)
+INFO:src.train:Epoch 258 complete. Avg loss 0.024202, lr 0.001000
+INFO:src.train:Epoch 259
+INFO:src.train:[E 259 I 0] loss 0.040981 (avg 0.040981) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.83e-03 1.41e-03] (9.92e-04 2.91e-02)
+INFO:src.train:Epoch 259 complete. Avg loss 0.030437, lr 0.001000
+INFO:src.train:Epoch 260
+INFO:src.train:[E 260 I 0] loss 0.022540 (avg 0.022540) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.58e-03 1.23e-03] (7.81e-04 2.98e-02)
+INFO:src.train:Epoch 260 complete. Avg loss 0.031992, lr 0.001000
+INFO:src.train:Epoch 261
+INFO:src.train:[E 261 I 0] loss 0.027100 (avg 0.027100) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.82e-03 1.63e-03] (9.81e-04 3.46e-02)
+INFO:src.train:Epoch 261 complete. Avg loss 0.026484, lr 0.001000
+INFO:src.train:Epoch 262
+INFO:src.train:[E 262 I 0] loss 0.045407 (avg 0.045407) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.87e-03 2.03e-03] (1.17e-03 3.71e-02)
+INFO:src.train:Epoch 262 complete. Avg loss 0.030601, lr 0.001000
+INFO:src.train:Epoch 263
+INFO:src.train:[E 263 I 0] loss 0.023494 (avg 0.023494) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.47e-03 1.52e-03] (8.79e-04 3.20e-02)
+INFO:src.train:Epoch 263 complete. Avg loss 0.024938, lr 0.001000
+INFO:src.train:Epoch 264
+INFO:src.train:[E 264 I 0] loss 0.025595 (avg 0.025595) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.32e-03 1.39e-03] (9.65e-04 2.66e-02)
+INFO:src.train:Epoch 264 complete. Avg loss 0.031072, lr 0.001000
+INFO:src.train:Epoch 265
+INFO:src.train:[E 265 I 0] loss 0.027807 (avg 0.027807) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.90e-03 1.34e-03] (7.87e-04 2.69e-02)
+INFO:src.train:Epoch 265 complete. Avg loss 0.027488, lr 0.001000
+INFO:src.train:Epoch 266
+INFO:src.train:[E 266 I 0] loss 0.040342 (avg 0.040342) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.19e-03 1.20e-03] (8.22e-04 2.58e-02)
+INFO:src.train:Epoch 266 complete. Avg loss 0.028405, lr 0.001000
+INFO:src.train:Epoch 267
+INFO:src.train:[E 267 I 0] loss 0.021871 (avg 0.021871) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.31e-03 1.07e-03] (7.04e-04 2.40e-02)
+INFO:src.train:Epoch 267 complete. Avg loss 0.022534, lr 0.001000
+INFO:src.train:Epoch 268
+INFO:src.train:[E 268 I 0] loss 0.050618 (avg 0.050618) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [5.31e-03 1.68e-03] (1.32e-03 3.88e-02)
+INFO:src.train:Epoch 268 complete. Avg loss 0.032072, lr 0.001000
+INFO:src.train:Epoch 269
+INFO:src.train:[E 269 I 0] loss 0.029448 (avg 0.029448) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.01e-03 1.01e-03] (6.71e-04 2.50e-02)
+INFO:src.train:Epoch 269 complete. Avg loss 0.032305, lr 0.001000
+INFO:src.train:Epoch 270
+INFO:src.train:[E 270 I 0] loss 0.019354 (avg 0.019354) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.19e-03 1.12e-03] (7.46e-04 2.61e-02)
+INFO:src.train:Epoch 270 complete. Avg loss 0.036658, lr 0.001000
+INFO:src.train:Epoch 271
+INFO:src.train:[E 271 I 0] loss 0.024533 (avg 0.024533) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.90e-03 1.36e-03] (8.81e-04 3.02e-02)
+INFO:src.train:Epoch 271 complete. Avg loss 0.029145, lr 0.001000
+INFO:src.train:Epoch 272
+INFO:src.train:[E 272 I 0] loss 0.041810 (avg 0.041810) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.34e-03 1.18e-03] (9.16e-04 2.91e-02)
+INFO:src.train:Epoch 272 complete. Avg loss 0.029747, lr 0.001000
+INFO:src.train:Epoch 273
+INFO:src.train:[E 273 I 0] loss 0.026172 (avg 0.026172) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.26e-03 1.08e-03] (7.99e-04 2.70e-02)
+INFO:src.train:Epoch 273 complete. Avg loss 0.032250, lr 0.001000
+INFO:src.train:Epoch 274
+INFO:src.train:[E 274 I 0] loss 0.026547 (avg 0.026547) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.39e-03 1.23e-03] (7.11e-04 2.88e-02)
+INFO:src.train:Epoch 274 complete. Avg loss 0.023274, lr 0.001000
+INFO:src.train:Epoch 275
+INFO:src.train:[E 275 I 0] loss 0.025466 (avg 0.025466) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.76e-03 1.43e-03] (7.83e-04 2.82e-02)
+INFO:src.train:Epoch 275 complete. Avg loss 0.024803, lr 0.001000
+INFO:src.train:Epoch 276
+INFO:src.train:[E 276 I 0] loss 0.048919 (avg 0.048919) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.92e-03 1.88e-03] (1.39e-03 4.70e-02)
+INFO:src.train:Epoch 276 complete. Avg loss 0.035356, lr 0.001000
+INFO:src.train:Epoch 277
+INFO:src.train:[E 277 I 0] loss 0.035201 (avg 0.035201) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.23e-03 1.44e-03] (9.29e-04 2.84e-02)
+INFO:src.train:Epoch 277 complete. Avg loss 0.032266, lr 0.001000
+INFO:src.train:Epoch 278
+INFO:src.train:[E 278 I 0] loss 0.024392 (avg 0.024392) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.55e-03 1.04e-03] (7.49e-04 2.85e-02)
+INFO:src.train:Epoch 278 complete. Avg loss 0.035039, lr 0.001000
+INFO:src.train:Epoch 279
+INFO:src.train:[E 279 I 0] loss 0.037867 (avg 0.037867) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.35e-03 1.13e-03] (8.42e-04 3.00e-02)
+INFO:src.train:Epoch 279 complete. Avg loss 0.033433, lr 0.001000
+INFO:src.train:Epoch 280
+INFO:src.train:[E 280 I 0] loss 0.026458 (avg 0.026458) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.66e-03 1.64e-03] (9.56e-04 3.33e-02)
+INFO:src.train:Epoch 280 complete. Avg loss 0.033029, lr 0.001000
+INFO:src.train:Epoch 281
+INFO:src.train:[E 281 I 0] loss 0.025052 (avg 0.025052) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.49e-03 1.91e-03] (9.13e-04 3.67e-02)
+INFO:src.train:Epoch 281 complete. Avg loss 0.025238, lr 0.001000
+INFO:src.train:Epoch 282
+INFO:src.train:[E 282 I 0] loss 0.034269 (avg 0.034269) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.16e-03 1.79e-03] (9.84e-04 3.67e-02)
+INFO:src.train:Epoch 282 complete. Avg loss 0.030985, lr 0.001000
+INFO:src.train:Epoch 283
+INFO:src.train:[E 283 I 0] loss 0.047904 (avg 0.047904) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.94e-03 1.78e-03] (1.39e-03 3.86e-02)
+INFO:src.train:Epoch 283 complete. Avg loss 0.033025, lr 0.001000
+INFO:src.train:Epoch 284
+INFO:src.train:[E 284 I 0] loss 0.039643 (avg 0.039643) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.39e-03 2.14e-03] (1.06e-03 3.72e-02)
+INFO:src.train:Epoch 284 complete. Avg loss 0.037550, lr 0.001000
+INFO:src.train:Epoch 285
+INFO:src.train:[E 285 I 0] loss 0.024196 (avg 0.024196) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.67e-03 1.41e-03] (9.75e-04 3.44e-02)
+INFO:src.train:Epoch 285 complete. Avg loss 0.035022, lr 0.001000
+INFO:src.train:Epoch 286
+INFO:src.train:[E 286 I 0] loss 0.048928 (avg 0.048928) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [4.22e-03 1.77e-03] (1.50e-03 4.04e-02)
+INFO:src.train:Epoch 286 complete. Avg loss 0.032224, lr 0.001000
+INFO:src.train:Epoch 287
+INFO:src.train:[E 287 I 0] loss 0.023470 (avg 0.023470) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.66e-03 1.48e-03] (9.58e-04 3.28e-02)
+INFO:src.train:Epoch 287 complete. Avg loss 0.027831, lr 0.001000
+INFO:src.train:Epoch 288
+INFO:src.train:[E 288 I 0] loss 0.047188 (avg 0.047188) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [4.66e-03 1.25e-03] (1.25e-03 3.82e-02)
+INFO:src.train:Epoch 288 complete. Avg loss 0.032430, lr 0.001000
+INFO:src.train:Epoch 289
+INFO:src.train:[E 289 I 0] loss 0.028036 (avg 0.028036) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.46e-03 9.29e-04] (8.09e-04 2.90e-02)
+INFO:src.train:Epoch 289 complete. Avg loss 0.031720, lr 0.001000
+INFO:src.train:Epoch 290
+INFO:src.train:[E 290 I 0] loss 0.024471 (avg 0.024471) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.03e-03 1.23e-03] (7.87e-04 3.25e-02)
+INFO:src.train:Epoch 290 complete. Avg loss 0.030724, lr 0.001000
+INFO:src.train:Epoch 291
+INFO:src.train:[E 291 I 0] loss 0.049657 (avg 0.049657) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.44e-03 1.71e-03] (1.38e-03 3.73e-02)
+INFO:src.train:Epoch 291 complete. Avg loss 0.038096, lr 0.001000
+INFO:src.train:Epoch 292
+INFO:src.train:[E 292 I 0] loss 0.021956 (avg 0.021956) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.48e-03 1.45e-03] (8.21e-04 3.35e-02)
+INFO:src.train:Epoch 292 complete. Avg loss 0.023347, lr 0.001000
+INFO:src.train:Epoch 293
+INFO:src.train:[E 293 I 0] loss 0.021797 (avg 0.021797) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.07e-03 1.18e-03] (6.71e-04 2.94e-02)
+INFO:src.train:Epoch 293 complete. Avg loss 0.028687, lr 0.001000
+INFO:src.train:Epoch 294
+INFO:src.train:[E 294 I 0] loss 0.037816 (avg 0.037816) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.39e-03 1.56e-03] (1.21e-03 3.11e-02)
+INFO:src.train:Epoch 294 complete. Avg loss 0.030719, lr 0.001000
+INFO:src.train:Epoch 295
+INFO:src.train:[E 295 I 0] loss 0.025772 (avg 0.025772) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.31e-03 1.31e-03] (7.21e-04 2.94e-02)
+INFO:src.train:Epoch 295 complete. Avg loss 0.032803, lr 0.001000
+INFO:src.train:Epoch 296
+INFO:src.train:[E 296 I 0] loss 0.026551 (avg 0.026551) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.65e-03 1.44e-03] (8.17e-04 3.21e-02)
+INFO:src.train:Epoch 296 complete. Avg loss 0.029289, lr 0.001000
+INFO:src.train:Epoch 297
+INFO:src.train:[E 297 I 0] loss 0.025099 (avg 0.025099) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.88e-03 1.61e-03] (8.26e-04 3.12e-02)
+INFO:src.train:Epoch 297 complete. Avg loss 0.025664, lr 0.001000
+INFO:src.train:Epoch 298
+INFO:src.train:[E 298 I 0] loss 0.022915 (avg 0.022915) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.34e-03 1.42e-03] (6.89e-04 2.80e-02)
+INFO:src.train:Epoch 298 complete. Avg loss 0.024257, lr 0.001000
+INFO:src.train:Epoch 299
+INFO:src.train:[E 299 I 0] loss 0.028234 (avg 0.028234) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.23e-03 1.29e-03] (7.94e-04 2.76e-02)
+INFO:src.train:Epoch 299 complete. Avg loss 0.028248, lr 0.001000
+INFO:src.train:Epoch 300
+INFO:src.train:[E 300 I 0] loss 0.033817 (avg 0.033817) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.21e-03 1.30e-03] (8.12e-04 2.95e-02)
+INFO:src.train:Epoch 300 complete. Avg loss 0.025197, lr 0.001000
+INFO:src.train:Epoch 301
+INFO:src.train:[E 301 I 0] loss 0.042131 (avg 0.042131) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [4.31e-03 1.44e-03] (1.10e-03 3.24e-02)
+INFO:src.train:Epoch 301 complete. Avg loss 0.028666, lr 0.001000
+INFO:src.train:Epoch 302
+INFO:src.train:[E 302 I 0] loss 0.021855 (avg 0.021855) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.17e-03 1.05e-03] (6.14e-04 2.40e-02)
+INFO:src.train:Epoch 302 complete. Avg loss 0.036030, lr 0.001000
+INFO:src.train:Epoch 303
+INFO:src.train:[E 303 I 0] loss 0.025093 (avg 0.025093) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.46e-03 1.73e-03] (9.94e-04 2.73e-02)
+INFO:src.train:Epoch 303 complete. Avg loss 0.022655, lr 0.001000
+INFO:src.train:Epoch 304
+INFO:src.train:[E 304 I 0] loss 0.023025 (avg 0.023025) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.24e-03 9.99e-04] (6.66e-04 2.35e-02)
+INFO:src.train:Epoch 304 complete. Avg loss 0.024089, lr 0.001000
+INFO:src.train:Epoch 305
+INFO:src.train:[E 305 I 0] loss 0.037746 (avg 0.037746) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.37e-03 1.16e-03] (9.01e-04 2.75e-02)
+INFO:src.train:Epoch 305 complete. Avg loss 0.030048, lr 0.001000
+INFO:src.train:Epoch 306
+INFO:src.train:[E 306 I 0] loss 0.026768 (avg 0.026768) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.58e-03 1.36e-03] (7.77e-04 2.47e-02)
+INFO:src.train:Epoch 306 complete. Avg loss 0.023901, lr 0.001000
+INFO:src.train:Epoch 307
+INFO:src.train:[E 307 I 0] loss 0.044941 (avg 0.044941) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.93e-03 1.08e-03] (9.27e-04 2.44e-02)
+INFO:src.train:Epoch 307 complete. Avg loss 0.035594, lr 0.001000
+INFO:src.train:Epoch 308
+INFO:src.train:[E 308 I 0] loss 0.037095 (avg 0.037095) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.97e-03 1.23e-03] (9.63e-04 2.68e-02)
+INFO:src.train:Epoch 308 complete. Avg loss 0.032694, lr 0.001000
+INFO:src.train:Epoch 309
+INFO:src.train:[E 309 I 0] loss 0.028821 (avg 0.028821) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.57e-03 1.27e-03] (7.47e-04 2.48e-02)
+INFO:src.train:Epoch 309 complete. Avg loss 0.029576, lr 0.001000
+INFO:src.train:Epoch 310
+INFO:src.train:[E 310 I 0] loss 0.021324 (avg 0.021324) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.63e-03 1.21e-03] (8.48e-04 2.56e-02)
+INFO:src.train:Epoch 310 complete. Avg loss 0.027195, lr 0.001000
+INFO:src.train:Epoch 311
+INFO:src.train:[E 311 I 0] loss 0.035371 (avg 0.035371) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.05e-03 1.15e-03] (8.62e-04 2.57e-02)
+INFO:src.train:Epoch 311 complete. Avg loss 0.026895, lr 0.001000
+INFO:src.train:Epoch 312
+INFO:src.train:[E 312 I 0] loss 0.023637 (avg 0.023637) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.01e-03 1.21e-03] (7.36e-04 2.41e-02)
+INFO:src.train:Epoch 312 complete. Avg loss 0.029395, lr 0.001000
+INFO:src.train:Epoch 313
+INFO:src.train:[E 313 I 0] loss 0.020705 (avg 0.020705) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.06e-03 1.05e-03] (6.52e-04 2.53e-02)
+INFO:src.train:Epoch 313 complete. Avg loss 0.022681, lr 0.001000
+INFO:src.train:Epoch 314
+INFO:src.train:[E 314 I 0] loss 0.039034 (avg 0.039034) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.92e-03 1.14e-03] (8.92e-04 2.87e-02)
+INFO:src.train:Epoch 314 complete. Avg loss 0.027305, lr 0.001000
+INFO:src.train:Epoch 315
+INFO:src.train:[E 315 I 0] loss 0.021876 (avg 0.021876) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.04e-03 1.01e-03] (6.99e-04 2.44e-02)
+INFO:src.train:Epoch 315 complete. Avg loss 0.026852, lr 0.001000
+INFO:src.train:Epoch 316
+INFO:src.train:[E 316 I 0] loss 0.021257 (avg 0.021257) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [1.40e-03 1.67e-03] (9.07e-04 2.94e-02)
+INFO:src.train:Epoch 316 complete. Avg loss 0.026198, lr 0.001000
+INFO:src.train:Epoch 317
+INFO:src.train:[E 317 I 0] loss 0.031742 (avg 0.031742) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.13e-03 1.01e-03] (7.44e-04 2.37e-02)
+INFO:src.train:Epoch 317 complete. Avg loss 0.030179, lr 0.001000
+INFO:src.train:Epoch 318
+INFO:src.train:[E 318 I 0] loss 0.038632 (avg 0.038632) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [3.46e-03 1.18e-03] (8.75e-04 3.50e-02)
+INFO:src.train:Epoch 318 complete. Avg loss 0.026717, lr 0.001000
+INFO:src.train:Epoch 319
+INFO:src.train:[E 319 I 0] loss 0.024785 (avg 0.024785) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.19e-03 1.62e-03] (8.36e-04 2.77e-02)
+INFO:src.train:Epoch 319 complete. Avg loss 0.022425, lr 0.001000
+INFO:src.train:Epoch 320
+INFO:src.train:[E 320 I 0] loss 0.039412 (avg 0.039412) mem 5084.96MB (106.8ms)
+INFO:src.train:    grad: [2.68e-03 9.85e-04] (8.85e-04 2.27e-02)
+INFO:src.train:Epoch 320 complete. Avg loss 0.038369, lr 0.001000
+INFO:src.train:Epoch 321
+INFO:src.train:[E 321 I 0] loss 0.022611 (avg 0.022611) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.15e-03 1.13e-03] (6.85e-04 2.53e-02)
+INFO:src.train:Epoch 321 complete. Avg loss 0.025857, lr 0.001000
+INFO:src.train:Epoch 322
+INFO:src.train:[E 322 I 0] loss 0.022227 (avg 0.022227) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [9.34e-04 8.13e-04] (5.84e-04 2.27e-02)
+INFO:src.train:Epoch 322 complete. Avg loss 0.021309, lr 0.001000
+INFO:src.train:Epoch 323
+INFO:src.train:[E 323 I 0] loss 0.020474 (avg 0.020474) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.06e-03 7.38e-04] (5.97e-04 2.20e-02)
+INFO:src.train:Epoch 323 complete. Avg loss 0.023520, lr 0.001000
+INFO:src.train:Epoch 324
+INFO:src.train:[E 324 I 0] loss 0.032309 (avg 0.032309) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.48e-03 9.82e-04] (6.71e-04 2.84e-02)
+INFO:src.train:Epoch 324 complete. Avg loss 0.031087, lr 0.001000
+INFO:src.train:Epoch 325
+INFO:src.train:[E 325 I 0] loss 0.030394 (avg 0.030394) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.44e-03 8.65e-04] (7.04e-04 2.42e-02)
+INFO:src.train:Epoch 325 complete. Avg loss 0.032821, lr 0.001000
+INFO:src.train:Epoch 326
+INFO:src.train:[E 326 I 0] loss 0.021455 (avg 0.021455) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.18e-03 9.38e-04] (7.05e-04 2.53e-02)
+INFO:src.train:Epoch 326 complete. Avg loss 0.031380, lr 0.001000
+INFO:src.train:Epoch 327
+INFO:src.train:[E 327 I 0] loss 0.021625 (avg 0.021625) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.59e-03 1.35e-03] (6.64e-04 2.63e-02)
+INFO:src.train:Epoch 327 complete. Avg loss 0.031478, lr 0.001000
+INFO:src.train:Epoch 328
+INFO:src.train:[E 328 I 0] loss 0.036448 (avg 0.036448) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.02e-03 1.85e-03] (1.33e-03 3.05e-02)
+INFO:src.train:Epoch 328 complete. Avg loss 0.032851, lr 0.001000
+INFO:src.train:Epoch 329
+INFO:src.train:[E 329 I 0] loss 0.042225 (avg 0.042225) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [3.87e-03 1.28e-03] (9.43e-04 2.83e-02)
+INFO:src.train:Epoch 329 complete. Avg loss 0.031290, lr 0.001000
+INFO:src.train:Epoch 330
+INFO:src.train:[E 330 I 0] loss 0.041332 (avg 0.041332) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.46e-03 1.49e-03] (8.75e-04 2.95e-02)
+INFO:src.train:Epoch 330 complete. Avg loss 0.036283, lr 0.001000
+INFO:src.train:Epoch 331
+INFO:src.train:[E 331 I 0] loss 0.019276 (avg 0.019276) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.51e-03 1.50e-03] (7.47e-04 2.56e-02)
+INFO:src.train:Epoch 331 complete. Avg loss 0.021330, lr 0.001000
+INFO:src.train:Epoch 332
+INFO:src.train:[E 332 I 0] loss 0.040511 (avg 0.040511) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.41e-03 1.25e-03] (1.12e-03 2.83e-02)
+INFO:src.train:Epoch 332 complete. Avg loss 0.029840, lr 0.001000
+INFO:src.train:Epoch 333
+INFO:src.train:[E 333 I 0] loss 0.033574 (avg 0.033574) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.79e-03 1.72e-03] (1.12e-03 3.12e-02)
+INFO:src.train:Epoch 333 complete. Avg loss 0.035865, lr 0.001000
+INFO:src.train:Epoch 334
+INFO:src.train:[E 334 I 0] loss 0.034552 (avg 0.034552) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.05e-03 1.60e-03] (1.07e-03 3.26e-02)
+INFO:src.train:Epoch 334 complete. Avg loss 0.027479, lr 0.001000
+INFO:src.train:Epoch 335
+INFO:src.train:[E 335 I 0] loss 0.022991 (avg 0.022991) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.92e-03 1.44e-03] (8.73e-04 2.97e-02)
+INFO:src.train:Epoch 335 complete. Avg loss 0.025361, lr 0.001000
+INFO:src.train:Epoch 336
+INFO:src.train:[E 336 I 0] loss 0.027820 (avg 0.027820) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.90e-03 1.62e-03] (8.44e-04 3.15e-02)
+INFO:src.train:Epoch 336 complete. Avg loss 0.027302, lr 0.001000
+INFO:src.train:Epoch 337
+INFO:src.train:[E 337 I 0] loss 0.022611 (avg 0.022611) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.41e-03 1.70e-03] (8.18e-04 2.97e-02)
+INFO:src.train:Epoch 337 complete. Avg loss 0.027613, lr 0.001000
+INFO:src.train:Epoch 338
+INFO:src.train:[E 338 I 0] loss 0.025150 (avg 0.025150) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.31e-03 1.45e-03] (7.58e-04 2.84e-02)
+INFO:src.train:Epoch 338 complete. Avg loss 0.022450, lr 0.001000
+INFO:src.train:Epoch 339
+INFO:src.train:[E 339 I 0] loss 0.020992 (avg 0.020992) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.22e-03 1.13e-03] (6.83e-04 2.77e-02)
+INFO:src.train:Epoch 339 complete. Avg loss 0.022229, lr 0.001000
+INFO:src.train:Epoch 340
+INFO:src.train:[E 340 I 0] loss 0.023683 (avg 0.023683) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.15e-03 1.09e-03] (6.81e-04 2.65e-02)
+INFO:src.train:Epoch 340 complete. Avg loss 0.035079, lr 0.001000
+INFO:src.train:Epoch 341
+INFO:src.train:[E 341 I 0] loss 0.021442 (avg 0.021442) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.69e-03 1.20e-03] (7.76e-04 2.88e-02)
+INFO:src.train:Epoch 341 complete. Avg loss 0.028763, lr 0.001000
+INFO:src.train:Epoch 342
+INFO:src.train:[E 342 I 0] loss 0.041740 (avg 0.041740) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [3.59e-03 1.33e-03] (1.10e-03 3.05e-02)
+INFO:src.train:Epoch 342 complete. Avg loss 0.037317, lr 0.001000
+INFO:src.train:Epoch 343
+INFO:src.train:[E 343 I 0] loss 0.022048 (avg 0.022048) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.42e-03 1.20e-03] (8.11e-04 2.61e-02)
+INFO:src.train:Epoch 343 complete. Avg loss 0.024834, lr 0.001000
+INFO:src.train:Epoch 344
+INFO:src.train:[E 344 I 0] loss 0.021390 (avg 0.021390) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [9.26e-04 1.26e-03] (7.15e-04 2.66e-02)
+INFO:src.train:Epoch 344 complete. Avg loss 0.021661, lr 0.001000
+INFO:src.train:Epoch 345
+INFO:src.train:[E 345 I 0] loss 0.032755 (avg 0.032755) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.06e-03 1.33e-03] (9.89e-04 2.59e-02)
+INFO:src.train:Epoch 345 complete. Avg loss 0.033167, lr 0.001000
+INFO:src.train:Epoch 346
+INFO:src.train:[E 346 I 0] loss 0.019920 (avg 0.019920) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.49e-03 1.85e-03] (8.35e-04 2.90e-02)
+INFO:src.train:Epoch 346 complete. Avg loss 0.021111, lr 0.001000
+INFO:src.train:Epoch 347
+INFO:src.train:[E 347 I 0] loss 0.021318 (avg 0.021318) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.33e-03 1.32e-03] (7.89e-04 2.75e-02)
+INFO:src.train:Epoch 347 complete. Avg loss 0.025947, lr 0.001000
+INFO:src.train:Epoch 348
+INFO:src.train:[E 348 I 0] loss 0.017844 (avg 0.017844) mem 5084.96MB (206.5ms)
+INFO:src.train:    grad: [1.38e-03 1.17e-03] (6.29e-04 2.44e-02)
+INFO:src.train:Epoch 348 complete. Avg loss 0.030856, lr 0.001000
+INFO:src.train:Epoch 349
+INFO:src.train:[E 349 I 0] loss 0.022361 (avg 0.022361) mem 5084.96MB (168.5ms)
+INFO:src.train:    grad: [1.68e-03 1.54e-03] (7.71e-04 2.81e-02)
+INFO:src.train:Epoch 349 complete. Avg loss 0.025357, lr 0.001000
+INFO:src.train:Epoch 350
+INFO:src.train:[E 350 I 0] loss 0.029238 (avg 0.029238) mem 5084.96MB (159.9ms)
+INFO:src.train:    grad: [1.77e-03 1.66e-03] (7.83e-04 2.81e-02)
+INFO:src.train:Epoch 350 complete. Avg loss 0.027219, lr 0.001000
+INFO:src.train:Epoch 351
+INFO:src.train:[E 351 I 0] loss 0.019396 (avg 0.019396) mem 5084.96MB (213.0ms)
+INFO:src.train:    grad: [1.11e-03 1.50e-03] (6.73e-04 2.77e-02)
+INFO:src.train:Epoch 351 complete. Avg loss 0.021689, lr 0.001000
+INFO:src.train:Epoch 352
+INFO:src.train:[E 352 I 0] loss 0.018632 (avg 0.018632) mem 5084.96MB (132.7ms)
+INFO:src.train:    grad: [1.11e-03 1.19e-03] (5.67e-04 2.52e-02)
+INFO:src.train:Epoch 352 complete. Avg loss 0.023413, lr 0.001000
+INFO:src.train:Epoch 353
+INFO:src.train:[E 353 I 0] loss 0.023194 (avg 0.023194) mem 5084.96MB (213.0ms)
+INFO:src.train:    grad: [9.81e-04 8.53e-04] (5.93e-04 2.47e-02)
+INFO:src.train:Epoch 353 complete. Avg loss 0.031557, lr 0.001000
+INFO:src.train:Epoch 354
+INFO:src.train:[E 354 I 0] loss 0.025398 (avg 0.025398) mem 5084.96MB (211.6ms)
+INFO:src.train:    grad: [2.33e-03 1.22e-03] (7.17e-04 2.72e-02)
+INFO:src.train:Epoch 354 complete. Avg loss 0.029534, lr 0.001000
+INFO:src.train:Epoch 355
+INFO:src.train:[E 355 I 0] loss 0.020929 (avg 0.020929) mem 5084.96MB (171.3ms)
+INFO:src.train:    grad: [1.47e-03 1.37e-03] (7.97e-04 2.79e-02)
+INFO:src.train:Epoch 355 complete. Avg loss 0.025560, lr 0.001000
+INFO:src.train:Epoch 356
+INFO:src.train:[E 356 I 0] loss 0.020178 (avg 0.020178) mem 5084.96MB (186.9ms)
+INFO:src.train:    grad: [1.54e-03 8.66e-04] (5.75e-04 2.76e-02)
+INFO:src.train:Epoch 356 complete. Avg loss 0.027288, lr 0.001000
+INFO:src.train:Epoch 357
+INFO:src.train:[E 357 I 0] loss 0.033084 (avg 0.033084) mem 5084.96MB (186.9ms)
+INFO:src.train:    grad: [3.26e-03 9.60e-04] (8.26e-04 3.06e-02)
+INFO:src.train:Epoch 357 complete. Avg loss 0.024120, lr 0.001000
+INFO:src.train:Epoch 358
+INFO:src.train:[E 358 I 0] loss 0.040387 (avg 0.040387) mem 5084.96MB (198.4ms)
+INFO:src.train:    grad: [2.88e-03 1.11e-03] (8.26e-04 2.59e-02)
+INFO:src.train:Epoch 358 complete. Avg loss 0.026092, lr 0.001000
+INFO:src.train:Epoch 359
+INFO:src.train:[E 359 I 0] loss 0.036768 (avg 0.036768) mem 5084.96MB (183.6ms)
+INFO:src.train:    grad: [1.93e-03 1.20e-03] (9.20e-04 2.45e-02)
+INFO:src.train:Epoch 359 complete. Avg loss 0.025966, lr 0.001000
+INFO:src.train:Epoch 360
+INFO:src.train:[E 360 I 0] loss 0.048304 (avg 0.048304) mem 5084.96MB (208.3ms)
+INFO:src.train:    grad: [4.87e-03 1.18e-03] (1.03e-03 2.81e-02)
+INFO:src.train:Epoch 360 complete. Avg loss 0.039001, lr 0.001000
+INFO:src.train:Epoch 361
+INFO:src.train:[E 361 I 0] loss 0.020947 (avg 0.020947) mem 5084.96MB (202.6ms)
+INFO:src.train:    grad: [1.40e-03 9.15e-04] (6.12e-04 2.32e-02)
+INFO:src.train:Epoch 361 complete. Avg loss 0.023906, lr 0.001000
+INFO:src.train:Epoch 362
+INFO:src.train:[E 362 I 0] loss 0.026439 (avg 0.026439) mem 5084.96MB (202.9ms)
+INFO:src.train:    grad: [1.56e-03 8.82e-04] (6.75e-04 2.29e-02)
+INFO:src.train:Epoch 362 complete. Avg loss 0.030101, lr 0.001000
+INFO:src.train:Epoch 363
+INFO:src.train:[E 363 I 0] loss 0.021242 (avg 0.021242) mem 5084.96MB (150.5ms)
+INFO:src.train:    grad: [1.15e-03 9.55e-04] (6.03e-04 2.39e-02)
+INFO:src.train:Epoch 363 complete. Avg loss 0.028631, lr 0.001000
+INFO:src.train:Epoch 364
+INFO:src.train:[E 364 I 0] loss 0.032961 (avg 0.032961) mem 5084.96MB (209.4ms)
+INFO:src.train:    grad: [2.07e-03 1.04e-03] (7.32e-04 2.51e-02)
+INFO:src.train:Epoch 364 complete. Avg loss 0.026250, lr 0.001000
+INFO:src.train:Epoch 365
+INFO:src.train:[E 365 I 0] loss 0.030968 (avg 0.030968) mem 5084.96MB (184.2ms)
+INFO:src.train:    grad: [2.26e-03 1.34e-03] (7.86e-04 2.74e-02)
+INFO:src.train:Epoch 365 complete. Avg loss 0.029102, lr 0.001000
+INFO:src.train:Epoch 366
+INFO:src.train:[E 366 I 0] loss 0.029463 (avg 0.029463) mem 5084.96MB (209.4ms)
+INFO:src.train:    grad: [2.08e-03 1.89e-03] (7.99e-04 2.79e-02)
+INFO:src.train:Epoch 366 complete. Avg loss 0.025000, lr 0.001000
+INFO:src.train:Epoch 367
+INFO:src.train:[E 367 I 0] loss 0.046026 (avg 0.046026) mem 5084.96MB (174.9ms)
+INFO:src.train:    grad: [3.22e-03 1.10e-03] (9.32e-04 3.02e-02)
+INFO:src.train:Epoch 367 complete. Avg loss 0.035415, lr 0.001000
+INFO:src.train:Epoch 368
+INFO:src.train:[E 368 I 0] loss 0.033172 (avg 0.033172) mem 5084.96MB (204.9ms)
+INFO:src.train:    grad: [2.38e-03 9.91e-04] (8.06e-04 2.62e-02)
+INFO:src.train:Epoch 368 complete. Avg loss 0.027854, lr 0.001000
+INFO:src.train:Epoch 369
+INFO:src.train:[E 369 I 0] loss 0.028744 (avg 0.028744) mem 5084.96MB (192.3ms)
+INFO:src.train:    grad: [3.32e-03 1.33e-03] (9.17e-04 2.88e-02)
+INFO:src.train:Epoch 369 complete. Avg loss 0.028200, lr 0.001000
+INFO:src.train:Epoch 370
+INFO:src.train:[E 370 I 0] loss 0.022351 (avg 0.022351) mem 5084.96MB (150.0ms)
+INFO:src.train:    grad: [1.02e-03 8.69e-04] (6.45e-04 2.50e-02)
+INFO:src.train:Epoch 370 complete. Avg loss 0.021722, lr 0.001000
+INFO:src.train:Epoch 371
+INFO:src.train:[E 371 I 0] loss 0.023210 (avg 0.023210) mem 5084.96MB (107.3ms)
+INFO:src.train:    grad: [1.33e-03 1.14e-03] (7.34e-04 2.49e-02)
+INFO:src.train:Epoch 371 complete. Avg loss 0.021266, lr 0.001000
+INFO:src.train:Epoch 372
+INFO:src.train:[E 372 I 0] loss 0.020010 (avg 0.020010) mem 5084.96MB (205.2ms)
+INFO:src.train:    grad: [8.95e-04 8.28e-04] (5.53e-04 2.33e-02)
+INFO:src.train:Epoch 372 complete. Avg loss 0.019707, lr 0.001000
+INFO:src.train:Epoch 373
+INFO:src.train:[E 373 I 0] loss 0.023007 (avg 0.023007) mem 5084.96MB (207.2ms)
+INFO:src.train:    grad: [1.80e-03 7.56e-04] (5.49e-04 2.11e-02)
+INFO:src.train:Epoch 373 complete. Avg loss 0.023751, lr 0.001000
+INFO:src.train:Epoch 374
+INFO:src.train:[E 374 I 0] loss 0.034951 (avg 0.034951) mem 5084.96MB (202.8ms)
+INFO:src.train:    grad: [2.04e-03 1.09e-03] (7.87e-04 2.36e-02)
+INFO:src.train:Epoch 374 complete. Avg loss 0.033468, lr 0.001000
+INFO:src.train:Epoch 375
+INFO:src.train:[E 375 I 0] loss 0.038891 (avg 0.038891) mem 5084.96MB (209.8ms)
+INFO:src.train:    grad: [1.90e-03 1.33e-03] (7.87e-04 2.48e-02)
+INFO:src.train:Epoch 375 complete. Avg loss 0.029157, lr 0.001000
+INFO:src.train:Epoch 376
+INFO:src.train:[E 376 I 0] loss 0.026606 (avg 0.026606) mem 5084.96MB (214.7ms)
+INFO:src.train:    grad: [1.42e-03 9.82e-04] (7.33e-04 2.46e-02)
+INFO:src.train:Epoch 376 complete. Avg loss 0.027551, lr 0.001000
+INFO:src.train:Epoch 377
+INFO:src.train:[E 377 I 0] loss 0.019465 (avg 0.019465) mem 5084.96MB (205.5ms)
+INFO:src.train:    grad: [1.29e-03 9.82e-04] (6.42e-04 2.36e-02)
+INFO:src.train:Epoch 377 complete. Avg loss 0.027484, lr 0.001000
+INFO:src.train:Epoch 378
+INFO:src.train:[E 378 I 0] loss 0.021282 (avg 0.021282) mem 5084.96MB (208.6ms)
+INFO:src.train:    grad: [1.34e-03 1.35e-03] (7.00e-04 2.30e-02)
+INFO:src.train:Epoch 378 complete. Avg loss 0.024658, lr 0.001000
+INFO:src.train:Epoch 379
+INFO:src.train:[E 379 I 0] loss 0.032294 (avg 0.032294) mem 5084.96MB (213.0ms)
+INFO:src.train:    grad: [2.20e-03 1.33e-03] (8.03e-04 2.86e-02)
+INFO:src.train:Epoch 379 complete. Avg loss 0.027495, lr 0.001000
+INFO:src.train:Epoch 380
+INFO:src.train:[E 380 I 0] loss 0.036929 (avg 0.036929) mem 5084.96MB (205.4ms)
+INFO:src.train:    grad: [2.61e-03 1.20e-03] (8.75e-04 2.80e-02)
+INFO:src.train:Epoch 380 complete. Avg loss 0.030074, lr 0.001000
+INFO:src.train:Epoch 381
+INFO:src.train:[E 381 I 0] loss 0.019046 (avg 0.019046) mem 5084.96MB (204.4ms)
+INFO:src.train:    grad: [1.48e-03 8.36e-04] (5.17e-04 2.51e-02)
+INFO:src.train:Epoch 381 complete. Avg loss 0.020484, lr 0.001000
+INFO:src.train:Epoch 382
+INFO:src.train:[E 382 I 0] loss 0.025851 (avg 0.025851) mem 5084.96MB (214.5ms)
+INFO:src.train:    grad: [1.88e-03 1.11e-03] (6.09e-04 2.70e-02)
+INFO:src.train:Epoch 382 complete. Avg loss 0.022147, lr 0.001000
+INFO:src.train:Epoch 383
+INFO:src.train:[E 383 I 0] loss 0.021041 (avg 0.021041) mem 5084.96MB (212.8ms)
+INFO:src.train:    grad: [1.17e-03 1.06e-03] (6.31e-04 2.30e-02)
+INFO:src.train:Epoch 383 complete. Avg loss 0.022899, lr 0.001000
+INFO:src.train:Epoch 384
+INFO:src.train:[E 384 I 0] loss 0.023610 (avg 0.023610) mem 5084.96MB (206.0ms)
+INFO:src.train:    grad: [1.24e-03 9.03e-04] (6.19e-04 2.28e-02)
+INFO:src.train:Epoch 384 complete. Avg loss 0.026299, lr 0.001000
+INFO:src.train:Epoch 385
+INFO:src.train:[E 385 I 0] loss 0.018858 (avg 0.018858) mem 5084.96MB (205.8ms)
+INFO:src.train:    grad: [1.63e-03 1.00e-03] (5.18e-04 2.48e-02)
+INFO:src.train:Epoch 385 complete. Avg loss 0.020735, lr 0.001000
+INFO:src.train:Epoch 386
+INFO:src.train:[E 386 I 0] loss 0.028669 (avg 0.028669) mem 5084.96MB (208.8ms)
+INFO:src.train:    grad: [2.15e-03 1.04e-03] (6.31e-04 2.60e-02)
+INFO:src.train:Epoch 386 complete. Avg loss 0.027287, lr 0.001000
+INFO:src.train:Epoch 387
+INFO:src.train:[E 387 I 0] loss 0.020609 (avg 0.020609) mem 5084.96MB (210.5ms)
+INFO:src.train:    grad: [1.64e-03 8.90e-04] (5.89e-04 2.54e-02)
+INFO:src.train:Epoch 387 complete. Avg loss 0.030397, lr 0.001000
+INFO:src.train:Epoch 388
+INFO:src.train:[E 388 I 0] loss 0.018738 (avg 0.018738) mem 5084.96MB (213.9ms)
+INFO:src.train:    grad: [1.03e-03 8.41e-04] (5.98e-04 2.24e-02)
+INFO:src.train:Epoch 388 complete. Avg loss 0.025378, lr 0.001000
+INFO:src.train:Epoch 389
+INFO:src.train:[E 389 I 0] loss 0.018019 (avg 0.018019) mem 5084.96MB (205.9ms)
+INFO:src.train:    grad: [1.26e-03 9.54e-04] (5.49e-04 2.45e-02)
+INFO:src.train:Epoch 389 complete. Avg loss 0.024097, lr 0.001000
+INFO:src.train:Epoch 390
+INFO:src.train:[E 390 I 0] loss 0.017612 (avg 0.017612) mem 5084.96MB (208.7ms)
+INFO:src.train:    grad: [1.09e-03 1.00e-03] (5.10e-04 2.40e-02)
+INFO:src.train:Epoch 390 complete. Avg loss 0.026286, lr 0.001000
+INFO:src.train:Epoch 391
+INFO:src.train:[E 391 I 0] loss 0.021934 (avg 0.021934) mem 5084.96MB (205.2ms)
+INFO:src.train:    grad: [1.15e-03 1.28e-03] (7.44e-04 2.56e-02)
+INFO:src.train:Epoch 391 complete. Avg loss 0.020693, lr 0.001000
+INFO:src.train:Epoch 392
+INFO:src.train:[E 392 I 0] loss 0.022905 (avg 0.022905) mem 5084.96MB (204.7ms)
+INFO:src.train:    grad: [1.20e-03 8.21e-04] (5.43e-04 2.21e-02)
+INFO:src.train:Epoch 392 complete. Avg loss 0.027376, lr 0.001000
+INFO:src.train:Epoch 393
+INFO:src.train:[E 393 I 0] loss 0.021128 (avg 0.021128) mem 5084.96MB (205.7ms)
+INFO:src.train:    grad: [1.22e-03 1.13e-03] (7.76e-04 2.36e-02)
+INFO:src.train:Epoch 393 complete. Avg loss 0.028714, lr 0.001000
+INFO:src.train:Epoch 394
+INFO:src.train:[E 394 I 0] loss 0.020212 (avg 0.020212) mem 5084.96MB (206.6ms)
+INFO:src.train:    grad: [1.37e-03 9.86e-04] (5.86e-04 2.55e-02)
+INFO:src.train:Epoch 394 complete. Avg loss 0.025833, lr 0.001000
+INFO:src.train:Epoch 395
+INFO:src.train:[E 395 I 0] loss 0.044580 (avg 0.044580) mem 5084.96MB (203.2ms)
+INFO:src.train:    grad: [3.16e-03 2.09e-03] (1.28e-03 2.98e-02)
+INFO:src.train:Epoch 395 complete. Avg loss 0.028672, lr 0.001000
+INFO:src.train:Epoch 396
+INFO:src.train:[E 396 I 0] loss 0.020611 (avg 0.020611) mem 5084.96MB (208.1ms)
+INFO:src.train:    grad: [9.19e-04 1.05e-03] (5.65e-04 2.35e-02)
+INFO:src.train:Epoch 396 complete. Avg loss 0.028158, lr 0.001000
+INFO:src.train:Epoch 397
+INFO:src.train:[E 397 I 0] loss 0.038086 (avg 0.038086) mem 5084.96MB (205.9ms)
+INFO:src.train:    grad: [2.96e-03 1.05e-03] (7.94e-04 2.91e-02)
+INFO:src.train:Epoch 397 complete. Avg loss 0.037924, lr 0.001000
+INFO:src.train:Epoch 398
+INFO:src.train:[E 398 I 0] loss 0.032605 (avg 0.032605) mem 5084.96MB (215.4ms)
+INFO:src.train:    grad: [2.01e-03 1.57e-03] (8.52e-04 2.82e-02)
+INFO:src.train:Epoch 398 complete. Avg loss 0.023711, lr 0.001000
+INFO:src.train:Epoch 399
+INFO:src.train:[E 399 I 0] loss 0.020652 (avg 0.020652) mem 5084.96MB (207.7ms)
+INFO:src.train:    grad: [1.28e-03 1.17e-03] (6.59e-04 2.72e-02)
+INFO:src.train:Epoch 399 complete. Avg loss 0.032432, lr 0.001000
+INFO:src.train:Epoch 400
+INFO:src.train:[E 400 I 0] loss 0.018752 (avg 0.018752) mem 5084.96MB (214.3ms)
+INFO:src.train:    grad: [1.60e-03 1.50e-03] (7.84e-04 3.03e-02)
+INFO:src.train:Epoch 400 complete. Avg loss 0.019834, lr 0.001000
+INFO:src.train:Epoch 401
+INFO:src.train:[E 401 I 0] loss 0.022157 (avg 0.022157) mem 5084.96MB (208.4ms)
+INFO:src.train:    grad: [1.25e-03 1.70e-03] (7.24e-04 2.66e-02)
+INFO:src.train:Epoch 401 complete. Avg loss 0.030328, lr 0.001000
+INFO:src.train:Epoch 402
+INFO:src.train:[E 402 I 0] loss 0.039492 (avg 0.039492) mem 5084.96MB (208.2ms)
+INFO:src.train:    grad: [2.73e-03 1.22e-03] (9.66e-04 2.59e-02)
+INFO:src.train:Epoch 402 complete. Avg loss 0.031334, lr 0.001000
+INFO:src.train:Epoch 403
+INFO:src.train:[E 403 I 0] loss 0.023680 (avg 0.023680) mem 5084.96MB (205.5ms)
+INFO:src.train:    grad: [1.88e-03 9.64e-04] (6.99e-04 2.60e-02)
+INFO:src.train:Epoch 403 complete. Avg loss 0.028805, lr 0.001000
+INFO:src.train:Epoch 404
+INFO:src.train:[E 404 I 0] loss 0.034159 (avg 0.034159) mem 5084.96MB (203.8ms)
+INFO:src.train:    grad: [3.22e-03 1.68e-03] (9.85e-04 3.51e-02)
+INFO:src.train:Epoch 404 complete. Avg loss 0.027243, lr 0.001000
+INFO:src.train:Epoch 405
+INFO:src.train:[E 405 I 0] loss 0.031454 (avg 0.031454) mem 5084.96MB (249.9ms)
+INFO:src.train:    grad: [2.02e-03 1.25e-03] (8.74e-04 3.02e-02)
+INFO:src.train:Epoch 405 complete. Avg loss 0.030267, lr 0.001000
+INFO:src.train:Epoch 406
+INFO:src.train:[E 406 I 0] loss 0.032796 (avg 0.032796) mem 5084.96MB (207.7ms)
+INFO:src.train:    grad: [2.48e-03 1.31e-03] (9.55e-04 2.98e-02)
+INFO:src.train:Epoch 406 complete. Avg loss 0.025229, lr 0.001000
+INFO:src.train:Epoch 407
+INFO:src.train:[E 407 I 0] loss 0.029088 (avg 0.029088) mem 5084.96MB (212.9ms)
+INFO:src.train:    grad: [2.81e-03 1.32e-03] (8.30e-04 2.86e-02)
+INFO:src.train:Epoch 407 complete. Avg loss 0.035664, lr 0.001000
+INFO:src.train:Epoch 408
+INFO:src.train:[E 408 I 0] loss 0.031920 (avg 0.031920) mem 5084.96MB (213.7ms)
+INFO:src.train:    grad: [2.43e-03 1.15e-03] (8.75e-04 3.30e-02)
+INFO:src.train:Epoch 408 complete. Avg loss 0.033298, lr 0.001000
+INFO:src.train:Epoch 409
+INFO:src.train:[E 409 I 0] loss 0.043899 (avg 0.043899) mem 5084.96MB (208.4ms)
+INFO:src.train:    grad: [3.61e-03 1.11e-03] (1.02e-03 3.39e-02)
+INFO:src.train:Epoch 409 complete. Avg loss 0.028943, lr 0.001000
+INFO:src.train:Epoch 410
+INFO:src.train:[E 410 I 0] loss 0.031158 (avg 0.031158) mem 5084.96MB (205.1ms)
+INFO:src.train:    grad: [3.25e-03 1.15e-03] (8.14e-04 3.30e-02)
+INFO:src.train:Epoch 410 complete. Avg loss 0.025330, lr 0.001000
+INFO:src.train:Epoch 411
+INFO:src.train:[E 411 I 0] loss 0.021471 (avg 0.021471) mem 5084.96MB (205.4ms)
+INFO:src.train:    grad: [1.74e-03 1.32e-03] (8.49e-04 2.86e-02)
+INFO:src.train:Epoch 411 complete. Avg loss 0.019318, lr 0.001000
+INFO:src.train:Epoch 412
+INFO:src.train:[E 412 I 0] loss 0.020543 (avg 0.020543) mem 5084.96MB (107.4ms)
+INFO:src.train:    grad: [1.22e-03 1.27e-03] (7.22e-04 2.90e-02)
+INFO:src.train:Epoch 412 complete. Avg loss 0.019932, lr 0.001000
+INFO:src.train:Epoch 413
+INFO:src.train:[E 413 I 0] loss 0.040984 (avg 0.040984) mem 5084.96MB (107.3ms)
+INFO:src.train:    grad: [4.40e-03 1.35e-03] (1.06e-03 3.20e-02)
+INFO:src.train:Epoch 413 complete. Avg loss 0.027471, lr 0.001000
+INFO:src.train:Epoch 414
+INFO:src.train:[E 414 I 0] loss 0.019751 (avg 0.019751) mem 5084.96MB (107.4ms)
+INFO:src.train:    grad: [1.20e-03 9.05e-04] (5.55e-04 2.44e-02)
+INFO:src.train:Epoch 414 complete. Avg loss 0.020040, lr 0.001000
+INFO:src.train:Epoch 415
+INFO:src.train:[E 415 I 0] loss 0.033118 (avg 0.033118) mem 5084.96MB (107.4ms)
+INFO:src.train:    grad: [2.18e-03 1.06e-03] (7.86e-04 2.69e-02)
+INFO:src.train:Epoch 415 complete. Avg loss 0.029668, lr 0.001000
+INFO:src.train:Epoch 416
+INFO:src.train:[E 416 I 0] loss 0.037016 (avg 0.037016) mem 5084.96MB (107.3ms)
+INFO:src.train:    grad: [3.10e-03 1.25e-03] (8.65e-04 2.60e-02)
+INFO:src.train:Epoch 416 complete. Avg loss 0.037263, lr 0.001000
+INFO:src.train:Epoch 417
+INFO:src.train:[E 417 I 0] loss 0.026574 (avg 0.026574) mem 5084.96MB (107.4ms)
+INFO:src.train:    grad: [1.51e-03 1.04e-03] (6.53e-04 2.36e-02)
+INFO:src.train:Epoch 417 complete. Avg loss 0.026099, lr 0.001000
+INFO:src.train:Epoch 418
+INFO:src.train:[E 418 I 0] loss 0.027892 (avg 0.027892) mem 5084.96MB (107.3ms)
+INFO:src.train:    grad: [1.54e-03 1.14e-03] (7.80e-04 2.46e-02)
+INFO:src.train:Epoch 418 complete. Avg loss 0.024636, lr 0.001000
+INFO:src.train:Epoch 419
+INFO:src.train:[E 419 I 0] loss 0.033397 (avg 0.033397) mem 5084.96MB (155.1ms)
+INFO:src.train:    grad: [1.97e-03 1.18e-03] (8.68e-04 2.82e-02)
+INFO:src.train:Epoch 419 complete. Avg loss 0.024398, lr 0.001000
+INFO:src.train:Epoch 420
+INFO:src.train:[E 420 I 0] loss 0.027557 (avg 0.027557) mem 5084.96MB (160.1ms)
+INFO:src.train:    grad: [1.72e-03 1.02e-03] (6.74e-04 2.57e-02)
+INFO:src.train:Epoch 420 complete. Avg loss 0.033731, lr 0.001000
+INFO:src.train:Epoch 421
+INFO:src.train:[E 421 I 0] loss 0.017315 (avg 0.017315) mem 5084.96MB (154.9ms)
+INFO:src.train:    grad: [1.48e-03 1.02e-03] (5.79e-04 2.70e-02)
+INFO:src.train:Epoch 421 complete. Avg loss 0.020709, lr 0.001000
+INFO:src.train:Epoch 422
+INFO:src.train:[E 422 I 0] loss 0.031225 (avg 0.031225) mem 5084.96MB (107.4ms)
+INFO:src.train:    grad: [2.66e-03 8.95e-04] (7.02e-04 2.65e-02)
+INFO:src.train:Epoch 422 complete. Avg loss 0.038726, lr 0.001000
+INFO:src.train:Epoch 423
+INFO:src.train:[E 423 I 0] loss 0.033408 (avg 0.033408) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [3.36e-03 1.11e-03] (8.26e-04 2.75e-02)
+INFO:src.train:Epoch 423 complete. Avg loss 0.031145, lr 0.001000
+INFO:src.train:Epoch 424
+INFO:src.train:[E 424 I 0] loss 0.034961 (avg 0.034961) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.61e-03 1.20e-03] (8.04e-04 2.77e-02)
+INFO:src.train:Epoch 424 complete. Avg loss 0.025348, lr 0.001000
+INFO:src.train:Epoch 425
+INFO:src.train:[E 425 I 0] loss 0.029579 (avg 0.029579) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [2.00e-03 1.03e-03] (7.97e-04 2.49e-02)
+INFO:src.train:Epoch 425 complete. Avg loss 0.030533, lr 0.001000
+INFO:src.train:Epoch 426
+INFO:src.train:[E 426 I 0] loss 0.027784 (avg 0.027784) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.57e-03 1.13e-03] (7.68e-04 2.66e-02)
+INFO:src.train:Epoch 426 complete. Avg loss 0.027075, lr 0.001000
+INFO:src.train:Epoch 427
+INFO:src.train:[E 427 I 0] loss 0.026300 (avg 0.026300) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.78e-03 1.03e-03] (6.86e-04 2.58e-02)
+INFO:src.train:Epoch 427 complete. Avg loss 0.027599, lr 0.001000
+INFO:src.train:Epoch 428
+INFO:src.train:[E 428 I 0] loss 0.030788 (avg 0.030788) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.92e-03 8.80e-04] (6.66e-04 2.45e-02)
+INFO:src.train:Epoch 428 complete. Avg loss 0.023453, lr 0.001000
+INFO:src.train:Epoch 429
+INFO:src.train:[E 429 I 0] loss 0.020670 (avg 0.020670) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [9.76e-04 1.09e-03] (5.80e-04 2.47e-02)
+INFO:src.train:Epoch 429 complete. Avg loss 0.027799, lr 0.001000
+INFO:src.train:Epoch 430
+INFO:src.train:[E 430 I 0] loss 0.018703 (avg 0.018703) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.02e-03 1.04e-03] (5.51e-04 2.43e-02)
+INFO:src.train:Epoch 430 complete. Avg loss 0.020102, lr 0.001000
+INFO:src.train:Epoch 431
+INFO:src.train:[E 431 I 0] loss 0.018499 (avg 0.018499) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [9.36e-04 8.95e-04] (4.49e-04 2.29e-02)
+INFO:src.train:Epoch 431 complete. Avg loss 0.029859, lr 0.001000
+INFO:src.train:Epoch 432
+INFO:src.train:[E 432 I 0] loss 0.023668 (avg 0.023668) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.46e-03 8.69e-04] (6.32e-04 2.40e-02)
+INFO:src.train:Epoch 432 complete. Avg loss 0.029965, lr 0.001000
+INFO:src.train:Epoch 433
+INFO:src.train:[E 433 I 0] loss 0.029599 (avg 0.029599) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.96e-03 1.03e-03] (6.24e-04 2.49e-02)
+INFO:src.train:Epoch 433 complete. Avg loss 0.025565, lr 0.001000
+INFO:src.train:Epoch 434
+INFO:src.train:[E 434 I 0] loss 0.019419 (avg 0.019419) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.26e-03 1.40e-03] (6.64e-04 2.77e-02)
+INFO:src.train:Epoch 434 complete. Avg loss 0.024107, lr 0.001000
+INFO:src.train:Epoch 435
+INFO:src.train:[E 435 I 0] loss 0.019915 (avg 0.019915) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [9.73e-04 8.85e-04] (5.90e-04 2.35e-02)
+INFO:src.train:Epoch 435 complete. Avg loss 0.025819, lr 0.001000
+INFO:src.train:Epoch 436
+INFO:src.train:[E 436 I 0] loss 0.025458 (avg 0.025458) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.53e-03 9.80e-04] (6.81e-04 2.50e-02)
+INFO:src.train:Epoch 436 complete. Avg loss 0.029082, lr 0.001000
+INFO:src.train:Epoch 437
+INFO:src.train:[E 437 I 0] loss 0.035985 (avg 0.035985) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [3.24e-03 1.05e-03] (8.82e-04 2.96e-02)
+INFO:src.train:Epoch 437 complete. Avg loss 0.034395, lr 0.001000
+INFO:src.train:Epoch 438
+INFO:src.train:[E 438 I 0] loss 0.020841 (avg 0.020841) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.63e-03 1.32e-03] (7.54e-04 2.84e-02)
+INFO:src.train:Epoch 438 complete. Avg loss 0.021151, lr 0.001000
+INFO:src.train:Epoch 439
+INFO:src.train:[E 439 I 0] loss 0.027069 (avg 0.027069) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [2.11e-03 1.13e-03] (8.22e-04 2.80e-02)
+INFO:src.train:Epoch 439 complete. Avg loss 0.031324, lr 0.001000
+INFO:src.train:Epoch 440
+INFO:src.train:[E 440 I 0] loss 0.030111 (avg 0.030111) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.77e-03 1.22e-03] (8.58e-04 2.80e-02)
+INFO:src.train:Epoch 440 complete. Avg loss 0.031658, lr 0.001000
+INFO:src.train:Epoch 441
+INFO:src.train:[E 441 I 0] loss 0.024242 (avg 0.024242) mem 5084.96MB (107.2ms)
+INFO:src.train:    grad: [1.85e-03 1.74e-03] (9.00e-04 2.83e-02)
+INFO:src.train:Epoch 441 complete. Avg loss 0.020173, lr 0.001000
+INFO:src.train:Epoch 442
+INFO:src.train:[E 442 I 0] loss 0.019987 (avg 0.019987) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [1.76e-03 1.57e-03] (8.81e-04 3.11e-02)
+INFO:src.train:Epoch 442 complete. Avg loss 0.029958, lr 0.001000
+INFO:src.train:Epoch 443
+INFO:src.train:[E 443 I 0] loss 0.027003 (avg 0.027003) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.41e-03 1.13e-03] (7.14e-04 2.61e-02)
+INFO:src.train:Epoch 443 complete. Avg loss 0.022520, lr 0.001000
+INFO:src.train:Epoch 444
+INFO:src.train:[E 444 I 0] loss 0.034941 (avg 0.034941) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [2.14e-03 2.84e-03] (1.54e-03 4.05e-02)
+INFO:src.train:Epoch 444 complete. Avg loss 0.026980, lr 0.001000
+INFO:src.train:Epoch 445
+INFO:src.train:[E 445 I 0] loss 0.028255 (avg 0.028255) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.35e-03 2.11e-03] (9.31e-04 3.29e-02)
+INFO:src.train:Epoch 445 complete. Avg loss 0.025699, lr 0.001000
+INFO:src.train:Epoch 446
+INFO:src.train:[E 446 I 0] loss 0.019749 (avg 0.019749) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.54e-03 1.42e-03] (8.06e-04 2.84e-02)
+INFO:src.train:Epoch 446 complete. Avg loss 0.029296, lr 0.001000
+INFO:src.train:Epoch 447
+INFO:src.train:[E 447 I 0] loss 0.021610 (avg 0.021610) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.60e-03 1.30e-03] (8.43e-04 3.23e-02)
+INFO:src.train:Epoch 447 complete. Avg loss 0.021598, lr 0.001000
+INFO:src.train:Epoch 448
+INFO:src.train:[E 448 I 0] loss 0.030041 (avg 0.030041) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.70e-03 1.46e-03] (9.60e-04 3.18e-02)
+INFO:src.train:Epoch 448 complete. Avg loss 0.029447, lr 0.001000
+INFO:src.train:Epoch 449
+INFO:src.train:[E 449 I 0] loss 0.033803 (avg 0.033803) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [1.78e-03 1.36e-03] (8.37e-04 2.89e-02)
+INFO:src.train:Epoch 449 complete. Avg loss 0.026563, lr 0.001000
+INFO:src.train:Epoch 450
+INFO:src.train:[E 450 I 0] loss 0.020015 (avg 0.020015) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.03e-03 1.06e-03] (6.19e-04 2.55e-02)
+INFO:src.train:Epoch 450 complete. Avg loss 0.025542, lr 0.001000
+INFO:src.train:Epoch 451
+INFO:src.train:[E 451 I 0] loss 0.023364 (avg 0.023364) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.45e-03 1.41e-03] (7.67e-04 2.98e-02)
+INFO:src.train:Epoch 451 complete. Avg loss 0.022468, lr 0.001000
+INFO:src.train:Epoch 452
+INFO:src.train:[E 452 I 0] loss 0.030347 (avg 0.030347) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.84e-03 1.22e-03] (8.27e-04 3.21e-02)
+INFO:src.train:Epoch 452 complete. Avg loss 0.026055, lr 0.001000
+INFO:src.train:Epoch 453
+INFO:src.train:[E 453 I 0] loss 0.018948 (avg 0.018948) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [9.29e-04 9.56e-04] (5.21e-04 2.37e-02)
+INFO:src.train:Epoch 453 complete. Avg loss 0.023091, lr 0.001000
+INFO:src.train:Epoch 454
+INFO:src.train:[E 454 I 0] loss 0.026954 (avg 0.026954) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.19e-03 9.68e-04] (6.85e-04 2.53e-02)
+INFO:src.train:Epoch 454 complete. Avg loss 0.026672, lr 0.001000
+INFO:src.train:Epoch 455
+INFO:src.train:[E 455 I 0] loss 0.018889 (avg 0.018889) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [1.12e-03 9.11e-04] (5.54e-04 2.66e-02)
+INFO:src.train:Epoch 455 complete. Avg loss 0.033062, lr 0.001000
+INFO:src.train:Epoch 456
+INFO:src.train:[E 456 I 0] loss 0.030935 (avg 0.030935) mem 5084.96MB (106.9ms)
+INFO:src.train:    grad: [2.20e-03 1.16e-03] (7.59e-04 2.75e-02)
+INFO:src.train:Epoch 456 complete. Avg loss 0.029547, lr 0.001000
+INFO:src.train:Epoch 457
+INFO:src.train:[E 457 I 0] loss 0.031017 (avg 0.031017) mem 5084.96MB (107.1ms)
+INFO:src.train:    grad: [2.51e-03 1.44e-03] (9.04e-04 3.61e-02)
+INFO:src.train:Epoch 457 complete. Avg loss 0.037194, lr 0.001000
+INFO:src.train:Epoch 458
+INFO:src.train:[E 458 I 0] loss 0.029375 (avg 0.029375) mem 5084.96MB (107.0ms)
+INFO:src.train:    grad: [2.02e-03 1.50e-03] (9.00e-04 2.97e-02)
+INFO:src.train:Epoch 458 complete. Avg loss 0.026426, lr 0.001000
+INFO:src.train:Epoch 459
+INFO:src.train:[E 459 I 0] loss 0.019183 (avg 0.019183) mem 5084.96MB (205.5ms)
+INFO:src.train:    grad: [9.76e-04 1.33e-03] (6.54e-04 2.55e-02)
+INFO:src.train:Epoch 459 complete. Avg loss 0.027069, lr 0.001000
+INFO:src.train:Epoch 460
+INFO:src.train:[E 460 I 0] loss 0.035188 (avg 0.035188) mem 5084.96MB (209.4ms)
+INFO:src.train:    grad: [3.69e-03 1.23e-03] (7.90e-04 3.10e-02)
+INFO:src.train:Epoch 460 complete. Avg loss 0.024295, lr 0.001000
+INFO:src.train:Epoch 461
+INFO:src.train:[E 461 I 0] loss 0.032526 (avg 0.032526) mem 5084.96MB (210.4ms)
+INFO:src.train:    grad: [2.49e-03 1.33e-03] (1.02e-03 2.95e-02)
+INFO:src.train:Epoch 461 complete. Avg loss 0.027744, lr 0.001000
+INFO:src.train:Epoch 462
+INFO:src.train:[E 462 I 0] loss 0.020671 (avg 0.020671) mem 5084.96MB (206.1ms)
+INFO:src.train:    grad: [1.03e-03 9.69e-04] (5.95e-04 2.64e-02)
+INFO:src.train:Epoch 462 complete. Avg loss 0.025715, lr 0.001000
+INFO:src.train:Epoch 463
+INFO:src.train:[E 463 I 0] loss 0.033305 (avg 0.033305) mem 5084.96MB (206.0ms)
+INFO:src.train:    grad: [2.31e-03 1.28e-03] (9.23e-04 2.65e-02)
+INFO:src.train:Epoch 463 complete. Avg loss 0.023132, lr 0.001000
+INFO:src.train:Epoch 464
+INFO:src.train:[E 464 I 0] loss 0.018578 (avg 0.018578) mem 5084.96MB (206.4ms)
+INFO:src.train:    grad: [1.06e-03 1.06e-03] (6.53e-04 2.35e-02)
+INFO:src.train:Epoch 464 complete. Avg loss 0.022015, lr 0.001000
+INFO:src.train:Epoch 465
+INFO:src.train:[E 465 I 0] loss 0.020577 (avg 0.020577) mem 5084.96MB (207.3ms)
+INFO:src.train:    grad: [7.83e-04 8.23e-04] (5.96e-04 2.40e-02)
+INFO:src.train:Epoch 465 complete. Avg loss 0.023549, lr 0.001000
+INFO:src.train:Epoch 466
+INFO:src.train:[E 466 I 0] loss 0.028414 (avg 0.028414) mem 5084.96MB (206.2ms)
+INFO:src.train:    grad: [1.86e-03 1.13e-03] (6.69e-04 2.36e-02)
+INFO:src.train:Epoch 466 complete. Avg loss 0.034866, lr 0.001000
+INFO:src.train:Epoch 467
+INFO:src.train:[E 467 I 0] loss 0.023915 (avg 0.023915) mem 5084.96MB (208.0ms)
+INFO:src.train:    grad: [2.29e-03 1.10e-03] (7.09e-04 2.69e-02)
+INFO:src.train:Epoch 467 complete. Avg loss 0.023195, lr 0.001000
+INFO:src.train:Epoch 468
+INFO:src.train:[E 468 I 0] loss 0.017978 (avg 0.017978) mem 5084.96MB (215.7ms)
+INFO:src.train:    grad: [1.24e-03 1.03e-03] (5.61e-04 2.34e-02)
+INFO:src.train:Epoch 468 complete. Avg loss 0.018781, lr 0.001000
+INFO:src.train:Epoch 469
+INFO:src.train:[E 469 I 0] loss 0.042625 (avg 0.042625) mem 5084.96MB (209.1ms)
+INFO:src.train:    grad: [4.76e-03 1.51e-03] (1.31e-03 3.87e-02)
+INFO:src.train:Epoch 469 complete. Avg loss 0.030287, lr 0.001000
+INFO:src.train:Epoch 470
+INFO:src.train:[E 470 I 0] loss 0.021076 (avg 0.021076) mem 5084.96MB (205.7ms)
+INFO:src.train:    grad: [1.22e-03 1.12e-03] (6.04e-04 2.46e-02)
+INFO:src.train:Epoch 470 complete. Avg loss 0.029984, lr 0.001000
+INFO:src.train:Epoch 471
+INFO:src.train:[E 471 I 0] loss 0.022933 (avg 0.022933) mem 5084.96MB (205.3ms)
+INFO:src.train:    grad: [1.68e-03 1.49e-03] (8.22e-04 2.98e-02)
+INFO:src.train:Epoch 471 complete. Avg loss 0.029246, lr 0.001000
+INFO:src.train:Epoch 472
+INFO:src.train:[E 472 I 0] loss 0.019609 (avg 0.019609) mem 5084.96MB (210.7ms)
+INFO:src.train:    grad: [1.02e-03 1.17e-03] (6.39e-04 2.86e-02)
+INFO:src.train:Epoch 472 complete. Avg loss 0.019754, lr 0.001000
+INFO:src.train:Epoch 473
+INFO:src.train:[E 473 I 0] loss 0.018351 (avg 0.018351) mem 5084.96MB (212.2ms)
+INFO:src.train:    grad: [1.37e-03 1.31e-03] (6.84e-04 2.83e-02)
+INFO:src.train:Epoch 473 complete. Avg loss 0.018233, lr 0.001000
+INFO:src.train:Epoch 474
+INFO:src.train:[E 474 I 0] loss 0.041383 (avg 0.041383) mem 5084.96MB (207.6ms)
+INFO:src.train:    grad: [2.34e-03 1.27e-03] (9.96e-04 2.69e-02)
+INFO:src.train:Epoch 474 complete. Avg loss 0.028504, lr 0.001000
+INFO:src.train:Epoch 475
+INFO:src.train:[E 475 I 0] loss 0.018711 (avg 0.018711) mem 5084.96MB (206.2ms)
+INFO:src.train:    grad: [8.98e-04 8.88e-04] (5.42e-04 2.31e-02)
+INFO:src.train:Epoch 475 complete. Avg loss 0.018296, lr 0.001000
+INFO:src.train:Epoch 476
+INFO:src.train:[E 476 I 0] loss 0.018135 (avg 0.018135) mem 5084.96MB (204.6ms)
+INFO:src.train:    grad: [7.51e-04 1.30e-03] (4.55e-04 2.22e-02)
+INFO:src.train:Epoch 476 complete. Avg loss 0.030641, lr 0.001000
+INFO:src.train:Epoch 477
+INFO:src.train:[E 477 I 0] loss 0.031623 (avg 0.031623) mem 5084.96MB (210.3ms)
+INFO:src.train:    grad: [1.58e-03 8.78e-04] (6.55e-04 2.30e-02)
+INFO:src.train:Epoch 477 complete. Avg loss 0.026328, lr 0.001000
+INFO:src.train:Epoch 478
+INFO:src.train:[E 478 I 0] loss 0.016280 (avg 0.016280) mem 5084.96MB (205.4ms)
+INFO:src.train:    grad: [1.28e-03 8.91e-04] (5.43e-04 2.24e-02)
+INFO:src.train:Epoch 478 complete. Avg loss 0.017647, lr 0.001000
+INFO:src.train:Epoch 479
+INFO:src.train:[E 479 I 0] loss 0.017429 (avg 0.017429) mem 5084.96MB (208.3ms)
+INFO:src.train:    grad: [1.11e-03 8.71e-04] (4.73e-04 2.11e-02)
+INFO:src.train:Epoch 479 complete. Avg loss 0.025775, lr 0.001000
+INFO:src.train:Epoch 480
+INFO:src.train:[E 480 I 0] loss 0.038338 (avg 0.038338) mem 5084.96MB (207.8ms)
+INFO:src.train:    grad: [2.60e-03 1.12e-03] (8.64e-04 2.44e-02)
+INFO:src.train:Epoch 480 complete. Avg loss 0.037380, lr 0.001000
+INFO:src.train:Epoch 481
+INFO:src.train:[E 481 I 0] loss 0.020047 (avg 0.020047) mem 5084.96MB (209.6ms)
+INFO:src.train:    grad: [2.03e-03 1.09e-03] (7.48e-04 2.95e-02)
+INFO:src.train:Epoch 481 complete. Avg loss 0.018515, lr 0.001000
+INFO:src.train:Epoch 482
+INFO:src.train:[E 482 I 0] loss 0.026113 (avg 0.026113) mem 5084.96MB (215.8ms)
+INFO:src.train:    grad: [1.39e-03 1.07e-03] (6.39e-04 2.82e-02)
+INFO:src.train:Epoch 482 complete. Avg loss 0.022654, lr 0.001000
+INFO:src.train:Epoch 483
+INFO:src.train:[E 483 I 0] loss 0.027901 (avg 0.027901) mem 5084.96MB (211.4ms)
+INFO:src.train:    grad: [1.68e-03 1.65e-03] (8.36e-04 3.25e-02)
+INFO:src.train:Epoch 483 complete. Avg loss 0.031883, lr 0.001000
+INFO:src.train:Epoch 484
+INFO:src.train:[E 484 I 0] loss 0.031974 (avg 0.031974) mem 5084.96MB (207.6ms)
+INFO:src.train:    grad: [2.78e-03 1.17e-03] (7.61e-04 3.12e-02)
+INFO:src.train:Epoch 484 complete. Avg loss 0.027744, lr 0.001000
+INFO:src.train:Epoch 485
+INFO:src.train:[E 485 I 0] loss 0.026179 (avg 0.026179) mem 5084.96MB (206.0ms)
+INFO:src.train:    grad: [1.41e-03 1.14e-03] (6.70e-04 3.02e-02)
+INFO:src.train:Epoch 485 complete. Avg loss 0.023064, lr 0.001000
+INFO:src.train:Epoch 486
+INFO:src.train:[E 486 I 0] loss 0.031205 (avg 0.031205) mem 5084.96MB (204.9ms)
+INFO:src.train:    grad: [2.07e-03 8.68e-04] (6.90e-04 2.48e-02)
+INFO:src.train:Epoch 486 complete. Avg loss 0.027192, lr 0.001000
+INFO:src.train:Epoch 487
+INFO:src.train:[E 487 I 0] loss 0.023227 (avg 0.023227) mem 5084.96MB (205.9ms)
+INFO:src.train:    grad: [1.41e-03 9.93e-04] (5.51e-04 2.23e-02)
+INFO:src.train:Epoch 487 complete. Avg loss 0.023545, lr 0.001000
+INFO:src.train:Epoch 488
+INFO:src.train:[E 488 I 0] loss 0.033064 (avg 0.033064) mem 5084.96MB (206.0ms)
+INFO:src.train:    grad: [2.31e-03 1.26e-03] (7.16e-04 2.61e-02)
+INFO:src.train:Epoch 488 complete. Avg loss 0.025131, lr 0.001000
+INFO:src.train:Epoch 489
+INFO:src.train:[E 489 I 0] loss 0.030445 (avg 0.030445) mem 5084.96MB (205.5ms)
+INFO:src.train:    grad: [1.86e-03 1.18e-03] (7.20e-04 2.48e-02)
+INFO:src.train:Epoch 489 complete. Avg loss 0.024815, lr 0.001000
+INFO:src.train:Epoch 490
+INFO:src.train:[E 490 I 0] loss 0.017737 (avg 0.017737) mem 5084.96MB (208.1ms)
+INFO:src.train:    grad: [8.90e-04 1.02e-03] (5.63e-04 2.24e-02)
+INFO:src.train:Epoch 490 complete. Avg loss 0.027883, lr 0.001000
+INFO:src.train:Epoch 491
+INFO:src.train:[E 491 I 0] loss 0.017224 (avg 0.017224) mem 5084.96MB (205.8ms)
+INFO:src.train:    grad: [8.66e-04 9.28e-04] (4.55e-04 2.24e-02)
+INFO:src.train:Epoch 491 complete. Avg loss 0.020923, lr 0.001000
+INFO:src.train:Epoch 492
+INFO:src.train:[E 492 I 0] loss 0.025488 (avg 0.025488) mem 5084.96MB (205.3ms)
+INFO:src.train:    grad: [1.15e-03 9.29e-04] (5.71e-04 2.28e-02)
+INFO:src.train:Epoch 492 complete. Avg loss 0.019654, lr 0.001000
+INFO:src.train:Epoch 493
+INFO:src.train:[E 493 I 0] loss 0.037161 (avg 0.037161) mem 5084.96MB (215.1ms)
+INFO:src.train:    grad: [3.23e-03 1.65e-03] (1.21e-03 3.20e-02)
+INFO:src.train:Epoch 493 complete. Avg loss 0.025809, lr 0.001000
+INFO:src.train:Epoch 494
+INFO:src.train:[E 494 I 0] loss 0.027821 (avg 0.027821) mem 5084.96MB (207.5ms)
+INFO:src.train:    grad: [2.69e-03 9.10e-04] (6.68e-04 2.39e-02)
+INFO:src.train:Epoch 494 complete. Avg loss 0.023216, lr 0.001000
+INFO:src.train:Epoch 495
+INFO:src.train:[E 495 I 0] loss 0.018184 (avg 0.018184) mem 5084.96MB (208.7ms)
+INFO:src.train:    grad: [1.07e-03 1.09e-03] (6.21e-04 2.54e-02)
+INFO:src.train:Epoch 495 complete. Avg loss 0.028304, lr 0.001000
+INFO:src.train:Epoch 496
+INFO:src.train:[E 496 I 0] loss 0.026754 (avg 0.026754) mem 5084.96MB (212.8ms)
+INFO:src.train:    grad: [1.27e-03 1.01e-03] (6.98e-04 2.44e-02)
+INFO:src.train:Epoch 496 complete. Avg loss 0.032200, lr 0.001000
+INFO:src.train:Epoch 497
+INFO:src.train:[E 497 I 0] loss 0.019441 (avg 0.019441) mem 5084.96MB (205.3ms)
+INFO:src.train:    grad: [1.08e-03 1.06e-03] (5.28e-04 2.50e-02)
+INFO:src.train:Epoch 497 complete. Avg loss 0.018043, lr 0.001000
+INFO:src.train:Epoch 498
+INFO:src.train:[E 498 I 0] loss 0.042254 (avg 0.042254) mem 5084.96MB (205.6ms)
+INFO:src.train:    grad: [2.31e-03 1.37e-03] (9.03e-04 2.52e-02)
+INFO:src.train:Epoch 498 complete. Avg loss 0.029538, lr 0.001000
+INFO:src.train:Epoch 499
+INFO:src.train:[E 499 I 0] loss 0.024031 (avg 0.024031) mem 5084.96MB (205.5ms)
+INFO:src.train:    grad: [1.75e-03 1.07e-03] (6.81e-04 2.33e-02)
+INFO:src.train:Epoch 499 complete. Avg loss 0.019810, lr 0.001000
+INFO:src.train:Epoch 500
+INFO:src.train:[E 500 I 0] loss 0.021168 (avg 0.021168) mem 5084.96MB (205.5ms)
+INFO:src.train:    grad: [1.01e-03 9.71e-04] (5.99e-04 2.24e-02)
+INFO:src.train:Epoch 500 complete. Avg loss 0.018861, lr 0.001000
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/train-step500.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/pretrained.pth.tar
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:00.00 (0.00 秒) (Cached)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.00 (0.00 秒) (Cached)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:19:41.58 (1181.58 秒)
+  ⏱️ 整體訓練階段總時間            : 00:19:41.58 (1181.58 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old/train/capsule
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old/golden_full_res_backup/capsule
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/train-step500.pth.tar
+      └── /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/pretrained.pth.tar
+===========================================================================
+
+===========================================================================
+[Task 2 無GT抓漏純推論啟動時間] 2026-11-11 21:23:52 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352
+===========================================================================
+[Golden-Ref] 已載入既有 4 張 Golden Image 參考清單: 000.png, 001.png, 002.png, 003.png
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/train-step1500.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/pretrained.pth.tar
+[Tiling-Test] 已遞迴將 31 張原圖準備為 279 張推論圖塊 (自動跳過 0 張純背景角落塊) -> /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old_tiled_pool
+
+[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 (共 279 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/_tmp_tile_amap_npy 並將於 Step 4 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_capsule_4shot_old diy_name=sim_escape_capsule_old data.test_root=/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old_tiled_pool app=test app.ckpt_step=1500 (PORT=36263)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=127983842209344>,
+  'ckpt_step': 1500,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_capsule_4shot_old',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_capsule_4shot_old',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 36263},
+  'diy_name': 'sim_escape_capsule_old',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 279 tile images under /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [80/279] tiles processed (.npy saved)
+[Tile-Infer] Progress: [160/279] tiles processed (.npy saved)
+[Tile-Infer] Progress: [240/279] tiles processed (.npy saved)
+[Tile-Infer] Progress: [279/279] tiles processed (.npy saved)
+
+[Step 4.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 31 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/_tmp_tile_amap_npy
+[Step 4.2] 異常判定門檻設定: Hybrid 智慧動態門檻 = 1.0347 [P95=0.5236, 穩健統計上界(med+3.5σ)=1.0347, MinFloor=0.2700]
+           (計分模式=四合一純化濾波, 圓周邊緣抑制=auto, 邊界縮減=4.0%, 微塵開運算比例=0.0080)
+[Step 4.2b] 過擬合自檢診斷 : 🟢 正常 (無對照組) [Golden平均=0.0000 | 非Golden正常中位數=0.1752 | Overfit_Ratio=1.00x (Gap=+0.0000)]
+[Step 4.3] 篩選與畫框完成：共 0 張超過有效門檻 (1.0347) 已畫框輸出；其餘 31 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體推論階段總時間 (Total Inference Time) : 00:00:47.52 (47.52 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (279 塊)   : 00:00:27.98 (27.98 秒)
+      ├─ Step 3.2 FoundAD 模型推論 (step=1500)     : 00:00:17.78 (17.78 秒)
+      ├─ Step 4 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:01.76 (1.76 秒)
+      └─ 平均每張原圖推論耗時 (31 張原圖)         : 1.53 秒/張
+---------------------------------------------------------------------------
+  [2] 任務全程總執行時間 (Total Wall Time)      : 00:00:47.54 (47.54 秒)
+---------------------------------------------------------------------------
+  [3] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=1.0347):
+      🚨 超過門檻判定異常並畫框輸出 : 0 張
+      ✅ 未達門檻或微塵濾除直接略過 : 31 張 (不輸出圖片)
+      📊 非 Golden 正常圖分數分佈 (四合一濾波後) : Max=0.5346 | P99=0.5323 | P95=0.5236 | Median=0.1752 | Mean=0.2623 | Std=0.1752
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.4374 | mean+2*std=0.6126 | mean+3*std=0.7878
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.6268, Mean=0.3001, Std=0.2024 vs  [四合一濾波] Max=0.5346, Mean=0.2623, Std=0.1752
+      🩺 模型過擬合自檢 (Overfit)    : 🟢 正常 (無對照組)
+                                       [Golden平均=0.0000 vs 非Golden中位數=0.1752 | Overfit_Ratio=1.00x | Gap=+0.0000]
+---------------------------------------------------------------------------
+  [4] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 載入訓練權重檔資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_212352/log.txt
+===========================================================================

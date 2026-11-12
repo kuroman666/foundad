@@ -1,0 +1,33 @@
+===================================================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All 3 Split Evaluations Comparison)]
+-------------------------------------------------------------------------------------------------------------------
+ 📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152
+ 📂 拆分結果根目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs
+ 🖼️ 拆分數量核對 : 各包張數 [23, 23, 22] (加總=68 張 / 資料集總數=68 張)
+ 🎚️ 門檻判定策略 : 各包獨立重算動態門檻 (PACK_LOCAL_RECOMPUTED) | 全池基準門檻=0.2700 (Mode: hybrid, Score: FILTERED_ROBUST)
+-------------------------------------------------------------------------------------------------------------------
+Eval包名稱      | 總張數    | 非Golden正常    | 實際採用門檻       | 本包獨立門檻       | 正常誤報(FPR)        | 抓出Escape瑕疵      | Normal Mean±Std  | mean+3*std
+-------------------------------------------------------------------------------------------------------------------
+eval_pack_1  | 23     | 20           | 0.2700       | 0.2700       | 0/20 (0.0%)      | 0/3 (0.0%)      | 0.1355±0.0252    | 0.2109
+eval_pack_2  | 23     | 21           | 0.2700       | 0.2700       | 0/21 (0.0%)      | 0/2 (0.0%)      | 0.1318±0.0473    | 0.2738
+eval_pack_3  | 22     | 19           | 0.2700       | 0.2700       | 0/19 (0.0%)      | 0/3 (0.0%)      | 0.1343±0.0280    | 0.2182
+-------------------------------------------------------------------------------------------------------------------
+ 🔹 [eval_pack_1] (共 23 張, 輸出異常紅框圖 0 張)
+ ├── 門檻對照 : 實際採用=0.2700 | 本包獨立重算(Local)=0.2700 | 全池統一(Global)=0.2700
+ ├── 正常圖分數分佈 : Max=0.1766 | P99=0.1759 | P95=0.1730 | Median=0.1298 | Mean=0.1355 | Std=0.0252
+ ├── 門檻參考值 : mean+1*std=0.1606 | mean+2*std=0.1858 | mean+3*std=0.2109
+ ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+ └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs/eval_pack_1/anomaly_images
+ 🔹 [eval_pack_2] (共 23 張, 輸出異常紅框圖 0 張)
+ ├── 門檻對照 : 實際採用=0.2700 | 本包獨立重算(Local)=0.2700 | 全池統一(Global)=0.2700
+ ├── 正常圖分數分佈 : Max=0.2631 | P99=0.2528 | P95=0.2115 | Median=0.1225 | Mean=0.1318 | Std=0.0473
+ ├── 門檻參考值 : mean+1*std=0.1791 | mean+2*std=0.2265 | mean+3*std=0.2738
+ ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+ └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs/eval_pack_2/anomaly_images
+ 🔹 [eval_pack_3] (共 22 張, 輸出異常紅框圖 0 張)
+ ├── 門檻對照 : 實際採用=0.2700 | 本包獨立重算(Local)=0.2700 | 全池統一(Global)=0.2700
+ ├── 正常圖分數分佈 : Max=0.1946 | P99=0.1934 | P95=0.1889 | Median=0.1235 | Mean=0.1343 | Std=0.0280
+ ├── 門檻參考值 : mean+1*std=0.1622 | mean+2*std=0.1902 | mean+3*std=0.2182
+ ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+ └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_transistor_old/20261111_234152/split_eval_3packs/eval_pack_3/anomaly_images
+===================================================================================================================

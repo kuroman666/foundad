@@ -69,8 +69,8 @@ NUM_PACKS=3
 SPLIT_COUNTS=""
 SPLIT_RATIOS="1:1:1"
 SPLIT_ORDER="stratified"
-RECOMPUTE_PACK_THRESH="--recompute_pack_thresh"
-EXCLUDE_GOLDEN=""
+RECOMPUTE_PACK_THRESH=""
+EXCLUDE_GOLDEN="--exclude_golden"
 USE_SYMLINK="--symlink"
 # ===============================================================
 

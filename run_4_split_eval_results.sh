@@ -39,7 +39,7 @@ AUTO_PERCENTILE=95.0         # 各包獨立重算門檻時的分位數 (如 95.0
 MIN_THRESHOLD=0.0            # 動態門檻最低安全底線
 
 # 檔案處理策略
-EXCLUDE_GOLDEN=""            # 若想在拆分前先排除 Golden 訓練圖 (只拆非 Golden 測試圖)，設為 "--exclude_golden"
+EXCLUDE_GOLDEN="--exclude_golden"            # 若想在拆分前先排除 Golden 訓練圖 (只拆非 Golden 測試圖)，設為 "--exclude_golden"
 USE_SYMLINK=""               # 若想用軟連結取代實體複製圖片與 .npy 以節省空間，設為 "--symlink"
 # ==============================================================================
 

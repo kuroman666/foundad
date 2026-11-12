@@ -1,0 +1,107 @@
+
+===========================================================================
+[Task 2 無GT訓練啟動時間] 2026-11-11 21:01:33
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_capsule_old/20261111_210133
+===========================================================================
+[⚡ Step 1 外部已挑選] 偵測到 /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old/train/capsule 已有 4 張 Golden 原圖，直接進入切塊！
+[Tiling-Train] 已將 4 張 (1000x1000) Golden 大圖無損切分為 27 張 (512x512) 高解析度代表性訓練圖塊 (已啟用跨片離群瑕疵過濾) -> /home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old/train/capsule
+
+[Step 2] 執行 FoundAD 高解析度圖塊訓練 (train_tiles=27, batch_size=8, iters_per_epoch=4, epochs=500, total_updates=2000):
+
+============================================================
+[CMD] python foundad/main.py mode=train data.batch_size=8 data.dataset=mvtec data.data_name=mvtec_sim_capsule_4shot_old data.data_path=/home/kenny/project/FoundAD/data data.train_root=/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old data.mvtec_classnames='[capsule]' optimization.epochs=500 diy_name=sim_escape_capsule_old app=train_dinov3 (PORT=33679)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=124423809931072>,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_capsule_4shot_old',
+            'data_path': '/home/kenny/project/FoundAD/data',
+            'dataset': 'mvtec',
+            'mvtec_classnames': ['capsule'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/path/to/dataset',
+            'train_root': '/home/kenny/project/FoundAD/data/mvtec_sim_capsule_4shot_old',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 33679},
+  'diy_name': 'sim_escape_capsule_old',
+  'logging': { 'folder': 'logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old',
+               'write_tag': 'train'},
+  'meta': { 'crop_size': 512,
+            'feat_normed': False,
+            'if_pred_pe': False,
+            'loss_mode': 'l2',
+            'model': 'dinov3',
+            'n_layer': 3,
+            'pred_depth': 6,
+            'pred_emb_dim': 384,
+            'use_bfloat16': False},
+  'mode': 'train',
+  'optimization': { 'epochs': 500,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+Config saved to logs/mvtec_sim_capsule_4shot_old/dinov3sim_escape_capsule_old/params.yaml
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+INFO:src.train:Loss mode l2
+Totally 27 will be trained..
+INFO:root:Using AdamW
+INFO:root:Constant lr, lr=0.001
+INFO:src.train:Epoch 1
+/home/kenny/project/FoundAD/foundad/src/train.py:122: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+  with autocast(dtype=torch.bfloat16, enabled=self.use_bf16):
+INFO:src.train:[E 1 I 0] loss 1.078493 (avg 1.078493) mem 4995.05MB (587.8ms)
+INFO:src.train:    grad: [2.33e-02 2.23e-02] (2.23e-02 7.05e-01)
+INFO:src.train:Epoch 1 complete. Avg loss 0.829930, lr 0.001000
+INFO:src.train:Epoch 2
+INFO:src.train:[E 2 I 0] loss 0.544185 (avg 0.544185) mem 5084.96MB (106.5ms)
+INFO:src.train:    grad: [4.50e-03 4.55e-03] (4.33e-03 5.08e-01)
+INFO:src.train:Epoch 2 complete. Avg loss 0.511255, lr 0.001000
+INFO:src.train:Epoch 3
+INFO:src.train:[E 3 I 0] loss 0.442103 (avg 0.442103) mem 5084.96MB (106.5ms)
+INFO:src.train:    grad: [7.18e-03 3.57e-03] (3.57e-03 3.67e-01)
+INFO:src.train:Epoch 3 complete. Avg loss 0.423394, lr 0.001000
+INFO:src.train:Epoch 4
+INFO:src.train:[E 4 I 0] loss 0.381262 (avg 0.381262) mem 5084.96MB (106.6ms)
+INFO:src.train:    grad: [4.45e-03 2.52e-03] (2.26e-03 3.22e-01)
+INFO:src.train:Epoch 4 complete. Avg loss 0.356153, lr 0.001000
+INFO:src.train:Epoch 5
+INFO:src.train:[E 5 I 0] loss 0.319354 (avg 0.319354) mem 5084.96MB (106.7ms)
+INFO:src.train:    grad: [5.41e-03 2.39e-03] (2.14e-03 2.83e-01)

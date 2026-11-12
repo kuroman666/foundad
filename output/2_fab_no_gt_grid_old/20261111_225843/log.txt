@@ -1,0 +1,133 @@
+
+===========================================================================
+[Task 2 無GT抓漏純推論啟動時間] 2026-11-11 22:58:43 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843
+===========================================================================
+[Golden-Ref] 已載入既有 4 張 Golden Image 參考清單: 000.png, 001.png, 002.png, 003.png
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot_old/dinov3sim_escape_grid_old/train-step1500.pth.tar 對接至 /home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot_old/dinov3sim_escape_grid_old/pretrained.pth.tar
+[Tiling-Test] 已遞迴將 29 張原圖準備為 261 張推論圖塊 (自動跳過 0 張純背景角落塊) -> /home/kenny/project/FoundAD/data/mvtec_sim_grid_4shot_old_tiled_pool
+
+[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 (共 261 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/_tmp_tile_amap_npy 並將於 Step 4 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=mvtec_sim_grid_4shot_old diy_name=sim_escape_grid_old data.test_root=/home/kenny/project/FoundAD/data/mvtec_sim_grid_4shot_old_tiled_pool app=test app.ckpt_step=1500 (PORT=45139)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=128677840972096>,
+  'ckpt_step': 1500,
+  'data': { 'batch_size': 8,
+            'data_name': 'mvtec_sim_grid_4shot_old',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/data/mvtec_sim_grid_4shot_old_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/mvtec_sim_grid_4shot_old',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 45139},
+  'diy_name': 'sim_escape_grid_old',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/mvtec_sim_grid_4shot_old/dinov3sim_escape_grid_old/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 261 tile images under /home/kenny/project/FoundAD/data/mvtec_sim_grid_4shot_old_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [80/261] tiles processed (.npy saved)
+[Tile-Infer] Progress: [160/261] tiles processed (.npy saved)
+[Tile-Infer] Progress: [240/261] tiles processed (.npy saved)
+[Tile-Infer] Progress: [261/261] tiles processed (.npy saved)
+
+[Step 4.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 29 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/_tmp_tile_amap_npy
+[Step 4.2] 異常判定門檻設定: Hybrid 智慧動態門檻 = 0.2700 [P95=0.1043, 穩健統計上界(med+3.5σ)=0.1373, MinFloor=0.2700]
+           (計分模式=四合一純化濾波, 圓周邊緣抑制=auto, 邊界縮減=4.0%, 微塵開運算比例=0.0080)
+[Step 4.2b] 過擬合自檢診斷 : 🟢 正常 (無對照組) [Golden平均=0.0000 | 非Golden正常中位數=0.0892 | Overfit_Ratio=1.00x (Gap=+0.0000)]
+[Step 4.3] 篩選與畫框完成：共 1 張超過有效門檻 (0.2700) 已畫框輸出；其餘 28 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體推論階段總時間 (Total Inference Time) : 00:00:19.15 (19.15 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (261 塊)   : 00:00:08.77 (8.77 秒)
+      ├─ Step 3.2 FoundAD 模型推論 (step=1500)     : 00:00:09.31 (9.31 秒)
+      ├─ Step 4 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:01.07 (1.07 秒)
+      └─ 平均每張原圖推論耗時 (29 張原圖)         : 0.66 秒/張
+---------------------------------------------------------------------------
+  [2] 任務全程總執行時間 (Total Wall Time)      : 00:00:19.17 (19.17 秒)
+---------------------------------------------------------------------------
+  [3] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.2700):
+      🚨 超過門檻判定異常並畫框輸出 : 1 張
+      ✅ 未達門檻或微塵濾除直接略過 : 28 張 (不輸出圖片)
+      📊 非 Golden 正常圖分數分佈 (四合一濾波後) : Max=0.1119 | P99=0.1104 | P95=0.1043 | Median=0.0892 | Mean=0.0856 | Std=0.0147
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1003 | mean+2*std=0.1149 | mean+3*std=0.1296
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.1469, Mean=0.1113, Std=0.0210 vs  [四合一濾波] Max=0.1119, Mean=0.0856, Std=0.0147
+      🩺 模型過擬合自檢 (Overfit)    : 🟢 正常 (無對照組)
+                                       [Golden平均=0.0000 vs 非Golden中位數=0.0892 | Overfit_Ratio=1.00x | Gap=+0.0000]
+---------------------------------------------------------------------------
+  [4] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 載入訓練權重檔資料夾       : /home/kenny/project/FoundAD/logs/mvtec_sim_grid_4shot_old/dinov3sim_escape_grid_old
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_grid_old/20261111_225843/log.txt
+===========================================================================

@@ -65,8 +65,8 @@ NUM_PACKS=3
 SPLIT_COUNTS=""        # 可填固定張數如 "500" 或 "700,700,600"；留空則依 SPLIT_RATIOS 比例均分
 SPLIT_RATIOS="1:1:1"
 SPLIT_ORDER="stratified"
-RECOMPUTE_PACK_THRESH="--recompute_pack_thresh"
-EXCLUDE_GOLDEN=""      # 若拆分時想排除 4 張 Golden 圖，設為 "--exclude_golden"
+RECOMPUTE_PACK_THRESH=""
+EXCLUDE_GOLDEN="--exclude_golden"      # 若拆分時想排除 4 張 Golden 圖，設為 "--exclude_golden"
 USE_SYMLINK="--symlink"
 # ===============================================================
 
