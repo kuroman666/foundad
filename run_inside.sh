@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # 檔案位置: FoundAD/run_inside.sh (全選覆蓋並存檔)
 # 用途: 公司內部實機 (Fab Inside) 完全無 GT 盲池四階段一鍵測試腳本
+# 用法: bash run_inside.sh ./datasets/fab_wafer_pool 0.32
 # 流程: 1_auto_golden.py -> 2_train_fab_no_gt.py -> 3_infer_fab_no_gt.py -> 4_split_eval_results.py
 set -e
 
@@ -9,10 +10,22 @@ OUTPUT_ROOT="./wafer_escape_results"
 DATASETS_DIR="./datasets"
 DINO_CKPT_PATH="auto" # 自動從 ~/.cache/torch/hub 或 ./hub_cache 離線搜尋 DINOv3/v2 權重
 
-# 若執行時有帶參數 (如 bash run_inside.sh /path/to/lot1 /path/to/lot2)，優先使用命令列參數；
-# 否則使用下方預設的公司內部無標籤盲池資料夾清單 (可放入單一或多個 Lot 資料夾)
-if [ $# -ge 1 ]; then
-  TARGET_POOL_DIRS=("$@")
+# 複製所有命令列參數至陣列
+ CLI_ARGS=("$@")
+
+# 若最後一個參數是純數字或小數 (例如 0.25, .3, 1)，自動將其提取為 THRESHOLD 並從路徑清單移除
+if [ ${#CLI_ARGS[@]} -ge 1 ]; then
+  LAST_IDX=$((${#CLI_ARGS[@]} - 1))
+  LAST_ARG="${CLI_ARGS[$LAST_IDX]}"
+  if [[ "${LAST_ARG}" =~ ^[0-9]+(\.[0-9]+)?$ || "${LAST_ARG}" =~ ^\.[0-9]+$ ]]; then
+    THRESHOLD="${THRESHOLD:-${LAST_ARG}}"
+    unset 'CLI_ARGS[$LAST_IDX]'
+  fi
+fi
+
+# 剩餘的參數即為盲池資料夾清單；若未傳入任何資料夾，則使用預設路徑
+if [ ${#CLI_ARGS[@]} -ge 1 ]; then
+  TARGET_POOL_DIRS=("${CLI_ARGS[@]}")
 else
   TARGET_POOL_DIRS=(
     "${DATASETS_DIR}/fab_wafer_pool"
@@ -47,13 +60,14 @@ BG_STD_THRESH=1.5
 DISABLE_TILING=""      # 若想強制關閉切塊，設為 "--disable_tiling"
 
 # --- 模型、動態門檻與四合一防誤報超參數 ---
-FAB_CKPT_STEP=2000
+# 訓練預設跑 2000 step (因為 2_train_fab_no_gt_old.py 需要明確的訓練步數)
+FAB_CKPT_STEP="${FAB_CKPT_STEP:-2000}"
 APP_TRAIN="train_dinov3"
 APP_TEST="test"
 
-THRESH_MODE="hybrid"   # 可選: hybrid, mean_std, percentile, top_k, fixed
+THRESH_MODE="fixed"   # 可選: hybrid, mean_std, percentile, top_k, fixed
 SIGMA_K=3.5
-THRESHOLD=0
+THRESHOLD="${THRESHOLD:-0}"
 MIN_THRESHOLD=0
 AUTO_PERCENTILE=95.0
 TOP_K=0

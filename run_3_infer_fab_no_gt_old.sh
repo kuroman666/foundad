@@ -2,7 +2,7 @@
 # ==============================================================================
 # 檔案位置: FoundAD/run_3_infer_fab_no_gt_old.sh
 # 用途: 執行 3_infer_fab_no_gt_old.py (FoundAD 無 GT 盲池高解析度純推論與防誤報篩選流程)
-# 用法: bash run_3_infer_fab_no_gt_old.sh [POOL_DIR] [OUT_DIR] [DATASETS_DIR] [DATA_NAME] [DIY_NAME] [CKPT_STEP]
+# 用法: bash run_3_infer_fab_no_gt_old.sh ./datasets/fab_wafer_pool fab_inside_old_wafer_4shot 0.32
 # 使用方式:
 #   1. 直接使用預設參數執行:
 #      bash run_3_infer_fab_no_gt_old.sh
@@ -16,6 +16,20 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
+# 支援位置參數: bash run_3_infer_fab_no_gt_old.sh [POOL_DIR] [DATA_NAME] [THRESHOLD] [額外 --旗標...]
+if [[ $# -ge 1 && "$1" != --* ]]; then
+    POOL_DIR="${POOL_DIR:-$1}"
+    shift
+fi
+if [[ $# -ge 1 && "$1" != --* ]]; then
+    DATA_NAME="${DATA_NAME:-$1}"
+    shift
+fi
+if [[ $# -ge 1 && "$1" != --* ]]; then
+    THRESHOLD="${THRESHOLD:-$1}"
+    shift
+fi
+
 # ------------------------------------------------------------------------------
 # 0. 硬體與執行環境設定
 # ------------------------------------------------------------------------------
@@ -26,15 +40,16 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 # ------------------------------------------------------------------------------
 # 1. 資料路徑與模型權重設定 (對齊 Step 1 / Step 2 的輸出設定)
 # ------------------------------------------------------------------------------
-POOL_DIR="${POOL_DIR:-./datasets/mock_unlabeled_pool}"       # 無 GT 測試盲池圖片資料夾
+POOL_DIR="${POOL_DIR:-./datasets/fab_wafer_pool}"                           # 無 GT 測試盲池圖片資料夾
 MOCK_FROM_MVTEC="${MOCK_FROM_MVTEC:-}"                       # 若需自動從 MVTec 建立模擬盲池可填路徑 (如 ./datasets/mvtec/transistor)，留空則直接讀 POOL_DIR
 OUT_DIR="${OUT_DIR:-./wafer_escape_results}"                 # 推論結果輸出主目錄 (程式內會自動建立時間戳記子目錄)
 DATASETS_DIR="${DATASETS_DIR:-./datasets}"                   # 資料集與切塊快取根目錄
-DATA_NAME="${DATA_NAME:-mvtec_sim_4shot}"                    # 對應 logs/<DATA_NAME> 與 datasets/<DATA_NAME> 的實驗名稱
+DATA_NAME="${DATA_NAME:-}"                                   # 對應 logs/<DATA_NAME> 與 datasets/<DATA_NAME> 的實驗名稱
 CATEGORY="${CATEGORY:-auto}"                                 # 產品/晶圓類別 (預設 auto 自動依路徑推斷)
 APP_TEST="${APP_TEST:-test}"                                 # FoundAD 推論設定檔模式
 DIY_NAME="${DIY_NAME:-sim_escape}"                           # 訓練實驗自訂後綴名稱
-CKPT_STEP="${CKPT_STEP:}"                                    # 欲載入的訓練權重步數 (若不存在會自動抓取最大 step)
+# 未設定時預設為 -1，強制觸發 Python 自動搜尋最大 step；同時相容 CKPT_STEP 與 FAB_CKPT_STEP
+CKPT_STEP="${CKPT_STEP:-${FAB_CKPT_STEP:--1}}"
 
 # ------------------------------------------------------------------------------
 # 2. 高解析度切塊 (Tiling) 與批次推論參數
@@ -49,8 +64,8 @@ DISABLE_TILING="${DISABLE_TILING:-0}"                        # 設為 1 則附�
 # 3. 動態門檻對齊參數 (Thresholding)
 #    可選模式: hybrid | mean_std | percentile | top_k | fixed
 # ------------------------------------------------------------------------------
-THRESH_MODE="${THRESH_MODE:-hybrid}"                         # 異常門檻決定模式
-THRESHOLD="${THRESHOLD:-0}"                                  # fixed 模式固定門檻 / hybrid 模式保底下限之一
+THRESH_MODE="${THRESH_MODE:-fixed}"                         # 異常門檻決定模式
+THRESHOLD="${THRESHOLD:-}"                                  # fixed 模式固定門檻 / hybrid 模式保底下限之一
 MIN_THRESHOLD="${MIN_THRESHOLD:-0}"                          # 動態門檻絕對最低安全底線 (適用於 hybrid / percentile / top_k)
 AUTO_PERCENTILE="${AUTO_PERCENTILE:-95.0}"                   # 盲池分位數 (如 95.0 代表 P95)
 TOP_K="${TOP_K:-0}"                                          # 若 > 0 則限制最多只輸出前 K 高分可疑圖片
