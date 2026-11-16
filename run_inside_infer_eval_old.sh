@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# 檔案位置: FoundAD/run_inside_infer_eval_old.sh (新增此檔並賦予執行權限 chmod +x run_inside_infer_eval_old.sh)
+# 檔案位置: FoundAD/run_inside_infer_eval_old.sh
 # 用途: 公司內部實機 (Fab Inside) 舊版僅執行「推論 + 結果拆分評估」二階段一鍵腳本
-# 用法: bash run_inside_infer_eval_old.sh ./datasets/fab_wafer_pool 0.32
+# 用法範例:
+#   1. 預設抓對應權重與預設門檻(0.18): bash run_inside_infer_eval_old.sh ./datasets/fab_wafer_pool
+#   2. 命令列直接指定權重檔與固定門檻: bash run_inside_infer_eval_old.sh ./datasets/new_pool ./logs/wafer_A/dinov3/train-step2000.pth.tar 0.32
 # 流程: 3_infer_fab_no_gt_old.py -> 4_split_eval_results.py (不重挑 Golden、不重新訓練模型)
 set -e
 
@@ -9,18 +11,32 @@ set -e
 OUTPUT_ROOT="./wafer_escape_results"
 DATASETS_DIR="./datasets"
 
-# 複製所有命令列參數至陣列
- CLI_ARGS=("$@")
+# 1. 選填：直接指定訓練好的權重檔 (.pth.tar) 或權重資料夾路徑 (留空 "" 則自動抓預設對應的權重)
+CUSTOM_CKPT_PATH=""
 
-# 若最後一個參數是純數字或小數 (例如 0.25, .3, 1)，自動將其提取為 THRESHOLD 並從路徑清單移除
-if [ ${#CLI_ARGS[@]} -ge 1 ]; then
-  LAST_IDX=$((${#CLI_ARGS[@]} - 1))
-  LAST_ARG="${CLI_ARGS[$LAST_IDX]}"
-  if [[ "${LAST_ARG}" =~ ^[0-9]+(\.[0-9]+)?$ || "${LAST_ARG}" =~ ^\.[0-9]+$ ]]; then
-    THRESHOLD="${THRESHOLD:-${LAST_ARG}}"
-    unset 'CLI_ARGS[$LAST_IDX]'
+# 2. 選填：直接指定固定門檻數值，例如 "0.32" (留空 "" 且命令列也未傳入數字時，自動抓預設門檻 0.18)
+CUSTOM_THRESHOLD=""
+DEFAULT_THRESHOLD="0.18"
+
+# 選填：舊版手動指定 DATA_NAME 與 DIY_NAME (若已填 CUSTOM_CKPT_PATH 則會自動解析，無須重複填寫)
+CUSTOM_DATA_NAME=""
+CUSTOM_DIY_NAME=""
+
+# 複製所有命令列參數至陣列，自動提取數字門檻與 .pth.tar 權重路徑
+CLI_ARGS=()
+CLI_THRESHOLD=""
+for arg in "$@"; do
+  if [[ "${arg}" =~ ^[0-9]+(\.[0-9]+)?$ || "${arg}" =~ ^\.[0-9]+$ ]]; then
+    CLI_THRESHOLD="${arg}"
+  elif [[ "${arg}" == *.pth.tar ]]; then
+    CUSTOM_CKPT_PATH="${arg}"
+  else
+    CLI_ARGS+=("${arg}")
   fi
-fi
+done
+
+# 優先順序：命令列傳入的數字 > 腳本內設定的 CUSTOM_THRESHOLD > 環境變數 THRESHOLD > 預設值 DEFAULT_THRESHOLD (0.25)
+THRESHOLD="${CLI_THRESHOLD:-${CUSTOM_THRESHOLD:-${THRESHOLD:-${DEFAULT_THRESHOLD}}}}"
 
 # 剩餘的參數即為盲池資料夾清單；若未傳入任何資料夾，則使用預設路徑
 if [ ${#CLI_ARGS[@]} -ge 1 ]; then
@@ -30,11 +46,6 @@ else
     "${DATASETS_DIR}/fab_wafer_pool"
   )
 fi
-
-# 選填：若想對「新批號盲池」跨資料集直接套用其他批號已訓練好的權重與 Golden 基準，
-# 可在此指定既有模型的 DATA_NAME 與 DIY_NAME (留空則自動對齊當前盲池對應的權重)
-CUSTOM_DATA_NAME=""    # 例如: "fab_inside_old_fab_wafer_pool_4shot" 或 "./logs/某個權重資料夾路徑"
-CUSTOM_DIY_NAME=""     # 例如: "fab_inside_old_fab_wafer_pool"
 
 # --- 二階段執行控制開關 ---
 FORCE_INFER=""         # 若想忽略測試池切塊 PNG 快取、強制重新切塊推論，設為 "--force_infer"
@@ -48,15 +59,14 @@ INFER_BATCH_SIZE=16
 BG_STD_THRESH=1.5
 DISABLE_TILING=""      # 若想強制關閉切塊，設為 "--disable_tiling"
 
-# --- 模型、動態門檻與四合一防誤報超參數 (對應 3_infer_fab_no_gt_old.py) ---
+# --- 模型、固定/動態門檻與四合一防誤報超參數 (對應 3_infer_fab_no_gt_old.py) ---
 # 若外部未指定 FAB_CKPT_STEP 或 CKPT_STEP，預設傳入 -1 以自動抓取最大 step
 FAB_CKPT_STEP="${FAB_CKPT_STEP:-${CKPT_STEP:--1}}"
 APP_TEST="test"
 
-THRESH_MODE="fixed"   # 可選: hybrid, mean_std, percentile, top_k, fixed
+THRESH_MODE="fixed"   # 已固定使用 fixed 模式；可選: hybrid, mean_std, percentile, top_k, fixed
 SIGMA_K=3.5
-THRESHOLD="${THRESHOLD:-}"       # Old 版預設為 0.25 (當 thresh_mode=fixed 或 hybrid 時作為保底門檻之一)
-MIN_THRESHOLD="${MIN_THRESHOLD:-0}"     # Old 版預設為 0.27 (動態門檻的絕對最低安全底線)
+MIN_THRESHOLD="${MIN_THRESHOLD:-0}"     # 動態門檻的絕對最低安全底線 (fixed 模式下不影響)
 AUTO_PERCENTILE=95.0
 TOP_K=0
 CORE_RATIO=0.55
@@ -158,12 +168,54 @@ run_single_inside_infer_eval_old() {
   local DATA_NAME="fab_inside_old_${UNIQUE_TAG}_${SHOTS}shot"
   local DIY_NAME="fab_inside_old_${UNIQUE_TAG}"
   local SAVE_BASE_DIR="${OUTPUT_ROOT}/inside_no_gt_old_${UNIQUE_TAG}"
+  local ACTIVE_CKPT_STEP="${FAB_CKPT_STEP}"
 
-  # 若使用者有手動指定外部權重對應的 CUSTOM_DATA_NAME / CUSTOM_DIY_NAME，優先採用
-  if [ -n "${CUSTOM_DATA_NAME}" ]; then
+  # 1. 若有指定 CUSTOM_CKPT_PATH (.pth.tar 檔或資料夾)，自動反推 DATA_NAME、DIY_NAME 與 STEP
+  if [ -n "${CUSTOM_CKPT_PATH}" ]; then
+    if [ ! -e "${CUSTOM_CKPT_PATH}" ]; then
+      echo "❌ [權重路徑錯誤] 找不到指定的權重檔案或資料夾: ${CUSTOM_CKPT_PATH}"
+      exit 1
+    fi
+    local RESOLVED_CKPT_INFO
+    RESOLVED_CKPT_INFO=$(python - "${CUSTOM_CKPT_PATH}" "${ACTIVE_CKPT_STEP}" << 'EOF'
+import os
+import re
+import sys
+
+p = os.path.abspath(sys.argv[1])
+req_step = sys.argv[2]
+
+if os.path.isfile(p):
+    ckpt_dir = os.path.dirname(p)
+    fname = os.path.basename(p)
+    m = re.search(r"train-step(\d+)\.pth\.tar", fname)
+    if m:
+        req_step = m.group(1)
+else:
+    ckpt_dir = p
+
+# 尋找 logs/ 下第一層資料夾名稱作為 data_name，其下層資料夾作為 diy_name
+parts = ckpt_dir.replace("\\", "/").split("/")
+data_name = ckpt_dir
+diy_name = ""
+if "logs" in parts:
+    idx = parts.index("logs")
+    if idx + 1 < len(parts):
+        data_name = parts[idx + 1]
+    if idx + 2 < len(parts):
+        diy_name = parts[idx + 2]
+
+print(f"{data_name}|{diy_name}|{req_step}")
+EOF
+)
+    IFS='|' read -r DATA_NAME DIY_NAME ACTIVE_CKPT_STEP <<< "${RESOLVED_CKPT_INFO}"
+    echo " [🎯 指定權重載入] 路徑: ${CUSTOM_CKPT_PATH}"
+    echo "    -> 自動解析 DATA_NAME=${DATA_NAME} | DIY_NAME=${DIY_NAME} | STEP=${ACTIVE_CKPT_STEP}"
+  # 2. 若未填 CUSTOM_CKPT_PATH，但有填 CUSTOM_DATA_NAME，則沿用舊邏輯
+  elif [ -n "${CUSTOM_DATA_NAME}" ]; then
     DATA_NAME="${CUSTOM_DATA_NAME}"
+  # 3. 預設自動對齊當前盲池對應的權重
   elif [ ! -d "./logs/${DATA_NAME}" ] && [ -d "./logs/fab_inside_${UNIQUE_TAG}_${SHOTS}shot" ]; then
-    # 自動容錯：若尚未跑過 old 版訓練，但有跑過新版 run_inside.sh 的權重，自動對接過去
     DATA_NAME="fab_inside_${UNIQUE_TAG}_${SHOTS}shot"
     DIY_NAME="fab_inside_${UNIQUE_TAG}"
     echo " [🔄 權重自動對接] 偵測到既有訓練權重位於 ./logs/${DATA_NAME}，自動對接該權重與 Golden 基準！"
@@ -177,13 +229,16 @@ run_single_inside_infer_eval_old() {
   echo "==========================================================================="
   echo " 🚀 [公司內部無 GT 純推論與評估啟動 (Old 版)] 盲池路徑: ${POOL_DIR}"
   echo "    CATEGORY : ${CAT_NAME} | UNIQUE_TAG: ${UNIQUE_TAG}"
-  echo "    DATA_NAME: ${DATA_NAME} | DIY_NAME: ${DIY_NAME}"
+  echo "    DATA_NAME: ${DATA_NAME} | DIY_NAME: ${DIY_NAME} | CKPT_STEP: ${ACTIVE_CKPT_STEP}"
+  echo "    門檻設定 : THRESH_MODE=${THRESH_MODE} | THRESHOLD=${THRESHOLD}"
   echo "    獨立輸出目錄: ${SAVE_BASE_DIR}"
   echo "==========================================================================="
 
   # 防呆檢查：確認 ./logs/${DATA_NAME} 或直接傳入之路徑下已有訓練好的 train-step*.pth.tar 權重
   local CKPT_FOUND=""
-  if [ -d "./logs/${DATA_NAME}" ]; then
+  if [ -n "${CUSTOM_CKPT_PATH}" ] && [ -f "${CUSTOM_CKPT_PATH}" ]; then
+    CKPT_FOUND="${CUSTOM_CKPT_PATH}"
+  elif [ -d "./logs/${DATA_NAME}" ]; then
     CKPT_FOUND=$(find "./logs/${DATA_NAME}" -name "train-step*.pth.tar" 2>/dev/null | head -n 1)
   elif [ -d "${DATA_NAME}" ]; then
     CKPT_FOUND=$(find "${DATA_NAME}" -name "train-step*.pth.tar" 2>/dev/null | head -n 1)
@@ -192,7 +247,7 @@ run_single_inside_infer_eval_old() {
   if [ -z "${CKPT_FOUND}" ]; then
     echo "❌ [缺少訓練權重錯誤] 在 ./logs/${DATA_NAME}/ 下找不到任何 train-step*.pth.tar 訓練權重檔！"
     echo "   ├── 請先執行 bash run_inside_old.sh 完成該盲池的初次訓練，"
-    echo "   └── 或於本腳本設定 CUSTOM_DATA_NAME 指定既有模型的資料集名稱或權重資料夾路徑。"
+    echo "   └── 或於本腳本設定 CUSTOM_CKPT_PATH 指定既有模型權重檔 (.pth.tar) 路徑。"
     exit 1
   fi
 
@@ -208,7 +263,7 @@ run_single_inside_infer_eval_old() {
     --category "${CAT_NAME}" \
     --app_test "${APP_TEST}" \
     --diy_name "${DIY_NAME}" \
-    --ckpt_step "${FAB_CKPT_STEP}" \
+    --ckpt_step "${ACTIVE_CKPT_STEP}" \
     --thresh_mode "${THRESH_MODE}" \
     --threshold "${THRESHOLD}" \
     --min_threshold "${MIN_THRESHOLD}" \
