@@ -112,6 +112,8 @@ setup.cfg
 *.png
 *.jpg
 *.tar.xz
+*.rar
+*.json
 
 # Large data dirs
 data/

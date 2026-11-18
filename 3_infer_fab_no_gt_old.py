@@ -1,4 +1,8 @@
 # 檔案位置: FoundAD/3_infer_fab_no_gt_old.py (僅保留 Inference 流程精簡版，原始檔案為 2_run_fab_no_gt.py(date:1105))
+# 背景執行全部 YDFID-2（19 個類別）： nohup ./run_outside_new_datasets.sh ./data/YDFID-2 > foundad_YDFID2.log 2>&1 &
+#                                 tail -f foundad_YDFID2.log
+# 執行 Mura / mini_AVMap2： nohup ./run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb ./data/Mura2_bg_mask > foundad_mura.log 2>&1 &
+#                          tail -f foundad_mura.log
 import importlib
 import shlex
 import os
@@ -23,7 +27,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-_ag = importlib.import_module("1_auto_golden")
+_ag = importlib.import_module("1_auto_golden_old")
 IMG_EXTENSIONS = _ag.IMG_EXTENSIONS
 format_duration = _ag.format_duration
 log_and_print = _ag.log_and_print
