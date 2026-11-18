@@ -29,17 +29,7 @@ from PIL import Image
 
 _ag = importlib.import_module("1_auto_golden_old")
 IMG_EXTENSIONS = _ag.IMG_EXTENSIONS
-format_duration = _ag.format_duration
-log_and_print = _ag.log_and_print
-safe_rmtree = _ag.safe_rmtree
-safe_copy = _ag.safe_copy
 scan_pool_images = _ag.scan_pool_images
-compute_pool_signature = _ag.compute_pool_signature
-load_image_rgb_uint8 = _ag.load_image_rgb_uint8
-get_axis_positions = _ag.get_axis_positions
-is_background_tile = _ag.is_background_tile
-prepare_tiled_golden_trainset = _ag.prepare_tiled_golden_trainset
-load_or_prepare_golden_dataset = _ag.load_or_prepare_golden_dataset
 
 
 def format_duration(seconds: float) -> str:
