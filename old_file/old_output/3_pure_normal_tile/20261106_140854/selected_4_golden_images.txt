@@ -1,5 +1,0 @@
-=== Auto-Selected Golden Images (Stage 1: Medoid Centrality + Token Spike Guard) ===
-Golden #1 (-> 000.png): clean_004.png | Hybrid_Score: 0.999161 (Raw_Centrality: 0.999161, Token_Spike: 1.169)
-Golden #2 (-> 001.png): clean_031.png | Hybrid_Score: 0.999110 (Raw_Centrality: 0.999110, Token_Spike: 1.175)
-Golden #3 (-> 002.png): clean_013.png | Hybrid_Score: 0.999101 (Raw_Centrality: 0.999101, Token_Spike: 1.177)
-Golden #4 (-> 003.png): clean_011.png | Hybrid_Score: 0.999068 (Raw_Centrality: 0.999068, Token_Spike: 1.166)

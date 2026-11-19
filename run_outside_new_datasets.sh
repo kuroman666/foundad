@@ -8,6 +8,10 @@
 #   2) 一次跑完 YDFID-2 全部 19 個類別:      bash run_outside_new_datasets.sh ./data/YDFID-2
 #   3) 跑 Mura 與 AVMap 資料集:              bash run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb
 #   4) 跑舊資料集 (完全相容):                bash run_outside_new_datasets.sh ./data/mvtec/capsule ./data/mvtec-2/can
+# 背景執行全部 YDFID-2（19 個類別）： nohup ./run_outside_new_datasets.sh ./data/YDFID-2 > foundad_YDFID2.txt 2>&1 &
+#                                 tail -f foundad_YDFID2.txt
+# 執行 Mura / mini_AVMap2： nohup ./run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb ./data/Mura2_bg_mask > foundad_mura.txt 2>&1 &
+#                          tail -f foundad_mura.txt
 set -e
 
 # ===================== [可自由修改的參數區] =====================
@@ -88,18 +92,18 @@ USE_SYMLINK="--symlink"
 
 BATCH_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 mkdir -p "${OUTPUT_ROOT}"
-BATCH_SUMMARY_TXT="${OUTPUT_ROOT}/new_datasets_batch_summary_${BATCH_TIMESTAMP}.txt"
-BATCH_SUMMARY_LATEST="${OUTPUT_ROOT}/latest_new_datasets_summary.txt"
-BATCH_SUMMARY_CSV="${OUTPUT_ROOT}/latest_new_datasets_summary.csv"
-MEM_MONITOR_LOG="${OUTPUT_ROOT}/mem_monitor_new_${BATCH_TIMESTAMP}.log"
-MEM_MONITOR_LATEST="${OUTPUT_ROOT}/latest_mem_monitor_new.log"
+BATCH_SUMMARY_TXT="${OUTPUT_ROOT}/multi_dataset_batch_summary_foundad_${BATCH_TIMESTAMP}.txt"
+BATCH_SUMMARY_LATEST="${OUTPUT_ROOT}/latest_multi_dataset_summary_foundad.txt"
+BATCH_SUMMARY_CSV="${OUTPUT_ROOT}/latest_multi_dataset_summary_foundad.csv"
+MEM_MONITOR_LOG="${OUTPUT_ROOT}/mem_monitor_foundad_${BATCH_TIMESTAMP}.log"
+MEM_MONITOR_LATEST="${OUTPUT_ROOT}/latest_mem_monitor_foundad.log"
 MEM_MONITOR_PID=""
 
 start_mem_monitor() {
     if [ "${ENABLE_MEM_MONITOR}" -ne 1 ]; then
         return
     fi
-    echo "=== FoundAD New Datasets System RAM & GPU VRAM Monitor Started at $(date '+%Y-%m-%d %H:%M:%S') ===" > "${MEM_MONITOR_LOG}"
+    echo "=== FoundAD System RAM & GPU VRAM Monitor Started at $(date '+%Y-%m-%d %H:%M:%S') ===" > "${MEM_MONITOR_LOG}"
     (
         while true; do
             TS=$(date '+%Y-%m-%d %H:%M:%S')
@@ -152,10 +156,10 @@ PYEOF
 trap cleanup_mem_monitor EXIT INT TERM
 start_mem_monitor
 
-echo "==========================================================================================================" > "${BATCH_SUMMARY_TXT}"
-echo " 📊 [FoundAD 新資料集批次訓練與推論總覽報表] 啟動時間: ${BATCH_TIMESTAMP}" >> "${BATCH_SUMMARY_TXT}"
-echo "==========================================================================================================" >> "${BATCH_SUMMARY_TXT}"
-echo "Dataset_Key,Category,Total_Imgs,Golden_Imgs,Normal_Imgs,Escape_Imgs,Eff_Threshold,Recall_Pct,FPR_Pct,Normal_Mean,Normal_Std,Train_Dir,Infer_Dir,Report_CSV" > "${BATCH_SUMMARY_CSV}"
+echo "==========================================================================================================================" > "${BATCH_SUMMARY_TXT}"
+echo " 📊 [FoundAD (Few-Shot) 多資料集批次訓練與推論總覽報表] 啟動時間: ${BATCH_TIMESTAMP}" >> "${BATCH_SUMMARY_TXT}"
+echo "==========================================================================================================================" >> "${BATCH_SUMMARY_TXT}"
+echo "Dataset_Key,Category,Total_Imgs,Golden_Imgs,Normal_Imgs,Escape_Imgs,Eff_Threshold,I_AUROC,I_AP,F1_Max,Recall_Pct,FPR_Pct,Precision_Pct,F1_Cur_Pct,Normal_Mean,Normal_Std,Train_Dir,Infer_Dir,Report_CSV" > "${BATCH_SUMMARY_CSV}"
 
 prepare_public_sim_pool() {
     local SRC_CAT_DIR="$1"
@@ -171,9 +175,7 @@ import stat
 import shutil
 
 IMG_EXTS = (".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff")
-# 支援舊資料集 (good / ok / normal) 與新資料集 YDFID-2 (defect-free)
 GOOD_FOLDER_NAMES = {"good", "defect-free", "defect_free", "ok", "normal"}
-# 自動忽略 GT 遮罩資料夾 (含 YDFID-2 的 GroundTruth 與 Mura 的 masks/masks2/with_GT)
 IGNORE_DIRS = {"masks", "masks2", "mask", "ground_truth", "groundtruth", "gt", "with_gt", "__macosx"}
 
 src_cat_dir, dst_pool_dir, mode, defect_limit, force_rebuild = (
@@ -198,10 +200,6 @@ def find_good_subdir(parent_dir):
             return os.path.join(parent_dir, d)
     return None
 
-# 自動相容三種資料集目錄結構：
-# 1) MVTec / MVTec-2: <src>/test/good/
-# 2) YDFID-2:         <src>/test/defect-free/ 與 <src>/test/defect/
-# 3) Mura / AVMap:    <src>/test/<sub_cat>/good/
 test_dir = None
 good_dir = None
 for cand in ["test", "test_public", "val", "validation"]:
@@ -251,7 +249,6 @@ for root, dirs, files in os.walk(good_dir):
             copy_unlocked(os.path.join(root, f), os.path.join(dst_pool_dir, f"clean_{f}"))
             good_count += 1
 
-# 若 test 正常樣本少於 8 張，自動從 train/good 或 train/defect-free 補充正常樣本
 if good_count < 8:
     rel_sub = os.path.relpath(test_dir, src_cat_dir)
     sub_cat_name = os.path.basename(test_dir) if os.path.dirname(rel_sub) else ""
@@ -327,7 +324,7 @@ run_single_public_category() {
 
     echo ""
     echo "==========================================================================="
-    echo " 🚀 [廠外新資料集無 GT 測試啟動 (FoundAD)] 資料集: ${PARENT_DATASET} | 類別: ${CAT_NAME}"
+    echo " 🚀 [廠外公開資料集無 GT 測試啟動 (FoundAD)] 資料集: ${PARENT_DATASET} | 類別: ${CAT_NAME}"
     echo "    DATA_NAME: ${DATA_NAME} | DIY_NAME: ${DIY_NAME}"
     echo "    獨立輸出目錄: ${SAVE_BASE_DIR}"
     echo "==========================================================================="
@@ -335,7 +332,7 @@ run_single_public_category() {
     # Step 0: 建立或沿用模擬盲池
     prepare_public_sim_pool "${CAT_DIR}" "${SIM_POOL_DIR}" "${POOL_MODE}" "${DEFECT_LIMIT}" "${REBUILD_POOL}"
 
-    # 自動偵測 blind pool 解析度：若圖片尺寸 >= 1536px (如 Mura 高解析度圖)，自動放大 tile_size 為 1024 防止圖塊過多
+    # 自動偵測 blind pool 解析度：若圖片尺寸 >= 1536px，自動放大 tile_size 為 1024 防止圖塊過多
     local EFF_TILE_SIZE="${TILE_SIZE}"
     local EFF_TILE_OVERLAP="${TILE_OVERLAP}"
     local RES_DETECT
@@ -507,7 +504,7 @@ PYEOF
         fi
     fi
 
-    # 終端機列印該類別統計總結，並同步 Append 寫入多資料集總表
+    # 終端機列印該類別統計總結（含 Recall / FPR / I-AUROC / I-AP / F1-max），並同步 Append 寫入多資料集總表
     python - "${SAVE_BASE_DIR}" "${CAT_NAME}" "${UNIQUE_TAG}" "${BATCH_SUMMARY_TXT}" "${BATCH_SUMMARY_CSV}" << 'PYEOF'
 import os
 import sys
@@ -532,7 +529,10 @@ if not csv_files:
 latest_csv = csv_files[-1]
 infer_dir = os.path.dirname(latest_csv)
 train_dirs = sorted(glob.glob(os.path.join(save_base, "*")))
-train_dirs = [d for d in train_dirs if os.path.isdir(d) and d != infer_dir and not os.path.basename(d).startswith("golden_reports")]
+train_dirs = [
+    d for d in train_dirs
+    if os.path.isdir(d) and d != infer_dir and not os.path.basename(d).startswith(("golden_reports", "split_eval_"))
+]
 latest_train_dir = train_dirs[-1] if train_dirs else save_base
 
 latest_txt = latest_csv.replace(".csv", ".txt")
@@ -541,7 +541,7 @@ overfit_line = ""
 score_mode_str = "FILTERED_ROBUST"
 if os.path.exists(latest_txt):
     with open(latest_txt, "r", encoding="utf-8") as tf:
-        txt_head = tf.read(1500)
+        txt_head = tf.read(1800)
         m = re.search(r"Effective Threshold:\s*([0-9.]+)", txt_head)
         if m:
             eff_thresh = float(m.group(1))
@@ -563,14 +563,15 @@ if total == 0:
     sys.exit(0)
 
 non_golden = [r for r in records if not r["Status"].startswith("GOLDEN")]
+eval_records = non_golden if non_golden else records
 non_golden_normal = [
-    r for r in non_golden if not os.path.basename(r["Original_Filename"]).startswith("escape_")
+    r for r in eval_records if not os.path.basename(r["Original_Filename"]).startswith("escape_")
 ]
 escape_defects = [
-    r for r in records if os.path.basename(r["Original_Filename"]).startswith("escape_")
+    r for r in eval_records if os.path.basename(r["Original_Filename"]).startswith("escape_")
 ]
 
-target_normal = non_golden_normal if non_golden_normal else (non_golden if non_golden else records)
+target_normal = non_golden_normal if non_golden_normal else eval_records
 non_g_scores = [float(r["Max_Score"]) for r in target_normal]
 
 max_s = float(np.max(non_g_scores))
@@ -588,10 +589,49 @@ caught_escape = [r for r in escape_defects if "ANOMALY" in r["Status"]]
 fpr_pct = (len(fp_normal) / len(target_normal) * 100.0) if target_normal else 0.0
 recall_pct = (len(caught_escape) / len(escape_defects) * 100.0) if escape_defects else 0.0
 
+auroc_val = ap_val = f1_max_val = best_th_val = 0.0
+prec_pct = f1_cur_pct = 0.0
+
+if escape_defects and non_golden_normal:
+    y_true = np.array(
+        [1 if os.path.basename(r["Original_Filename"]).startswith("escape_") else 0 for r in eval_records],
+        dtype=np.int32,
+    )
+    y_score = np.array([float(r["Max_Score"]) for r in eval_records], dtype=np.float64)
+    n_pos, n_neg = int(np.sum(y_true == 1)), int(np.sum(y_true == 0))
+
+    order = np.argsort(-y_score, kind="mergesort")
+    yt_s, ys_s = y_true[order], y_score[order]
+    ranks = np.zeros(len(ys_s), dtype=np.float64)
+    i, n = 0, len(ys_s)
+    while i < n:
+        j = i + 1
+        while j < n and ys_s[j] == ys_s[i]:
+            j += 1
+        ranks[i:j] = 0.5 * ((n - j + 1) + (n - i))
+        i = j
+    auroc_val = (float(np.sum(ranks[yt_s == 1])) - n_pos * (n_pos + 1) / 2.0) / max(1.0, float(n_pos * n_neg))
+
+    tp_c, fp_c = np.cumsum(yt_s == 1), np.cumsum(yt_s == 0)
+    t_idx = np.r_[np.where(np.diff(ys_s))[0], n - 1]
+    tps, fps = tp_c[t_idx], fp_c[t_idx]
+    precs = tps / np.maximum(1, tps + fps)
+    recs = tps / max(1, n_pos)
+    ap_val = float(np.sum(np.diff(np.r_[0.0, recs]) * precs))
+    f1s = (2.0 * precs * recs) / np.maximum(1e-12, precs + recs)
+    b_i = int(np.argmax(f1s))
+    f1_max_val = float(f1s[b_i])
+    best_th_val = float(ys_s[t_idx[b_i]])
+
+    tp_cur = len(caught_escape)
+    fp_cur = len(fp_normal)
+    prec_pct = (tp_cur / max(1, tp_cur + fp_cur)) * 100.0
+    f1_cur_pct = (2.0 * prec_pct * recall_pct) / max(1e-12, prec_pct + recall_pct)
+
 summary_block = [
-    "=" * 85,
-    f" 🎯 [{unique_tag.upper()} (FoundAD) 廠外新資料集測試總結 — 分數分佈與 Threshold 參考 ({score_mode_str})]",
-    "-" * 85,
+    "=" * 95,
+    f" 🎯 [{unique_tag.upper()} (FoundAD) 廠外公開資料集測試總結 — 分數分佈與量化評估指標 ({score_mode_str})]",
+    "-" * 95,
     f"  📂 訓練紀錄資料夾             : {os.path.abspath(latest_train_dir)}",
     f"  📂 推論紀錄資料夾             : {os.path.abspath(infer_dir)}",
     f"  📄 最新排名報表位置           : {os.path.abspath(latest_csv)}",
@@ -599,9 +639,10 @@ summary_block = [
     f"  🎚️ 本次動態對齊後有效門檻      : {eff_thresh:.4f}",
 ]
 if escape_defects:
-    summary_block.append(
-        f"  🎯 抓漏與誤報表現             : 成功抓出瑕疵 {len(caught_escape)}/{len(escape_defects)} 張 (Recall={recall_pct:.1f}%) | 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張 (FPR={fpr_pct:.1f}%)"
-    )
+    summary_block.extend([
+        f"  🏆 標準量化評估指標 (Metrics) : I-AUROC={auroc_val:.4f} | I-AP={ap_val:.4f} | F1-max={f1_max_val:.4f} (Best_Th={best_th_val:.4f})",
+        f"  🎯 抓漏與誤報表現 (Current)   : Recall={recall_pct:.2f}% ({len(caught_escape)}/{len(escape_defects)}) | FPR={fpr_pct:.2f}% ({len(fp_normal)}/{len(target_normal)}) | Precision={prec_pct:.2f}% | F1={f1_cur_pct:.2f}%",
+    ])
 else:
     summary_block.append(
         f"  🎯 純正常池誤報表現 (FPR)     : 正常圖誤報 {len(fp_normal)}/{len(target_normal)} 張 (扣除Golden後 FPR={fpr_pct:.2f}%)"
@@ -609,7 +650,7 @@ else:
 if overfit_line:
     summary_block.append(f"  🩺 模型過擬合自檢 (Overfit)    : {overfit_line}")
 summary_block.extend([
-    "-" * 85,
+    "-" * 95,
     f"  📊 非 Golden 正常圖分數分佈    : Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}",
     f"  📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}",
 ])
@@ -618,7 +659,7 @@ if escape_defects:
     summary_block.append(
         f"  🔍 隱藏 Escape 瑕疵圖分數分佈  : Min={float(np.min(esc_scores)):.4f} | Median={float(np.median(esc_scores)):.4f} | Max={float(np.max(esc_scores)):.4f}"
     )
-summary_block.append("=" * 85 + "\n")
+summary_block.append("=" * 95 + "\n")
 
 full_text = "\n".join(summary_block)
 print("\n" + full_text)
@@ -636,8 +677,13 @@ with open(batch_csv, "a", newline="", encoding="utf-8") as cf:
         len(target_normal),
         len(escape_defects),
         f"{eff_thresh:.4f}",
+        f"{auroc_val:.4f}",
+        f"{ap_val:.4f}",
+        f"{f1_max_val:.4f}",
         f"{recall_pct:.2f}",
         f"{fpr_pct:.2f}",
+        f"{prec_pct:.2f}",
+        f"{f1_cur_pct:.2f}",
         f"{mean_s:.4f}",
         f"{std_s:.4f}",
         os.path.abspath(latest_train_dir),
@@ -669,12 +715,94 @@ for cat_path in "${EXPANDED_CAT_DIRS[@]}"; do
     run_single_public_category "${cat_path}"
 done
 
+# 產生「全類別並列彙整總表（含平均指標）」附加到總表最下方，方便一鍵截圖
+python - "${BATCH_SUMMARY_CSV}" "${BATCH_SUMMARY_TXT}" << 'PYEOF'
+import os
+import sys
+import csv
+import numpy as np
+
+csv_p, txt_p = sys.argv[1], sys.argv[2]
+if not os.path.isfile(csv_p):
+    sys.exit(0)
+
+with open(csv_p, "r", encoding="utf-8") as f:
+    rows = list(csv.DictReader(f))
+
+if not rows:
+    sys.exit(0)
+
+table_lines = [
+    "=" * 124,
+    " 📋 [FoundAD 廠外模擬無 GT 測試 — 全類別彙整總表 (All Categories Summary Table)]",
+    "-" * 124,
+    f" {'Dataset_Key':<22} | {'Total':>5} | {'Gold':>4} | {'Norm':>4} | {'Esc':>3} | {'Thresh':>6} | {'I-AUROC':>7} | {'I-AP':>6} | {'F1-max':>6} | {'Recall(%)':>9} | {'FPR(%)':>7} | {'Normal Mean±Std'}",
+    "-" * 124,
+]
+
+esc_rows = []
+all_fprs = []
+all_threshs = []
+all_means = []
+all_stds = []
+
+for r in rows:
+    esc_cnt = int(r["Escape_Imgs"])
+    fpr_v = float(r["FPR_Pct"])
+    th_v = float(r["Eff_Threshold"])
+    m_v = float(r["Normal_Mean"])
+    s_v = float(r["Normal_Std"])
+    all_fprs.append(fpr_v)
+    all_threshs.append(th_v)
+    all_means.append(m_v)
+    all_stds.append(s_v)
+
+    if esc_cnt > 0:
+        esc_rows.append(r)
+        auroc_s = f"{float(r['I_AUROC']):.4f}"
+        ap_s = f"{float(r['I_AP']):.4f}"
+        f1m_s = f"{float(r['F1_Max']):.4f}"
+        rec_s = f"{float(r['Recall_Pct']):6.2f}%"
+    else:
+        auroc_s = "  N/A  "
+        ap_s = " N/A  "
+        f1m_s = " N/A  "
+        rec_s = "   N/A   "
+
+    table_lines.append(
+        f" {r['Dataset_Key']:<22} | {int(r['Total_Imgs']):>5} | {int(r['Golden_Imgs']):>4} | "
+        f"{int(r['Normal_Imgs']):>4} | {esc_cnt:>3} | {th_v:>6.4f} | {auroc_s:>7} | {ap_s:>6} | "
+        f"{f1m_s:>6} | {rec_s:>9} | {fpr_v:>6.2f}% | {m_v:.4f}±{s_v:.4f}"
+    )
+
+table_lines.append("-" * 124)
+if esc_rows:
+    avg_auroc = f"{np.mean([float(r['I_AUROC']) for r in esc_rows]):.4f}"
+    avg_ap = f"{np.mean([float(r['I_AP']) for r in esc_rows]):.4f}"
+    avg_f1m = f"{np.mean([float(r['F1_Max']) for r in esc_rows]):.4f}"
+    avg_rec = f"{np.mean([float(r['Recall_Pct']) for r in esc_rows]):6.2f}%"
+else:
+    avg_auroc, avg_ap, avg_f1m, avg_rec = "  N/A  ", " N/A  ", " N/A  ", "   N/A   "
+
+table_lines.append(
+    f" {'AVERAGE (平均)':<22} | {'---':>5} | {'---':>4} | {'---':>4} | {'---':>3} | "
+    f"{np.mean(all_threshs):>6.4f} | {avg_auroc:>7} | {avg_ap:>6} | {avg_f1m:>6} | "
+    f"{avg_rec:>9} | {np.mean(all_fprs):>6.2f}% | {np.mean(all_means):.4f}±{np.mean(all_stds):.4f}"
+)
+table_lines.append("=" * 124 + "\n")
+
+summary_table_str = "\n".join(table_lines)
+print("\n" + summary_table_str)
+with open(txt_p, "a", encoding="utf-8") as bf:
+    bf.write(summary_table_str + "\n")
+PYEOF
+
 cp -f "${BATCH_SUMMARY_TXT}" "${BATCH_SUMMARY_LATEST}"
 echo ""
-echo "=========================================================================================================="
-echo " ✅ 全部 ${#EXPANDED_CAT_DIRS[@]} 個類別 (FoundAD 新資料集) 執行完畢！所有紀錄皆已獨立保存："
+echo "=========================================================================================================================="
+echo " ✅ 全部 ${#EXPANDED_CAT_DIRS[@]} 個類別 (FoundAD) 執行完畢！所有紀錄皆已獨立保存："
 echo "    📄 本次多資料集完整彙整報表 (TXT) : ${BATCH_SUMMARY_TXT}"
 echo "    📄 最新多資料集完整彙整報表 (TXT) : ${BATCH_SUMMARY_LATEST}"
 echo "    📊 最新多資料集完整彙整報表 (CSV) : ${BATCH_SUMMARY_CSV}"
 echo "    📈 系統 RAM / VRAM 資源監控日誌  : ${MEM_MONITOR_LOG}"
-echo "=========================================================================================================="
+echo "=========================================================================================================================="

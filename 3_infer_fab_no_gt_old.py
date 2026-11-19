@@ -991,6 +991,94 @@ def evaluate_overfitting_diagnostics(
 
     return g_mean, overfit_ratio, golden_gap, status_badge, advice_msg
 
+def compute_blind_pool_eval_metrics(ranking_records: List[Dict]) -> Optional[Dict[str, float]]:
+    """
+    若盲池檔名包含模擬標籤 (escape_* 為正樣本, 非 Golden 正常圖為負樣本)，
+    自動計算 Image-AUROC、I-AP、F1-max (最佳門檻)、以及當前門檻下的 Recall / FPR / Precision / F1。
+    (自動排除作為訓練集之 GOLDEN 樣本，確保評估無資料洩漏)
+    """
+    eval_recs = [r for r in ranking_records if not str(r.get("status", "")).startswith("GOLDEN")]
+    if not eval_recs:
+        eval_recs = ranking_records
+
+    escape_recs = [r for r in eval_recs if os.path.basename(r["filename"]).startswith("escape_")]
+    normal_recs = [r for r in eval_recs if not os.path.basename(r["filename"]).startswith("escape_")]
+    if not escape_recs or not normal_recs:
+        return None
+
+    y_true = np.array(
+        [1 if os.path.basename(r["filename"]).startswith("escape_") else 0 for r in eval_recs],
+        dtype=np.int32,
+    )
+    y_score = np.array([float(r["max_score"]) for r in eval_recs], dtype=np.float64)
+    y_pred = np.array([1 if "ANOMALY" in str(r["status"]) else 0 for r in eval_recs], dtype=np.int32)
+
+    n_pos = int(np.sum(y_true == 1))
+    n_neg = int(np.sum(y_true == 0))
+
+    # 1. Image-level AUROC (Mann-Whitney U 精確計算，含同分處理)
+    order = np.argsort(-y_score, kind="mergesort")
+    y_true_sorted = y_true[order]
+    y_score_sorted = y_score[order]
+
+    ranks = np.zeros(len(y_score_sorted), dtype=np.float64)
+    i = 0
+    n = len(y_score_sorted)
+    while i < n:
+        j = i + 1
+        while j < n and y_score_sorted[j] == y_score_sorted[i]:
+            j += 1
+        avg_rank = 0.5 * ((n - j + 1) + (n - i))
+        ranks[i:j] = avg_rank
+        i = j
+    pos_rank_sum = float(np.sum(ranks[y_true_sorted == 1]))
+    auroc = (pos_rank_sum - n_pos * (n_pos + 1) / 2.0) / max(1.0, float(n_pos * n_neg))
+
+    # 2. Image-level AP & F1-max (掃描所有門檻切點)
+    tp_cum = np.cumsum(y_true_sorted == 1)
+    fp_cum = np.cumsum(y_true_sorted == 0)
+    distinct_idx = np.where(np.diff(y_score_sorted))[0]
+    thresh_idxs = np.r_[distinct_idx, n - 1]
+
+    tps = tp_cum[thresh_idxs]
+    fps = fp_cum[thresh_idxs]
+    precisions = tps / np.maximum(1, tps + fps)
+    recalls = tps / max(1, n_pos)
+
+    rec_diff = np.diff(np.r_[0.0, recalls])
+    ap = float(np.sum(rec_diff * precisions))
+
+    f1_curve = (2.0 * precisions * recalls) / np.maximum(1e-12, precisions + recalls)
+    best_idx = int(np.argmax(f1_curve))
+    f1_max = float(f1_curve[best_idx])
+    best_thresh = float(y_score_sorted[thresh_idxs[best_idx]])
+
+    # 3. 當前門檻下的實測指標
+    tp_cur = int(np.sum((y_true == 1) & (y_pred == 1)))
+    fp_cur = int(np.sum((y_true == 0) & (y_pred == 1)))
+    fn_cur = int(np.sum((y_true == 1) & (y_pred == 0)))
+
+    recall_cur = tp_cur / max(1, n_pos)
+    fpr_cur = fp_cur / max(1, n_neg)
+    prec_cur = tp_cur / max(1, tp_cur + fp_cur)
+    f1_cur = (2.0 * prec_cur * recall_cur) / max(1e-12, prec_cur + recall_cur)
+
+    return {
+        "n_pos": n_pos,
+        "n_neg": n_neg,
+        "auroc": auroc,
+        "ap": ap,
+        "f1_max": f1_max,
+        "best_thresh": best_thresh,
+        "tp": tp_cur,
+        "fp": fp_cur,
+        "fn": fn_cur,
+        "recall": recall_cur,
+        "fpr": fpr_cur,
+        "precision": prec_cur,
+        "f1_cur": f1_cur,
+    }
+
 
 def stitch_and_filter_anomalies(
     manifest: Dict,
@@ -1380,7 +1468,29 @@ def stitch_and_filter_anomalies(
     filt_mean_s = float(np.mean(filt_dist_scores))
     filt_std_s = float(np.std(filt_dist_scores))
 
+    eval_metrics = compute_blind_pool_eval_metrics(ranking_records)
+    metrics_summary_line = ""
+    metrics_report_header = ""
+    if eval_metrics is not None:
+        metrics_summary_line = (
+            f"      🏆 模擬盲池量化指標 (Eval)     : "
+            f"I-AUROC={eval_metrics['auroc']:.4f} | I-AP={eval_metrics['ap']:.4f} | "
+            f"F1-max={eval_metrics['f1_max']:.4f} (@{eval_metrics['best_thresh']:.4f})\n"
+            f"      🎯 當前門檻實測表現 (Current)    : "
+            f"Recall={eval_metrics['recall']*100:.2f}% ({eval_metrics['tp']}/{eval_metrics['n_pos']}) | "
+            f"FPR={eval_metrics['fpr']*100:.2f}% ({eval_metrics['fp']}/{eval_metrics['n_neg']}) | "
+            f"Precision={eval_metrics['precision']*100:.2f}% | F1={eval_metrics['f1_cur']*100:.2f}%\n"
+        )
+        metrics_report_header = (
+            f"Benchmark Metrics (No-GT Sim) : I-AUROC={eval_metrics['auroc']:.4f} | I-AP={eval_metrics['ap']:.4f} | "
+            f"F1-max={eval_metrics['f1_max']:.4f} (Best_Th={eval_metrics['best_thresh']:.4f})\n"
+            f"Current Threshold Performance : Recall={eval_metrics['recall']*100:.2f}% ({eval_metrics['tp']}/{eval_metrics['n_pos']}) | "
+            f"FPR={eval_metrics['fpr']*100:.2f}% ({eval_metrics['fp']}/{eval_metrics['n_neg']}) | "
+            f"Precision={eval_metrics['precision']*100:.2f}% | F1={eval_metrics['f1_cur']*100:.2f}%\n"
+        )
+
     dist_summary_lines = (
+        f"{metrics_summary_line}"
         f"      📊 非 Golden 正常圖分數分佈 ({'RAW未濾波' if raw_score_mode else '四合一濾波後'}) : "
         f"Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}\n"
         f"      📐 非 Golden 正常圖門檻參考值  : mean+1*std={m1std:.4f} | mean+2*std={m2std:.4f} | mean+3*std={m3std:.4f}\n"
@@ -1404,6 +1514,7 @@ def stitch_and_filter_anomalies(
             f"Wafer Edge Mode: {'off(raw)' if raw_score_mode else wafer_edge_mode} (Margin: {wafer_edge_margin:.3f})\n"
             f"Core Box Ratio: {core_ratio:.2f} | Exported Anomaly Images: {anomaly_count} | "
             f"Skipped Normal Images: {skipped_normal_count}\n"
+            f"{metrics_report_header}"
             f"Non-Golden Normal Score Dist: Max={max_s:.4f} | P99={p99_s:.4f} | P95={p95_s:.4f} | "
             f"Median={median_s:.4f} | Mean={mean_s:.4f} | Std={std_s:.4f}\n"
             f"Ablation Compare (Normal)   : Raw_Max={raw_max_s:.4f}, Raw_Mean={raw_mean_s:.4f} vs "

@@ -1,0 +1,33 @@
+===================================================================================================================
+ 🎯 [最終 3 份 Eval 結果並列總覽 (All 3 Split Evaluations Comparison)]
+-------------------------------------------------------------------------------------------------------------------
+ 📂 來源完整推論目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001
+ 📂 拆分結果根目錄 : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs
+ 🖼️ 拆分數量核對 : 各包張數 [58, 58, 57] (加總=173 張 / 資料集總數=173 張)
+ 🎚️ 門檻判定策略 : 全池統一動態門檻 (GLOBAL_POOL_UNIFIED) | 全池基準門檻=0.2700 (Mode: hybrid, Score: FILTERED_ROBUST)
+-------------------------------------------------------------------------------------------------------------------
+Eval包名稱      | 總張數    | 非Golden正常    | 實際採用門檻       | 本包獨立門檻       | 正常誤報(FPR)        | 抓出Escape瑕疵      | Normal Mean±Std  | mean+3*std
+-------------------------------------------------------------------------------------------------------------------
+eval_pack_1  | 58     | 57           | 0.2700       | 0.6928       | 7/57 (12.3%)     | 1/1 (100.0%)    | 0.1170±0.1715    | 0.6316
+eval_pack_2  | 58     | 51           | 0.2700       | 0.7906       | 0/51 (0.0%)      | 7/7 (100.0%)    | 0.0511±0.0225    | 0.1187
+eval_pack_3  | 57     | 57           | 0.2700       | 0.2700       | 0/57 (0.0%)      | 0/0 (N/A)       | 0.0603±0.0278    | 0.1437
+-------------------------------------------------------------------------------------------------------------------
+ 🔹 [eval_pack_1] (共 58 張, 輸出異常紅框圖 8 張)
+ ├── 門檻對照 : 實際採用=0.2700 | 本包獨立重算(Local)=0.6928 | 全池統一(Global)=0.2700
+ ├── 正常圖分數分佈 : Max=0.7045 | P99=0.6914 | P95=0.5259 | Median=0.0513 | Mean=0.1170 | Std=0.1715
+ ├── 門檻參考值 : mean+1*std=0.2885 | mean+2*std=0.4601 | mean+3*std=0.6316
+ ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs/eval_pack_1/escape_ranking_report.txt
+ └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs/eval_pack_1/anomaly_images
+ 🔹 [eval_pack_2] (共 58 張, 輸出異常紅框圖 7 張)
+ ├── 門檻對照 : 實際採用=0.2700 | 本包獨立重算(Local)=0.7906 | 全池統一(Global)=0.2700
+ ├── 正常圖分數分佈 : Max=0.1487 | P99=0.1322 | P95=0.0975 | Median=0.0471 | Mean=0.0511 | Std=0.0225
+ ├── 門檻參考值 : mean+1*std=0.0737 | mean+2*std=0.0962 | mean+3*std=0.1187
+ ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs/eval_pack_2/escape_ranking_report.txt
+ └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs/eval_pack_2/anomaly_images
+ 🔹 [eval_pack_3] (共 57 張, 輸出異常紅框圖 0 張)
+ ├── 門檻對照 : 實際採用=0.2700 | 本包獨立重算(Local)=0.2700 | 全池統一(Global)=0.2700
+ ├── 正常圖分數分佈 : Max=0.1467 | P99=0.1455 | P95=0.1416 | Median=0.0523 | Mean=0.0603 | Std=0.0278
+ ├── 門檻參考值 : mean+1*std=0.0881 | mean+2*std=0.1159 | mean+3*std=0.1437
+ ├── 評估報表 (TXT) : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs/eval_pack_3/escape_ranking_report.txt
+ └── 異常圖片資料夾 : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL1/20261119_210001/split_eval_3packs/eval_pack_3/anomaly_images
+===================================================================================================================

@@ -1,5 +1,0 @@
-=== Stage 2 Full-Image Purified Golden Images (from 16 Candidates) ===
-Golden #1 (-> 000.png): clean_001.png | Stage1_Score: 0.969785
-Golden #2 (-> 001.png): clean_008.png | Stage1_Score: 0.977288
-Golden #3 (-> 002.png): clean_011.png | Stage1_Score: 0.972478
-Golden #4 (-> 003.png): clean_004.png | Stage1_Score: 0.965620
