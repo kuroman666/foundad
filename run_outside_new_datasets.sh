@@ -8,10 +8,10 @@
 #   2) 一次跑完 YDFID-2 全部 19 個類別:      bash run_outside_new_datasets.sh ./data/YDFID-2
 #   3) 跑 Mura 與 AVMap 資料集:              bash run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb
 #   4) 跑舊資料集 (完全相容):                bash run_outside_new_datasets.sh ./data/mvtec/capsule ./data/mvtec-2/can
-# 背景執行全部 YDFID-2（19 個類別）： nohup ./run_outside_new_datasets.sh ./data/YDFID-2 > foundad_YDFID2.txt 2>&1 &
-#                                 tail -f foundad_YDFID2.txt
-# 執行 Mura / mini_AVMap2： nohup ./run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb ./data/Mura2_bg_mask > foundad_mura.txt 2>&1 &
-#                          tail -f foundad_mura.txt
+# 背景執行全部 YDFID-2（19 個類別）： nohup ./run_outside_new_datasets.sh ./data/YDFID-2 > foundad_YDFID2.log 2>&1 &
+#                                 tail -f foundad_YDFID2.log
+# 執行 Mura / mini_AVMap2： nohup ./run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb ./data/Mura2_bg_mask > foundad_mura.log 2>&1 &
+#                          tail -f foundad_mura.log
 set -e
 
 # ===================== [可自由修改的參數區] =====================

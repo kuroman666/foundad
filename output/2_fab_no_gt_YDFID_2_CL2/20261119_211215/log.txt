@@ -7946,3 +7946,158 @@ INFO:src.train:[E 1965 I 0] loss 0.018474 (avg 0.018474) mem 2784.50MB (55.6ms)
 INFO:src.train:    grad: [9.88e-04 8.50e-04] (5.87e-04 1.97e-02)
 INFO:src.train:Epoch 1965 complete. Avg loss 0.018474, lr 0.001000
 INFO:src.train:Epoch 1966
+INFO:src.train:[E 1966 I 0] loss 0.016235 (avg 0.016235) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.02e-03 1.31e-03] (7.45e-04 2.51e-02)
+INFO:src.train:Epoch 1966 complete. Avg loss 0.016235, lr 0.001000
+INFO:src.train:Epoch 1967
+INFO:src.train:[E 1967 I 0] loss 0.010915 (avg 0.010915) mem 2784.50MB (55.7ms)
+INFO:src.train:    grad: [9.15e-04 9.95e-04] (5.15e-04 2.14e-02)
+INFO:src.train:Epoch 1967 complete. Avg loss 0.010915, lr 0.001000
+INFO:src.train:Epoch 1968
+INFO:src.train:[E 1968 I 0] loss 0.013119 (avg 0.013119) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [8.41e-04 1.02e-03] (5.90e-04 2.18e-02)
+INFO:src.train:Epoch 1968 complete. Avg loss 0.013119, lr 0.001000
+INFO:src.train:Epoch 1969
+INFO:src.train:[E 1969 I 0] loss 0.017003 (avg 0.017003) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [7.85e-04 1.04e-03] (6.25e-04 2.32e-02)
+INFO:src.train:Epoch 1969 complete. Avg loss 0.017003, lr 0.001000
+INFO:src.train:Epoch 1970
+INFO:src.train:[E 1970 I 0] loss 0.012247 (avg 0.012247) mem 2784.50MB (55.7ms)
+INFO:src.train:    grad: [7.75e-04 1.51e-03] (6.27e-04 2.17e-02)
+INFO:src.train:Epoch 1970 complete. Avg loss 0.012247, lr 0.001000
+INFO:src.train:Epoch 1971
+INFO:src.train:[E 1971 I 0] loss 0.020438 (avg 0.020438) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.27e-03 8.80e-04] (6.78e-04 2.12e-02)
+INFO:src.train:Epoch 1971 complete. Avg loss 0.020438, lr 0.001000
+INFO:src.train:Epoch 1972
+INFO:src.train:[E 1972 I 0] loss 0.011769 (avg 0.011769) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.06e-03 9.34e-04] (4.82e-04 1.88e-02)
+INFO:src.train:Epoch 1972 complete. Avg loss 0.011769, lr 0.001000
+INFO:src.train:Epoch 1973
+INFO:src.train:[E 1973 I 0] loss 0.009828 (avg 0.009828) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [6.03e-04 1.19e-03] (4.54e-04 2.15e-02)
+INFO:src.train:Epoch 1973 complete. Avg loss 0.009828, lr 0.001000
+INFO:src.train:Epoch 1974
+INFO:src.train:[E 1974 I 0] loss 0.008638 (avg 0.008638) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [6.75e-04 8.06e-04] (4.03e-04 1.83e-02)
+INFO:src.train:Epoch 1974 complete. Avg loss 0.008638, lr 0.001000
+INFO:src.train:Epoch 1975
+INFO:src.train:[E 1975 I 0] loss 0.015951 (avg 0.015951) mem 2784.50MB (55.5ms)
+INFO:src.train:    grad: [1.07e-03 1.44e-03] (7.75e-04 2.28e-02)
+INFO:src.train:Epoch 1975 complete. Avg loss 0.015951, lr 0.001000
+INFO:src.train:Epoch 1976
+INFO:src.train:[E 1976 I 0] loss 0.035967 (avg 0.035967) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [3.63e-03 1.81e-03] (8.70e-04 2.55e-02)
+INFO:src.train:Epoch 1976 complete. Avg loss 0.035967, lr 0.001000
+INFO:src.train:Epoch 1977
+INFO:src.train:[E 1977 I 0] loss 0.008920 (avg 0.008920) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.16e-03 1.12e-03] (5.01e-04 2.25e-02)
+INFO:src.train:Epoch 1977 complete. Avg loss 0.008920, lr 0.001000
+INFO:src.train:Epoch 1978
+INFO:src.train:[E 1978 I 0] loss 0.014718 (avg 0.014718) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.49e-03 9.51e-04] (6.09e-04 2.07e-02)
+INFO:src.train:Epoch 1978 complete. Avg loss 0.014718, lr 0.001000
+INFO:src.train:Epoch 1979
+INFO:src.train:[E 1979 I 0] loss 0.012748 (avg 0.012748) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [8.17e-04 8.72e-04] (4.85e-04 1.84e-02)
+INFO:src.train:Epoch 1979 complete. Avg loss 0.012748, lr 0.001000
+INFO:src.train:Epoch 1980
+INFO:src.train:[E 1980 I 0] loss 0.011196 (avg 0.011196) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [6.91e-04 8.67e-04] (4.63e-04 1.95e-02)
+INFO:src.train:Epoch 1980 complete. Avg loss 0.011196, lr 0.001000
+INFO:src.train:Epoch 1981
+INFO:src.train:[E 1981 I 0] loss 0.033554 (avg 0.033554) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [5.23e-03 1.37e-03] (9.47e-04 2.97e-02)
+INFO:src.train:Epoch 1981 complete. Avg loss 0.033554, lr 0.001000
+INFO:src.train:Epoch 1982
+INFO:src.train:[E 1982 I 0] loss 0.044731 (avg 0.044731) mem 2784.50MB (55.7ms)
+INFO:src.train:    grad: [1.94e-03 1.44e-03] (9.63e-04 2.24e-02)
+INFO:src.train:Epoch 1982 complete. Avg loss 0.044731, lr 0.001000
+INFO:src.train:Epoch 1983
+INFO:src.train:[E 1983 I 0] loss 0.014754 (avg 0.014754) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.24e-03 1.54e-03] (9.43e-04 2.81e-02)
+INFO:src.train:Epoch 1983 complete. Avg loss 0.014754, lr 0.001000
+INFO:src.train:Epoch 1984
+INFO:src.train:[E 1984 I 0] loss 0.023687 (avg 0.023687) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [2.32e-03 1.24e-03] (7.82e-04 2.13e-02)
+INFO:src.train:Epoch 1984 complete. Avg loss 0.023687, lr 0.001000
+INFO:src.train:Epoch 1985
+INFO:src.train:[E 1985 I 0] loss 0.035564 (avg 0.035564) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [2.30e-03 2.29e-03] (9.89e-04 2.71e-02)
+INFO:src.train:Epoch 1985 complete. Avg loss 0.035564, lr 0.001000
+INFO:src.train:Epoch 1986
+INFO:src.train:[E 1986 I 0] loss 0.014719 (avg 0.014719) mem 2784.50MB (55.5ms)
+INFO:src.train:    grad: [1.29e-03 1.95e-03] (8.32e-04 2.74e-02)
+INFO:src.train:Epoch 1986 complete. Avg loss 0.014719, lr 0.001000
+INFO:src.train:Epoch 1987
+INFO:src.train:[E 1987 I 0] loss 0.012452 (avg 0.012452) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.26e-03 1.43e-03] (7.09e-04 2.32e-02)
+INFO:src.train:Epoch 1987 complete. Avg loss 0.012452, lr 0.001000
+INFO:src.train:Epoch 1988
+INFO:src.train:[E 1988 I 0] loss 0.014439 (avg 0.014439) mem 2784.50MB (55.5ms)
+INFO:src.train:    grad: [9.01e-04 1.61e-03] (7.46e-04 2.39e-02)
+INFO:src.train:Epoch 1988 complete. Avg loss 0.014439, lr 0.001000
+INFO:src.train:Epoch 1989
+INFO:src.train:[E 1989 I 0] loss 0.014191 (avg 0.014191) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [9.43e-04 9.92e-04] (6.36e-04 2.27e-02)
+INFO:src.train:Epoch 1989 complete. Avg loss 0.014191, lr 0.001000
+INFO:src.train:Epoch 1990
+INFO:src.train:[E 1990 I 0] loss 0.023514 (avg 0.023514) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.22e-03 1.27e-03] (7.49e-04 2.25e-02)
+INFO:src.train:Epoch 1990 complete. Avg loss 0.023514, lr 0.001000
+INFO:src.train:Epoch 1991
+INFO:src.train:[E 1991 I 0] loss 0.011689 (avg 0.011689) mem 2784.50MB (55.5ms)
+INFO:src.train:    grad: [8.90e-04 1.21e-03] (6.12e-04 2.52e-02)
+INFO:src.train:Epoch 1991 complete. Avg loss 0.011689, lr 0.001000
+INFO:src.train:Epoch 1992
+INFO:src.train:[E 1992 I 0] loss 0.012182 (avg 0.012182) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [8.29e-04 9.45e-04] (5.94e-04 2.35e-02)
+INFO:src.train:Epoch 1992 complete. Avg loss 0.012182, lr 0.001000
+INFO:src.train:Epoch 1993
+INFO:src.train:[E 1993 I 0] loss 0.011256 (avg 0.011256) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [7.95e-04 8.14e-04] (5.37e-04 2.21e-02)
+INFO:src.train:Epoch 1993 complete. Avg loss 0.011256, lr 0.001000
+INFO:src.train:Epoch 1994
+INFO:src.train:[E 1994 I 0] loss 0.027558 (avg 0.027558) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.21e-03 1.82e-03] (9.22e-04 2.59e-02)
+INFO:src.train:Epoch 1994 complete. Avg loss 0.027558, lr 0.001000
+INFO:src.train:Epoch 1995
+INFO:src.train:[E 1995 I 0] loss 0.012379 (avg 0.012379) mem 2784.50MB (55.7ms)
+INFO:src.train:    grad: [9.37e-04 1.50e-03] (5.87e-04 2.30e-02)
+INFO:src.train:Epoch 1995 complete. Avg loss 0.012379, lr 0.001000
+INFO:src.train:Epoch 1996
+INFO:src.train:[E 1996 I 0] loss 0.019039 (avg 0.019039) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.03e-03 9.46e-04] (6.32e-04 2.14e-02)
+INFO:src.train:Epoch 1996 complete. Avg loss 0.019039, lr 0.001000
+INFO:src.train:Epoch 1997
+INFO:src.train:[E 1997 I 0] loss 0.032559 (avg 0.032559) mem 2784.50MB (55.5ms)
+INFO:src.train:    grad: [1.85e-03 1.31e-03] (6.63e-04 2.56e-02)
+INFO:src.train:Epoch 1997 complete. Avg loss 0.032559, lr 0.001000
+INFO:src.train:Epoch 1998
+INFO:src.train:[E 1998 I 0] loss 0.012310 (avg 0.012310) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [9.20e-04 9.49e-04] (5.12e-04 2.25e-02)
+INFO:src.train:Epoch 1998 complete. Avg loss 0.012310, lr 0.001000
+INFO:src.train:Epoch 1999
+INFO:src.train:[E 1999 I 0] loss 0.018993 (avg 0.018993) mem 2784.50MB (55.6ms)
+INFO:src.train:    grad: [1.28e-03 9.71e-04] (6.98e-04 2.43e-02)
+INFO:src.train:Epoch 1999 complete. Avg loss 0.018993, lr 0.001000
+INFO:src.train:Epoch 2000
+INFO:src.train:[E 2000 I 0] loss 0.025049 (avg 0.025049) mem 2784.50MB (55.7ms)
+INFO:src.train:    grad: [1.43e-03 1.08e-03] (8.51e-04 2.15e-02)
+INFO:src.train:Epoch 2000 complete. Avg loss 0.025049, lr 0.001000
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL2_4shot/dinov3sim_escape_YDFID_2_CL2/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL2_4shot/dinov3sim_escape_YDFID_2_CL2/pretrained.pth.tar
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:00.00 (0.00 秒) (Cached)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.00 (0.00 秒) (Cached)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:13:27.27 (807.27 秒)
+  ⏱️ 整體訓練階段總時間            : 00:13:27.27 (807.27 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/data/YDFID_2_sim_CL2_4shot/train/CL2
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/data/YDFID_2_sim_CL2_4shot/golden_full_res_backup/CL2
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL2_4shot/dinov3sim_escape_YDFID_2_CL2
+      └── /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL2_4shot/dinov3sim_escape_YDFID_2_CL2/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL2_4shot/dinov3sim_escape_YDFID_2_CL2/pretrained.pth.tar
+===========================================================================
