@@ -158,12 +158,14 @@ run_single_inside_infer_eval_old() {
   PARENT_DIR_NAME=$(basename "$(dirname "$(cd "${POOL_DIR}" && pwd)")")
   local DS_PREFIX="${PARENT_DIR_NAME//-/_}"
   DS_PREFIX="${DS_PREFIX// /_}"
-
-  # 與 run_inside_old.sh / run_inside.sh 保持相同的唯一識別標籤
-  local UNIQUE_TAG="${CAT_NAME}"
-  if [ "${DS_PREFIX}" != "datasets" ] && [ "${DS_PREFIX}" != "." ] && [ -n "${DS_PREFIX}" ]; then
-    UNIQUE_TAG="${DS_PREFIX}_${CAT_NAME}"
-  fi
+  
+  # 自動從 Dataset 路徑取得批號
+  # 預期路徑：.../W642/TMQB28/chipping
+  local BATCH_ID
+  BATCH_ID=$(basename "$(dirname "$(dirname "$(cd "${POOL_DIR}" && pwd)")")")
+  
+  # 組合輸出名稱：批號_Layer_資料類型
+  local UNIQUE_TAG="${BATCH_ID}_${DS_PREFIX}_${CAT_NAME}"
 
   local DATA_NAME="fab_inside_old_${UNIQUE_TAG}_${SHOTS}shot"
   local DIY_NAME="fab_inside_old_${UNIQUE_TAG}"
