@@ -1,0 +1,47 @@
+=== FoundAD Split Eval Report — Pack #2 (eval_pack_2) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL3/20261119_213918
+Score Mode: FILTERED_ROBUST | Threshold Mode: hybrid | Threshold Policy: GLOBAL_POOL_UNIFIED
+Effective Threshold (Used) : 0.2700 (Pack_Local_Thresh=0.2700 vs Global_Pool_Thresh=0.2700, Diff=+0.0000)
+Pack Local Thresh Detail : Hybrid 真無GT雙重校準動態門檻 (嚴格上限<=5%) = 0.2700 [未見過正常核心上界(mu+3.5*σ_left)=0.1086 (mu=0.0545, σ_left=0.0155), Golden基準上界=0.1086, Raw_P95保底=0.0987 (Core_P95=0.0863), MinFloor=0.2700]
+Pack Total Images: 33 | Exported Anomaly Images: 0 | Skipped Normal Images: 33
+Normal False Positives (FPR): 0/31 (0.00%) | Escape Caught (Recall): 0/2 (0.00%)
+Non-Golden Normal Score Dist: Max=0.1073 | P99=0.1021 | P95=0.0885 | Median=0.0601 | Mean=0.0612 | Std=0.0166
+Ablation Compare (Normal) : Raw_Max=0.1233, Raw_Mean=0.0696 vs Filtered_Max=0.1073, Filtered_Mean=0.0612
+Threshold Ref (Mean+k*Std) : mean+1*std=0.0777 | mean+2*std=0.0943 | mean+3*std=0.1109
+Overfit Diagnostic : 🟢 正常 (無對照組) (Golden_Mean=0.0000, NonGolden_Med=0.0557, Ratio=1.00x, Gap=+0.0000)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Global_Status       | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 6      | clean_005.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.1073    | 0.1233    | 0.1073     | -0.0160  | 0      | (未超過動態門檻，不輸出圖片)
+2      | 7      | clean_055.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0901    | 0.1022    | 0.0901     | -0.0121  | 0      | (未超過動態門檻，不輸出圖片)
+3      | 8      | clean_009.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0868    | 0.0965    | 0.0868     | -0.0097  | 0      | (未超過動態門檻，不輸出圖片)
+4      | 10     | clean_010.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0858    | 0.0922    | 0.0858     | -0.0064  | 0      | (未超過動態門檻，不輸出圖片)
+5      | 14     | escape_defect_001.png      | PASS_SKIPPED        | PASS_SKIPPED        | 0.0809    | 0.0873    | 0.0809     | -0.0064  | 0      | (未超過動態門檻，不輸出圖片)
+6      | 16     | clean_013.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0740    | 0.0978    | 0.0740     | -0.0238  | 0      | (未超過動態門檻，不輸出圖片)
+7      | 17     | clean_083.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0730    | 0.0801    | 0.0730     | -0.0071  | 0      | (未超過動態門檻，不輸出圖片)
+8      | 18     | clean_085.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0698    | 0.0766    | 0.0698     | -0.0068  | 0      | (未超過動態門檻，不輸出圖片)
+9      | 20     | clean_034.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0682    | 0.0766    | 0.0682     | -0.0084  | 0      | (未超過動態門檻，不輸出圖片)
+10     | 22     | clean_076.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0669    | 0.0708    | 0.0669     | -0.0039  | 0      | (未超過動態門檻，不輸出圖片)
+11     | 28     | clean_016.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0627    | 0.0688    | 0.0627     | -0.0061  | 0      | (未超過動態門檻，不輸出圖片)
+12     | 31     | clean_060.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0620    | 0.0708    | 0.0620     | -0.0088  | 0      | (未超過動態門檻，不輸出圖片)
+13     | 32     | clean_054.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0619    | 0.0725    | 0.0619     | -0.0106  | 0      | (未超過動態門檻，不輸出圖片)
+14     | 34     | clean_048.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0616    | 0.0725    | 0.0616     | -0.0109  | 0      | (未超過動態門檻，不輸出圖片)
+15     | 35     | clean_022.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0612    | 0.0672    | 0.0612     | -0.0060  | 0      | (未超過動態門檻，不輸出圖片)
+16     | 38     | clean_050.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0602    | 0.0664    | 0.0602     | -0.0062  | 0      | (未超過動態門檻，不輸出圖片)
+17     | 39     | clean_004.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0601    | 0.0719    | 0.0601     | -0.0118  | 0      | (未超過動態門檻，不輸出圖片)
+18     | 41     | clean_012.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0595    | 0.0637    | 0.0595     | -0.0042  | 0      | (未超過動態門檻，不輸出圖片)
+19     | 43     | clean_008.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0582    | 0.0693    | 0.0582     | -0.0111  | 0      | (未超過動態門檻，不輸出圖片)
+20     | 47     | clean_088.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0566    | 0.0655    | 0.0566     | -0.0089  | 0      | (未超過動態門檻，不輸出圖片)
+21     | 48     | clean_007.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0566    | 0.0715    | 0.0566     | -0.0149  | 0      | (未超過動態門檻，不輸出圖片)
+22     | 50     | clean_073.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0559    | 0.0651    | 0.0559     | -0.0092  | 0      | (未超過動態門檻，不輸出圖片)
+23     | 51     | clean_058.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0558    | 0.0612    | 0.0558     | -0.0053  | 0      | (未超過動態門檻，不輸出圖片)
+24     | 55     | escape_defect_002.png      | PASS_SKIPPED        | PASS_SKIPPED        | 0.0552    | 0.0633    | 0.0552     | -0.0081  | 0      | (未超過動態門檻，不輸出圖片)
+25     | 59     | clean_062.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0545    | 0.0610    | 0.0545     | -0.0065  | 0      | (未超過動態門檻，不輸出圖片)
+26     | 60     | clean_057.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0544    | 0.0634    | 0.0544     | -0.0090  | 0      | (未超過動態門檻，不輸出圖片)
+27     | 64     | clean_080.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0533    | 0.0597    | 0.0533     | -0.0064  | 0      | (未超過動態門檻，不輸出圖片)
+28     | 75     | clean_014.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0495    | 0.0568    | 0.0495     | -0.0073  | 0      | (未超過動態門檻，不輸出圖片)
+29     | 79     | clean_041.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0481    | 0.0573    | 0.0481     | -0.0091  | 0      | (未超過動態門檻，不輸出圖片)
+30     | 85     | clean_006.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0451    | 0.0498    | 0.0451     | -0.0048  | 0      | (未超過動態門檻，不輸出圖片)
+31     | 86     | clean_001.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0445    | 0.0474    | 0.0445     | -0.0029  | 0      | (未超過動態門檻，不輸出圖片)
+32     | 94     | clean_066.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0382    | 0.0436    | 0.0382     | -0.0054  | 0      | (未超過動態門檻，不輸出圖片)
+33     | 98     | clean_027.png              | PASS_SKIPPED        | PASS_SKIPPED        | 0.0142    | 0.0167    | 0.0142     | -0.0026  | 0      | (未超過動態門檻，不輸出圖片)

@@ -1,0 +1,137 @@
+
+===========================================================================
+[Task 2 無GT抓漏純推論啟動時間] 2026-11-22 19:43:39 (UTC+8)
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339
+===========================================================================
+[Golden-Ref] 已載入既有 4 張 Golden Image 參考清單: 000.png, 001.png, 002.png, 003.png
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL10_4shot/dinov3sim_escape_YDFID_2_CL10/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL10_4shot/dinov3sim_escape_YDFID_2_CL10/pretrained.pth.tar
+
+[⚡ 測試池切塊快取命中] 測試圖片池與切塊參數未變動，直接沿用既有 161 張子圖塊 PNG (0.00 秒)
+
+[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 (共 161 張推論圖塊, BatchSize=16, 暫存於 /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/_tmp_tile_amap_npy 並將於 Step 4 RAM 拼接後立即銷毀):
+
+============================================================
+[CMD] python foundad/main.py mode=demo data.dataset=mvtec data.data_name=YDFID_2_sim_CL10_4shot diy_name=sim_escape_YDFID_2_CL10 data.test_root=/home/kenny/project/FoundAD/data/YDFID_2_sim_CL10_4shot_tiled_pool app=test app.ckpt_step=2000 (PORT=40897)
+============================================================
+INFO:root:Params:
+{ 'app': <Recursion on dict with id=130489315829696>,
+  'ckpt_step': 2000,
+  'data': { 'batch_size': 8,
+            'data_name': 'YDFID_2_sim_CL10_4shot',
+            'data_path': '/path/to/fewshot-folder',
+            'dataset': 'mvtec',
+            'mvtec_classnames': [ 'bottle',
+                                  'cable',
+                                  'capsule',
+                                  'carpet',
+                                  'grid',
+                                  'hazelnut',
+                                  'leather',
+                                  'metal_nut',
+                                  'pill',
+                                  'screw',
+                                  'tile',
+                                  'toothbrush',
+                                  'transistor',
+                                  'wood',
+                                  'zipper'],
+            'num_workers': 0,
+            'pin_mem': True,
+            'test_root': '/home/kenny/project/FoundAD/data/YDFID_2_sim_CL10_4shot_tiled_pool',
+            'train_root': '/path/to/fewshot-folder/YDFID_2_sim_CL10_4shot',
+            'use_blur': True,
+            'use_color_jitter': True,
+            'use_gray': True,
+            'use_hflip': True,
+            'use_rotate90': True,
+            'use_vflip': True,
+            'visa_classnames': [ 'candle',
+                                 'capsules',
+                                 'cashew',
+                                 'chewinggum',
+                                 'fryum',
+                                 'macaroni1',
+                                 'macaroni2',
+                                 'pcb1',
+                                 'pcb2',
+                                 'pcb3',
+                                 'pcb4',
+                                 'pipe_fryum']},
+  'devices': ['cuda:0'],
+  'dist': {'backend': 'nccl', 'master_addr': 'localhost', 'master_port': 40897},
+  'diy_name': 'sim_escape_YDFID_2_CL10',
+  'logging': {'write_tag': 'AD'},
+  'mode': 'demo',
+  'model_name': 'dinov3',
+  'optimization': { 'epochs': 2000,
+                    'gamma': 0.1,
+                    'lr': 0.001,
+                    'lr_config': 'const',
+                    'min_lr': 0.0001,
+                    'step_size': 300,
+                    'warmup_epoch': 100,
+                    'weight_decay': 0.0001},
+  'testing': { 'K_top_mvtec': 10,
+               'K_top_visa': 6,
+               'expect_fpr': 0.3,
+               'max_steps': 200,
+               'segmentation_vis': True}}
+loading logs/YDFID_2_sim_CL10_4shot/dinov3sim_escape_YDFID_2_CL10/pretrained.pth.tar...
+Using cache found in /home/kenny/.cache/torch/hub/facebookresearch_dinov3_main
+INFO:dinov3:using base=100 for rope new
+INFO:dinov3:using min_period=None for rope new
+INFO:dinov3:using max_period=None for rope new
+INFO:dinov3:using normalize_coords=separate for rope new
+INFO:dinov3:using shift_coords=None for rope new
+INFO:dinov3:using rescale_coords=2 for rope new
+INFO:dinov3:using jitter_coords=None for rope new
+INFO:dinov3:using dtype=fp32 for rope new
+INFO:dinov3:using mlp layer as FFN
+Normed features: False
+[INFO] Found 161 tile images under /home/kenny/project/FoundAD/data/YDFID_2_sim_CL10_4shot_tiled_pool (BatchSize=16, SaveTilePNG=OFF)
+[Tile-Infer] Progress: [80/161] tiles processed (.npy saved)
+[Tile-Infer] Progress: [160/161] tiles processed (.npy saved)
+[Tile-Infer] Progress: [161/161] tiles processed (.npy saved)
+
+[Step 4.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 161 張原圖) | 計分模式: FILTERED_ROBUST (四合一防誤報純化 + Top-0.015% 抗噪點峰值)
+[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/_tmp_tile_amap_npy
+[Step 4.2] 異常判定門檻設定: Fixed 固定門檻 (沿用訓練集設定) = 0.2500 (本時期切出 0/153 張, 0.00%)
+           ├─ [本時期飄移參考] 3-Sigma (Shewhart 1931)         : 0.1816 (Mean=0.0803, Std=0.0338)
+           └─ [本時期飄移參考] Modified Z-Score (Iglewicz 1993): 0.1426 (Median=0.0712, MAD=0.0138)
+           (計分模式=四合一純化濾波, 圓周邊緣抑制=auto, 邊界縮減=4.0%, 微塵開運算比例=0.0080)
+[Step 4.2b] 過擬合自檢診斷 : 🟢 正常 (無對照組) [Golden平均=0.0000 | 非Golden正常中位數=0.0712 | Overfit_Ratio=1.00x (Gap=+0.0000)]
+[Step 4.3] 篩選與畫框完成：共 1 張超過有效門檻 (0.2500) 已畫框輸出；其餘 160 張正常圖已自動略過不輸出。
+
+===========================================================================
+ [✅ 推論完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體推論階段總時間 (Total Inference Time) : 00:00:08.83 (8.83 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (161 塊)   : 00:00:00.00 (0.00 秒) (Cached)
+      ├─ Step 3.2 FoundAD 模型推論 (step=2000)     : 00:00:07.64 (7.64 秒)
+      ├─ Step 4 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:01.19 (1.19 秒)
+      └─ 平均每張原圖推論耗時 (161 張原圖)         : 0.05 秒/張
+---------------------------------------------------------------------------
+  [2] 任務全程總執行時間 (Total Wall Time)      : 00:00:08.85 (8.85 秒)
+---------------------------------------------------------------------------
+  [3] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=hybrid, Eff_Thresh=0.2500):
+      🚨 超過門檻判定異常並畫框輸出 : 1 張
+      ✅ 未達門檻或微塵濾除直接略過 : 160 張 (不輸出圖片)
+      🏆 模擬盲池量化指標 (Eval)     : I-AUROC=0.9346 | I-AP=0.5590 | F1-max=0.5455 (@0.2239)
+      🎯 當前門檻實測表現 (Current)    : Recall=12.50% (1/8) | FPR=0.00% (0/153) | Precision=100.00% | F1=22.22%
+      📊 非 Golden 正常圖分數分佈 (四合一濾波後) : Max=0.2097 | P99=0.1964 | P95=0.1495 | Median=0.0712 | Mean=0.0803 | Std=0.0338
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.1141 | mean+2*std=0.1478 | mean+3*std=0.1816
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.2419, Mean=0.0901, Std=0.0376 vs  [四合一濾波] Max=0.2097, Mean=0.0803, Std=0.0338
+      🩺 模型過擬合自檢 (Overfit)    : 🟢 正常 (無對照組)
+                                       [Golden平均=0.0000 vs 非Golden中位數=0.0712 | Overfit_Ratio=1.00x | Gap=+0.0000]
+---------------------------------------------------------------------------
+  [4] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 載入訓練權重檔資料夾       : /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL10_4shot/dinov3sim_escape_YDFID_2_CL10
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL10/20261122_194339/log.txt
+===========================================================================

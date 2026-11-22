@@ -1,0 +1,23 @@
+
+===========================================================================
+[Task 2 無GT訓練啟動時間] 2026-11-22 19:55:53
+[本次專屬時間戳記輸出目錄] /home/kenny/project/FoundAD/output/2_fab_no_gt_YDFID_2_CL12/20261122_195553
+===========================================================================
+[⚡ Golden 快取命中] 直接沿用已挑選並切塊之 4 張 Golden Image (共 4 張訓練圖塊) (0.00 秒)
+[⏱️ 計時] 已設定 --skip_train，跳過 Step 2 模型訓練階段 (0.00 秒)
+[Auto-Ckpt] 已將訓練權重 /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL12_4shot/dinov3sim_escape_YDFID_2_CL12/train-step2000.pth.tar 對接至 /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL12_4shot/dinov3sim_escape_YDFID_2_CL12/pretrained.pth.tar
+
+===========================================================================
+ [✅ 訓練階段完成 — 時間統計與權重檔儲存位置]
+---------------------------------------------------------------------------
+  ⏱️ Step 1 自動挑選 Golden 圖耗時 : 00:00:00.00 (0.00 秒) (Cached)
+  ⏱️ Step 1.5 高解析度訓練切塊耗時 : 00:00:00.00 (0.00 秒) (Cached)
+  ⏱️ Step 2 FoundAD 模型訓練耗時   : 00:00:00.00 (0.00 秒) (Skipped)
+  ⏱️ 整體訓練階段總時間            : 00:00:00.00 (0.00 秒)
+---------------------------------------------------------------------------
+  📁 Golden 訓練圖塊資料夾         : /home/kenny/project/FoundAD/data/YDFID_2_sim_CL12_4shot/train/CL12
+  📁 Golden 原圖備份資料夾         : /home/kenny/project/FoundAD/data/YDFID_2_sim_CL12_4shot/golden_full_res_backup/CL12
+  📦 訓練權重檔儲存資料夾          : /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL12_4shot/dinov3sim_escape_YDFID_2_CL12
+      └── /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL12_4shot/dinov3sim_escape_YDFID_2_CL12/train-step2000.pth.tar
+      └── /home/kenny/project/FoundAD/logs/YDFID_2_sim_CL12_4shot/dinov3sim_escape_YDFID_2_CL12/pretrained.pth.tar
+===========================================================================

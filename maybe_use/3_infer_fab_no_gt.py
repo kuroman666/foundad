@@ -1295,91 +1295,83 @@ def estimate_blind_normal_core_stats(
 def compute_dynamic_effective_threshold(
     non_golden_scores: List[float],
     golden_scores: List[float],
-    thresh_mode: str,
-    user_threshold: float,
-    min_threshold: float,
-    auto_percentile: float,
-    sigma_k: float,
-    top_k: int,
+    thresh_mode: str = "auto",
+    user_threshold: float = 0.0,
+    min_threshold: float = 0.0,
+    auto_percentile: float = 95.0,
+    sigma_k: float = 3.5,
+    top_k: int = 0,
 ) -> Tuple[float, str]:
-    mode = thresh_mode.lower().strip()
-    scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
-    g_arr = np.array(golden_scores, dtype=np.float32) if golden_scores else np.array([], dtype=np.float32)
-    if scores_arr.size == 0:
-        return max(user_threshold, min_threshold), "無樣本保底門檻"
-
-    mu_core, sigma_left, g_med, est_normal_arr = estimate_blind_normal_core_stats(
-        non_golden_scores=non_golden_scores,
-        golden_scores=golden_scores,
+    """
+    雙模式門檻判定：
+      - 若 user_threshold > 0：直接採用「固定門檻 (Fixed)」，適用於同產品後續不同時期推論。
+      - 若 user_threshold <= 0：自動計算兩種具文獻依據之無監督統計門檻並取較小值，適用於第一批訓練集定門檻：
+          1. 3-Sigma 法則 (Shewhart, 1931): mean + 3 * std
+          2. Modified Z-Score (Iglewicz & Hoaglin, 1993): median + (3.5 / 0.6745) * MAD
+    """
+    scores_arr = np.array(
+        non_golden_scores if non_golden_scores else golden_scores,
+        dtype=np.float32,
     )
+    if scores_arr.size == 0:
+        fallback = float(user_threshold) if user_threshold > 0 else float(min_threshold)
+        return fallback, f"無樣本保底門檻 ({fallback:.4f})"
 
-    # 自動保護：公司大池 (>=60張) 完整採用設定之 sigma_k (3.5)；小測試池 (<60張) 自動限制在 <=3.5，防止門檻失控
-    eff_sigma_k = min(float(sigma_k), 3.5) if scores_arr.size < 60 else float(sigma_k)
-    left_stat_bound = float(mu_core + eff_sigma_k * sigma_left)
+    total_n = int(scores_arr.size)
 
-    p_clip = float(np.clip(auto_percentile, 50.0, 99.9))
-    p_val_core = float(np.percentile(est_normal_arr, p_clip))
-    p_val_raw = float(np.percentile(scores_arr, p_clip))
+    # 計算兩種文獻門檻 (無論固定或自動模式皆算出，方便追蹤跨時期分佈飄移)
+    mean_val = float(np.mean(scores_arr))
+    std_val = float(np.std(scores_arr))
+    thresh_3sigma = mean_val + 3.0 * std_val
 
-    # 嚴格上限門檻 (Strict Upper-Bound Cap): 確保 score >= thresh 的張數絕對 <= floor(N * (100 - p_clip)%)
-    n_total = scores_arr.size
-    max_allowed_anoms = int(np.floor(n_total * ((100.0 - p_clip) / 100.0) + 1e-6))
-    sorted_desc_all = np.sort(scores_arr)[::-1]
-    if max_allowed_anoms <= 0:
-        strict_pct_bound = float(sorted_desc_all[0] + 1e-5)
-    elif max_allowed_anoms < n_total:
-        hi_v = float(sorted_desc_all[max_allowed_anoms - 1])
-        lo_v = float(sorted_desc_all[max_allowed_anoms])
-        strict_pct_bound = float(0.5 * (hi_v + lo_v)) if hi_v > lo_v else float(hi_v + 1e-5)
-    else:
-        strict_pct_bound = p_val_raw
+    med_val = float(np.median(scores_arr))
+    mad_val = float(np.median(np.abs(scores_arr - med_val)))
+    thresh_mod_z = med_val + (3.5 / 0.6745) * mad_val
 
-    raw_pct_floor = max(p_val_raw, strict_pct_bound)
-
-    if g_arr.size > 0:
-        g_max = float(np.max(g_arr))
-        # Golden 基準上界僅作為「不能比 Golden 最高分還低」的防誤殺底線 (g_max * 1.05 + 0.015)
-        golden_ref_bound = g_max * 1.05 + 0.015
-        golden_safety_cap = max(p_val_core * 1.18 + 0.02, left_stat_bound)
-    else:
-        golden_ref_bound = left_stat_bound
-        golden_safety_cap = left_stat_bound
-
-    calibrated_bound = min(max(left_stat_bound, golden_ref_bound), golden_safety_cap)
-
-    topk_bound = 0.0
-    if top_k > 0 and scores_arr.size > top_k:
-        topk_bound = float(0.5 * (sorted_desc_all[top_k - 1] + sorted_desc_all[top_k]))
-
-    floor_val = max(float(min_threshold), float(user_threshold))
-
-    if mode == "fixed":
-        eff = float(user_threshold)
-        desc = f"Fixed 固定門檻 = {eff:.4f}"
-    elif mode == "mean_std":
-        eff = max(float(min_threshold), calibrated_bound, topk_bound) if top_k > 0 else max(float(min_threshold), calibrated_bound)
+    # 【模式 A】後續時期推論：已指定固定門檻 (user_threshold > 0)
+    if user_threshold is not None and float(user_threshold) > 0.0:
+        eff_thresh = float(user_threshold)
+        eff_count = int(np.sum(scores_arr >= eff_thresh))
+        eff_pct = (eff_count / total_n) * 100.0
         desc = (
-            f"Left-Core + Golden 雙重校準統計門檻 (mu_core+{eff_sigma_k:g}*σ_left) = {eff:.4f} "
-            f"[mu_core={mu_core:.4f}, σ_left={sigma_left:.4f}, Golden_Med={g_med:.4f}]"
+            f"Fixed 固定門檻 (沿用訓練集設定) = {eff_thresh:.4f} "
+            f"(本時期切出 {eff_count}/{total_n} 張, {eff_pct:.2f}%)\n"
+            f"           ├─ [本時期飄移參考] 3-Sigma (Shewhart 1931)         : {thresh_3sigma:.4f} (Mean={mean_val:.4f}, Std={std_val:.4f})\n"
+            f"           └─ [本時期飄移參考] Modified Z-Score (Iglewicz 1993): {thresh_mod_z:.4f} (Median={med_val:.4f}, MAD={mad_val:.4f})"
         )
-    elif mode == "percentile":
-        eff = max(float(min_threshold), raw_pct_floor, topk_bound)
-        desc = f"Auto-P{auto_percentile:g} 嚴格上限分位數門檻 (最多抓 {100.0 - p_clip:g}%) = {eff:.4f} [Raw_P{auto_percentile:g}={p_val_raw:.4f}]"
-    elif mode == "top_k":
-        eff = max(float(min_threshold), topk_bound if top_k > 0 else calibrated_bound)
-        desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f}"
+        return eff_thresh, desc
+
+    # 【模式 B】第一批訓練集定門檻：取 Min(3-Sigma, Modified Z-Score)
+    if thresh_3sigma <= thresh_mod_z:
+        eff_thresh, eff_name = thresh_3sigma, "3-Sigma (mean+3*std)"
+        high_thresh, high_name = thresh_mod_z, "Modified Z-Score (3.5)"
     else:
-        # 方案 A：使用 raw_pct_floor (全池 P95 嚴格保底) 納入 max()，確保異常比例絕對 <= (100 - auto_percentile)% = 5%
-        hybrid_stat = max(floor_val, calibrated_bound, raw_pct_floor)
-        eff = max(hybrid_stat, topk_bound) if top_k > 0 else hybrid_stat
-        desc = (
-            f"Hybrid 真無GT雙重校準動態門檻 (嚴格上限<={100.0 - p_clip:g}%) = {eff:.4f} "
-            f"[未見過正常核心上界(mu+{eff_sigma_k:g}*σ_left)={left_stat_bound:.4f} (mu={mu_core:.4f}, σ_left={sigma_left:.4f}), "
-            f"Golden基準上界={golden_ref_bound:.4f}, Raw_P{auto_percentile:g}保底={raw_pct_floor:.4f} (Core_P{auto_percentile:g}={p_val_core:.4f}), "
-            f"MinFloor={floor_val:.4f}"
-            f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
+        eff_thresh, eff_name = thresh_mod_z, "Modified Z-Score (3.5)"
+        high_thresh, high_name = thresh_3sigma, "3-Sigma (mean+3*std)"
+
+    eff_count = int(np.sum(scores_arr >= eff_thresh))
+    eff_pct = (eff_count / total_n) * 100.0
+
+    high_count = int(np.sum(scores_arr >= high_thresh))
+    high_pct = (high_count / total_n) * 100.0
+    high_percentile = float(np.mean(scores_arr < high_thresh) * 100.0)
+
+    if high_count == 0:
+        high_cut_info = f"高於全體最高分 ({float(np.max(scores_arr)):.4f})，切出 0 張 (0.00%)"
+    else:
+        high_cut_info = (
+            f"切在 Rank {high_count}/{total_n} 之後 "
+            f"(共 {high_count} 張 >= 該門檻, 佔 {high_pct:.2f}%, 約 P{high_percentile:.2f})"
         )
-    return eff, desc
+
+    desc = (
+        f"Min(3-Sigma, Mod-Z) 採用 [{eff_name}] = {eff_thresh:.4f} "
+        f"(切出 {eff_count}/{total_n} 張, {eff_pct:.2f}%)\n"
+        f"           ├─ 3-Sigma (Shewhart 1931)         : {thresh_3sigma:.4f} (Mean={mean_val:.4f}, Std={std_val:.4f})\n"
+        f"           ├─ Modified Z-Score (Iglewicz 1993): {thresh_mod_z:.4f} (Median={med_val:.4f}, MAD={mad_val:.4f})\n"
+        f"           └─ 較高門檻 [{high_name}] = {high_thresh:.4f} -> {high_cut_info}"
+    )
+    return float(eff_thresh), desc
 
 
 def evaluate_overfitting_diagnostics(

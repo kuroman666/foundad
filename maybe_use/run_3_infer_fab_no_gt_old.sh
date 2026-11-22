@@ -64,8 +64,8 @@ DISABLE_TILING="${DISABLE_TILING:-0}"                        # 設為 1 則附�
 # 3. 動態門檻對齊參數 (Thresholding)
 #    可選模式: hybrid | mean_std | percentile | top_k | fixed
 # ------------------------------------------------------------------------------
-THRESH_MODE="${THRESH_MODE:-fixed}"                         # 異常門檻決定模式
-THRESHOLD="${THRESHOLD:-}"                                  # fixed 模式固定門檻 / hybrid 模式保底下限之一
+THRESH_MODE="${THRESH_MODE:-auto}"                         # 異常門檻決定模式
+THRESHOLD="${THRESHOLD:-0.0}"                                  # fixed 模式固定門檻 / hybrid 模式保底下限之一
 MIN_THRESHOLD="${MIN_THRESHOLD:-0}"                          # 動態門檻絕對最低安全底線 (適用於 hybrid / percentile / top_k)
 AUTO_PERCENTILE="${AUTO_PERCENTILE:-95.0}"                   # 盲池分位數 (如 95.0 代表 P95)
 TOP_K="${TOP_K:-0}"                                          # 若 > 0 則限制最多只輸出前 K 高分可疑圖片

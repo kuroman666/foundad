@@ -873,89 +873,83 @@ def extract_tight_bboxes_for_anomaly_image(
 def compute_dynamic_effective_threshold(
     non_golden_scores: List[float],
     golden_scores: List[float],
-    thresh_mode: str,
-    user_threshold: float,
-    min_threshold: float,
-    auto_percentile: float,
-    sigma_k: float,
-    top_k: int,
+    thresh_mode: str = "auto",
+    user_threshold: float = 0.0,
+    min_threshold: float = 0.0,
+    auto_percentile: float = 95.0,
+    sigma_k: float = 3.5,
+    top_k: int = 0,
 ) -> Tuple[float, str]:
     """
-    計算最終異常判定門檻，支援 5 種模式：
-    - fixed      : 直接使用 user_threshold。
-    - mean_std   : 直接使用非 Golden 正常圖之 mean + sigma_k * std 作為門檻 (不受 min_threshold 強制墊高影響)。
-    - percentile : 自動對齊盲池 P95/P98 分位數，並以 min_threshold 保底。
-    - top_k      : 自動對齊盲池第 K 高分 (最多輸出 Top-K 張)，並以 min_threshold 保底。
-    - hybrid     : 結合 P95 分位數 + 抗極端值之 MAD 穩健上界 + 去極端值 Trimmed Mean+k*Std 上界 + min_threshold 保底。
+    雙模式門檻判定：
+      - 若 user_threshold > 0：直接採用「固定門檻 (Fixed)」，適用於同產品後續不同時期推論。
+      - 若 user_threshold <= 0：自動計算兩種具文獻依據之無監督統計門檻並取較小值，適用於第一批訓練集定門檻：
+          1. 3-Sigma 法則 (Shewhart, 1931): mean + 3 * std
+          2. Modified Z-Score (Iglewicz & Hoaglin, 1993): median + (3.5 / 0.6745) * MAD
     """
-    mode = thresh_mode.lower().strip()
-    scores_arr = np.array(non_golden_scores if non_golden_scores else golden_scores, dtype=np.float32)
-
+    scores_arr = np.array(
+        non_golden_scores if non_golden_scores else golden_scores,
+        dtype=np.float32,
+    )
     if scores_arr.size == 0:
-        return max(user_threshold, min_threshold), "無樣本保底門檻"
+        fallback = float(user_threshold) if user_threshold > 0 else float(min_threshold)
+        return fallback, f"無樣本保底門檻 ({fallback:.4f})"
 
+    total_n = int(scores_arr.size)
+
+    # 計算兩種文獻門檻 (無論固定或自動模式皆算出，方便追蹤跨時期分佈飄移)
     mean_val = float(np.mean(scores_arr))
     std_val = float(np.std(scores_arr))
-    mean_std_bound = mean_val + sigma_k * std_val
+    thresh_3sigma = mean_val + 3.0 * std_val
 
-    if scores_arr.size >= 10:
-        p95_cut = float(np.percentile(scores_arr, 95.0))
-        trimmed_arr = scores_arr[scores_arr <= p95_cut]
-        if trimmed_arr.size >= 5:
-            trim_mean = float(np.mean(trimmed_arr))
-            trim_std = float(np.std(trimmed_arr))
-        else:
-            trim_mean, trim_std = mean_val, std_val
+    med_val = float(np.median(scores_arr))
+    mad_val = float(np.median(np.abs(scores_arr - med_val)))
+    thresh_mod_z = med_val + (3.5 / 0.6745) * mad_val
+
+    # 【模式 A】後續時期推論：已指定固定門檻 (user_threshold > 0)
+    if user_threshold is not None and float(user_threshold) > 0.0:
+        eff_thresh = float(user_threshold)
+        eff_count = int(np.sum(scores_arr >= eff_thresh))
+        eff_pct = (eff_count / total_n) * 100.0
+        desc = (
+            f"Fixed 固定門檻 (沿用訓練集設定) = {eff_thresh:.4f} "
+            f"(本時期切出 {eff_count}/{total_n} 張, {eff_pct:.2f}%)\n"
+            f"           ├─ [本時期飄移參考] 3-Sigma (Shewhart 1931)         : {thresh_3sigma:.4f} (Mean={mean_val:.4f}, Std={std_val:.4f})\n"
+            f"           └─ [本時期飄移參考] Modified Z-Score (Iglewicz 1993): {thresh_mod_z:.4f} (Median={med_val:.4f}, MAD={mad_val:.4f})"
+        )
+        return eff_thresh, desc
+
+    # 【模式 B】第一批訓練集定門檻：取 Min(3-Sigma, Modified Z-Score)
+    if thresh_3sigma <= thresh_mod_z:
+        eff_thresh, eff_name = thresh_3sigma, "3-Sigma (mean+3*std)"
+        high_thresh, high_name = thresh_mod_z, "Modified Z-Score (3.5)"
     else:
-        trim_mean, trim_std = mean_val, std_val
-    trimmed_stat_bound = trim_mean + sigma_k * max(trim_std, 0.012)
+        eff_thresh, eff_name = thresh_mod_z, "Modified Z-Score (3.5)"
+        high_thresh, high_name = thresh_3sigma, "3-Sigma (mean+3*std)"
 
-    med = float(np.median(scores_arr))
-    q75, q25 = np.percentile(scores_arr, [75.0, 25.0])
-    iqr_sigma = float((q75 - q25) / 1.349)
-    mad_sigma = float(1.4826 * np.median(np.abs(scores_arr - med)))
-    robust_sigma = max(iqr_sigma, mad_sigma, trim_std, 0.012)
+    eff_count = int(np.sum(scores_arr >= eff_thresh))
+    eff_pct = (eff_count / total_n) * 100.0
 
-    p_val = float(np.percentile(scores_arr, np.clip(auto_percentile, 50.0, 99.9)))
-    mad_bound = max(med + sigma_k * robust_sigma, trimmed_stat_bound)
+    high_count = int(np.sum(scores_arr >= high_thresh))
+    high_pct = (high_count / total_n) * 100.0
+    high_percentile = float(np.mean(scores_arr < high_thresh) * 100.0)
 
-    topk_bound = 0.0
-    if top_k > 0 and scores_arr.size > top_k:
-        sorted_desc = np.sort(scores_arr)[::-1]
-        topk_bound = float(0.5 * (sorted_desc[top_k - 1] + sorted_desc[top_k]))
-
-    if mode == "fixed":
-        eff = float(user_threshold)
-        desc = f"Fixed 固定門檻 = {eff:.4f}"
-    elif mode == "mean_std":
-        eff = max(mean_std_bound, topk_bound) if top_k > 0 else mean_std_bound
-        desc = (
-            f"Mean+Std 統計門檻 (mean+{sigma_k:g}*std) = {eff:.4f} "
-            f"[Mean={mean_val:.4f}, Std={std_val:.4f} | "
-            f"mean+1*std={mean_val + 1.0 * std_val:.4f}, "
-            f"mean+2*std={mean_val + 2.0 * std_val:.4f}, "
-            f"mean+3*std={mean_val + 3.0 * std_val:.4f}"
-            f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
-        )
-    elif mode == "percentile":
-        eff = max(float(min_threshold), p_val, topk_bound)
-        desc = (
-            f"Auto-P{auto_percentile:g} 動態分位數門檻 = {eff:.4f} "
-            f"(P{auto_percentile:g}={p_val:.4f}, MinFloor={min_threshold:.4f})"
-        )
-    elif mode == "top_k":
-        eff = max(float(min_threshold), topk_bound if top_k > 0 else p_val)
-        desc = f"Auto-TopK (K={top_k}) 動態門檻 = {eff:.4f} (TopK_Bound={topk_bound:.4f}, MinFloor={min_threshold:.4f})"
+    if high_count == 0:
+        high_cut_info = f"高於全體最高分 ({float(np.max(scores_arr)):.4f})，切出 0 張 (0.00%)"
     else:
-        eff = max(float(min_threshold), float(user_threshold), p_val, mad_bound, topk_bound)
-        desc = (
-            f"Hybrid 智慧動態門檻 = {eff:.4f} "
-            f"[P{auto_percentile:g}={p_val:.4f}, 穩健統計上界(med+{sigma_k:g}σ)={mad_bound:.4f}, "
-            f"MinFloor={max(float(min_threshold), float(user_threshold)):.4f}"
-            f"{f', TopK({top_k})={topk_bound:.4f}' if top_k > 0 else ''}]"
+        high_cut_info = (
+            f"切在 Rank {high_count}/{total_n} 之後 "
+            f"(共 {high_count} 張 >= 該門檻, 佔 {high_pct:.2f}%, 約 P{high_percentile:.2f})"
         )
 
-    return eff, desc
+    desc = (
+        f"Min(3-Sigma, Mod-Z) 採用 [{eff_name}] = {eff_thresh:.4f} "
+        f"(切出 {eff_count}/{total_n} 張, {eff_pct:.2f}%)\n"
+        f"           ├─ 3-Sigma (Shewhart 1931)         : {thresh_3sigma:.4f} (Mean={mean_val:.4f}, Std={std_val:.4f})\n"
+        f"           ├─ Modified Z-Score (Iglewicz 1993): {thresh_mod_z:.4f} (Median={med_val:.4f}, MAD={mad_val:.4f})\n"
+        f"           └─ 較高門檻 [{high_name}] = {high_thresh:.4f} -> {high_cut_info}"
+    )
+    return float(eff_thresh), desc
 
 
 def evaluate_overfitting_diagnostics(
@@ -1575,8 +1569,8 @@ def main():
 
     # 門檻與動態對齊參數
     parser.add_argument(
-        "--thresh_mode", type=str, default="hybrid",
-        choices=["hybrid", "mean_std", "percentile", "top_k", "fixed"],
+        "--thresh_mode", type=str, default="auto",
+        choices=["auto", "hybrid", "mean_std", "percentile", "top_k", "fixed"],
         help="門檻決定模式：hybrid(結合P95+MAD穩健統計+保底門檻)、mean_std(直接以 mean + sigma_k * std 作為門檻)、percentile(對齊分位數)、top_k(只抓前K高分)、fixed(固定threshold)"
     )
     parser.add_argument(
