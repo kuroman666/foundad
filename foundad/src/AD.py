@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import math
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List
 import numpy as np
@@ -18,7 +19,7 @@ from src.utils.metrics import (
 )
 from src.helper import save_segmentation_grid
 from src.utils.logging import CSVLogger
-from src.foundad import VisionModule          
+from src.foundad import VisionModule
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger("evaluator")
@@ -175,7 +176,12 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
 
     dump_dir = os.environ.get("FAB_AMAP_DUMP_DIR", "")
     skip_tile_png = os.environ.get("FAB_SKIP_TILE_HEATMAP_PNG", "1" if dump_dir else "0") == "1"
-    infer_bs = max(1, int(os.environ.get("FAB_INFER_BATCH_SIZE", "16")))
+    infer_bs = max(1, int(os.environ.get("FAB_INFER_BATCH_SIZE", "64")))
+    num_workers = max(1, int(os.environ.get("FAB_NUM_WORKERS", str(min(8, os.cpu_count() or 4)))))
+
+    amp_str = os.environ.get("FAB_AMP_DTYPE", "off").lower()
+    amp_dtype = torch.bfloat16 if amp_str == "bf16" else (torch.float16 if amp_str == "fp16" else None)
+    use_amp = (amp_dtype is not None) and (device.type == "cuda")
 
     out_root = Path(cfg["logging"]["folder"]) / "heatmaps"
     if not skip_tile_png:
@@ -197,7 +203,8 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
     total_imgs = len(img_paths)
     print(
         f"[INFO] Found {total_imgs} tile images under {test_root} "
-        f"(BatchSize={infer_bs}, SaveTilePNG={'OFF' if skip_tile_png else 'ON'})"
+        f"(BatchSize={infer_bs}, Workers={num_workers}, AMP={amp_str if use_amp else 'off'}, "
+        f"NativeFloat32Npy=ON, SaveTilePNG={'OFF' if skip_tile_png else 'ON'})"
     )
 
     mean = torch.tensor([0.485, 0.456, 0.406], device=device).view(1, 3, 1, 1)
@@ -220,41 +227,53 @@ def _demo(ckpt: Path, cfg: Dict[str, Any]) -> None:
         overlay_rgb = cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB)
         Image.fromarray(overlay_rgb).save(save_path)
 
-    for start_idx in range(0, total_imgs, infer_bs):
-        batch_paths = img_paths[start_idx:start_idx + infer_bs]
-        batch_tensors = torch.stack([_load_tensor(p) for p in batch_paths], dim=0).to(device, non_blocking=True)
-        batch_norm = (batch_tensors - mean) / std
-        str_paths = [str(p) for p in batch_paths]
+    with ThreadPoolExecutor(max_workers=num_workers) as io_pool:
+        for start_idx in range(0, total_imgs, infer_bs):
+            batch_paths = img_paths[start_idx:start_idx + infer_bs]
+            loaded_list = list(io_pool.map(_load_tensor, batch_paths))
+            batch_tensors = torch.stack(loaded_list, dim=0)
+            if device.type == "cuda":
+                batch_tensors = batch_tensors.pin_memory().to(device, non_blocking=True)
+            else:
+                batch_tensors = batch_tensors.to(device)
 
-        enc = model.target_features(batch_norm, str_paths, n_layer=n_layer)
-        pred = model.predict(enc)
+            batch_norm = (batch_tensors - mean) / std
+            str_paths = [str(p) for p in batch_paths]
 
-        l = F.mse_loss(enc, pred, reduction="none").mean(dim=2)
-        h = w = int(math.sqrt(l.size(1)))
-        pix_batch = F.interpolate(
-            l.view(-1, 1, h, w), size=(crop, crop), mode="bilinear", align_corners=False
-        ).squeeze(1)
+            with torch.amp.autocast("cuda", dtype=amp_dtype, enabled=use_amp):
+                enc = model.target_features(batch_norm, str_paths, n_layer=n_layer)
+                pred = model.predict(enc)
 
-        pix_np_batch = pix_batch.detach().cpu().numpy()
+            # 轉回 float32 計算 MSE，避免 bfloat16 精度損失或轉 numpy 報錯
+            l = F.mse_loss(enc.float(), pred.float(), reduction="none").mean(dim=2)
+            h = w = int(math.sqrt(l.size(1)))
+            native_amap_batch = l.view(-1, h, w).float().detach().cpu().numpy()
 
-        for b_idx, path in enumerate(batch_paths):
-            raw_amap = pix_np_batch[b_idx]
-            if dump_dir:
-                np.save(os.path.join(dump_dir, f"{path.name}.npy"), raw_amap)
-
+            pix_np_batch = None
             if not skip_tile_png:
-                pmin, pmax = float(raw_amap.min()), float(raw_amap.max())
-                pix_norm = (raw_amap - pmin) / (pmax - pmin + 1e-8)
-                img_uint8 = (batch_tensors[b_idx].permute(1, 2, 0).detach().cpu().numpy() * 255.0).clip(0, 255).astype(np.uint8)
-                rel = path.relative_to(test_root)
-                save_dir = out_root / rel.parent
-                save_dir.mkdir(parents=True, exist_ok=True)
-                save_path = save_dir / f"{path.stem}_heatmap.png"
-                _save_overlay_heatmap(img_uint8, pix_norm, save_path)
+                pix_batch = F.interpolate(
+                    l.view(-1, 1, h, w), size=(crop, crop), mode="bilinear", align_corners=False
+                ).squeeze(1)
+                pix_np_batch = pix_batch.float().detach().cpu().numpy()
 
-        done_cnt = min(start_idx + infer_bs, total_imgs)
-        if done_cnt == total_imgs or (done_cnt // infer_bs) % 5 == 0:
-            print(f"[Tile-Infer] Progress: [{done_cnt}/{total_imgs}] tiles processed (.npy saved)")
+            for b_idx, path in enumerate(batch_paths):
+                if dump_dir:
+                    np.save(os.path.join(dump_dir, f"{path.name}.npy"), native_amap_batch[b_idx])
+
+                if not skip_tile_png and pix_np_batch is not None:
+                    raw_amap = pix_np_batch[b_idx]
+                    pmin, pmax = float(raw_amap.min()), float(raw_amap.max())
+                    pix_norm = (raw_amap - pmin) / (pmax - pmin + 1e-8)
+                    img_uint8 = (batch_tensors[b_idx].permute(1, 2, 0).detach().cpu().numpy() * 255.0).clip(0, 255).astype(np.uint8)
+                    rel = path.relative_to(test_root)
+                    save_dir = out_root / rel.parent
+                    save_dir.mkdir(parents=True, exist_ok=True)
+                    save_path = save_dir / f"{path.stem}_heatmap.png"
+                    _save_overlay_heatmap(img_uint8, pix_norm, save_path)
+
+            done_cnt = min(start_idx + infer_bs, total_imgs)
+            if done_cnt == total_imgs or (done_cnt // infer_bs) % 5 == 0:
+                print(f"[Tile-Infer] Progress: [{done_cnt}/{total_imgs}] tiles processed (.npy saved)")
 
 
 def main(args: Dict[str, Any]) -> None:

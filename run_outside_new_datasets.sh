@@ -25,7 +25,7 @@ if [ $# -ge 1 ]; then
 else
     TARGET_CAT_DIRS=(
         # --- 新資料集: YDFID-2 (填入父目錄可自動展開全部 19 類，或指定單一類別) ---
-        "${DATASETS_DIR}/YDFID-2/CL1"
+        # "${DATASETS_DIR}/YDFID-2/CL1"
         # "${DATASETS_DIR}/YDFID-2"
 
         # --- 新資料集: Mura / mini_AVMap2 ---
@@ -34,8 +34,13 @@ else
         # "${DATASETS_DIR}/Mura2_bg_mask"
 
         # --- 舊資料集範例 (完全相容) ---
-        # "${DATASETS_DIR}/mvtec/capsule"
-        # "${DATASETS_DIR}/mvtec-2/can"
+        "${DATASETS_DIR}/mvtec/bottle"
+        "${DATASETS_DIR}/mvtec/cable"
+        "${DATASETS_DIR}/mvtec/capsule"
+        "${DATASETS_DIR}/mvtec/grid"
+        "${DATASETS_DIR}/mvtec/tile"
+        "${DATASETS_DIR}/mvtec/transistor"
+        "${DATASETS_DIR}/mvtec-2/can"
     )
 fi
 

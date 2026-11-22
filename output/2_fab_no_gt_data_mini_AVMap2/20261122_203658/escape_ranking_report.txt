@@ -1,0 +1,78 @@
+=== FoundAD High-Res Anomaly Detection Report (Inference Only) ===
+Score Mode: FILTERED_ROBUST | Threshold Mode: auto | Effective Threshold: 0.3584 | Wafer Edge Mode: auto (Margin: 0.040)
+Core Box Ratio: 0.55 | Exported Anomaly Images: 6 | Skipped Normal Images: 25
+Benchmark Metrics (No-GT Sim) : I-AUROC=0.7772 | I-AP=0.4813 | F1-max=0.6400 (Best_Th=0.1448)
+Current Threshold Performance : Recall=50.00% (4/8) | FPR=8.70% (2/23) | Precision=66.67% | F1=57.14%
+Non-Golden Normal Score Dist: Max=0.5572 | P99=0.5441 | P95=0.4837 | Median=0.1195 | Mean=0.1848 | Std=0.1390
+Ablation Compare (Normal)   : Raw_Max=0.7035, Raw_Mean=0.2609 vs Filtered_Max=0.5572, Filtered_Mean=0.1848
+Threshold Ref (Mean+k*Std)  : mean+1*std=0.3238 | mean+2*std=0.4629 | mean+3*std=0.6019
+Overfit Diagnostic          : 🟢 正常 (無對照組) (Golden_Mean=0.0000, NonGolden_Med=0.1195, Ratio=1.00x, Gap=+0.0000)
+-------------------------------------------------------------------------------------------------------------------------------------------------
+Rank  | Original_Filename          | Status              | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+-------------------------------------------------------------------------------------------------------------------------------------------------
+1     | clean_7C3DAE9801_7C3DAGM9PA_PAT4_53.jpg | ANOMALY             | 0.5572    | 0.6404    | 0.5572     | -0.0832  | 1      | Rank001_Score0.5572_Box01_clean_7C3DAE9801_7C3DAGM9PA_PAT4_53.jpg
+2     | clean_7C3DAE8901_7C3DAEM2LB_PAT4_64.jpg | ANOMALY             | 0.4977    | 0.5959    | 0.4977     | -0.0982  | 1      | Rank002_Score0.4977_Box01_clean_7C3DAE8901_7C3DAEM2LB_PAT4_64.jpg
+3     | escape_bad_7A3D829002_7C3DAEW6AA_PAT1_61.jpg | ANOMALY             | 0.4888    | 0.6541    | 0.4888     | -0.1653  | 1      | Rank003_Score0.4888_Box01_escape_bad_7A3D829002_7C3DAEW6AA_PAT1_61.jpg
+4     | escape_bad_7B3D87F000_7B3D87E9GB_PAT3_60.jpg | ANOMALY             | 0.4600    | 0.5836    | 0.4600     | -0.1236  | 3      | Rank004_Score0.4600_Box03_escape_bad_7B3D87F000_7B3D87E9GB_PAT3_60.jpg
+5     | escape_bad_7B3D87F000_7B3D87E9GB_PAT3_61.jpg | ANOMALY             | 0.4300    | 0.5601    | 0.4300     | -0.1301  | 6      | Rank005_Score0.4300_Box06_escape_bad_7B3D87F000_7B3D87E9GB_PAT3_61.jpg
+6     | escape_bad_7B3D87F000_7B3D87E9GB_PAT3_105.jpg | ANOMALY             | 0.3836    | 0.4921    | 0.3836     | -0.1085  | 2      | Rank006_Score0.3836_Box02_escape_bad_7B3D87F000_7B3D87E9GB_PAT3_105.jpg
+7     | clean_7A3D829002_7C3DAEW6AA_PAT1_8.jpg | PASS_SKIPPED        | 0.3579    | 0.7035    | 0.3579     | -0.3457  | 0      | (未超過動態門檻，不輸出圖片)
+8     | clean_7A3D829002_7C3DAEW6AA_PAT1_100.jpg | PASS_SKIPPED        | 0.3286    | 0.5945    | 0.3286     | -0.2659  | 0      | (未超過動態門檻，不輸出圖片)
+9     | clean_7B3D9A0600_7B3D9A06PB_PAT2_42.jpg | PASS_SKIPPED        | 0.2861    | 0.5864    | 0.2861     | -0.3003  | 0      | (未超過動態門檻，不輸出圖片)
+10    | clean_7B3DAKP300_7B3DAKP3SB_PAT3_7.jpg | PASS_SKIPPED        | 0.2598    | 0.2794    | 0.2598     | -0.0196  | 0      | (未超過動態門檻，不輸出圖片)
+11    | clean_7B3DAKP300_7B3DAKP3SB_PAT3_66.jpg | PASS_SKIPPED        | 0.2562    | 0.3842    | 0.2562     | -0.1280  | 0      | (未超過動態門檻，不輸出圖片)
+12    | clean_7A3D829002_7C3DAEW6AA_PAT1_41.jpg | PASS_SKIPPED        | 0.2507    | 0.4611    | 0.2507     | -0.2103  | 0      | (未超過動態門檻，不輸出圖片)
+13    | escape_bad_7B3D87F000_7B3D87E9GB_PAT3_76.jpg | PASS_SKIPPED        | 0.2498    | 0.2916    | 0.2498     | -0.0419  | 0      | (未超過動態門檻，不輸出圖片)
+14    | escape_bad_7A3D829002_7C3DAEW6AA_PAT1_62.jpg | PASS_SKIPPED        | 0.2482    | 0.3164    | 0.2482     | -0.0682  | 0      | (未超過動態門檻，不輸出圖片)
+15    | escape_bad_7B3D87F000_7B3D87E9GB_PAT3_46.jpg | PASS_SKIPPED        | 0.2109    | 0.2245    | 0.2109     | -0.0136  | 0      | (未超過動態門檻，不輸出圖片)
+16    | clean_7CDDA00101_7C3DAFB8VA_PAT5_19.jpg | PASS_SKIPPED        | 0.1471    | 0.1677    | 0.1471     | -0.0206  | 0      | (未超過動態門檻，不輸出圖片)
+17    | escape_bad_7A3D829002_7C3DAEW6AA_PAT1_91.jpg | PASS_SKIPPED        | 0.1448    | 0.1585    | 0.1448     | -0.0137  | 0      | (未超過動態門檻，不輸出圖片)
+18    | clean_7B3D9A0600_7B3D9A06PB_PAT2_61.jpg | PASS_SKIPPED        | 0.1383    | 0.1743    | 0.1383     | -0.0361  | 0      | (未超過動態門檻，不輸出圖片)
+19    | clean_7C3DAEX100_7C3DAEX1VB_PAT2_115.jpg | PASS_SKIPPED        | 0.1227    | 0.1361    | 0.1227     | -0.0134  | 0      | (未超過動態門檻，不輸出圖片)
+20    | clean_7C3DAE8901_7C3DAEM2LB_PAT4_51.jpg | PASS_SKIPPED        | 0.1195    | 0.1546    | 0.1195     | -0.0351  | 0      | (未超過動態門檻，不輸出圖片)
+21    | clean_7C3DAE8901_7C3DAEM2LB_PAT4_4.jpg | PASS_SKIPPED        | 0.1136    | 0.1255    | 0.1136     | -0.0119  | 0      | (未超過動態門檻，不輸出圖片)
+22    | clean_7A3D829002_7C3DAEW6AA_PAT1_75.jpg | PASS_SKIPPED        | 0.1119    | 0.1270    | 0.1119     | -0.0152  | 0      | (未超過動態門檻，不輸出圖片)
+23    | clean_7B3D99T000_7B3D98K6RA_PAT6_5.jpg | PASS_SKIPPED        | 0.1100    | 0.1592    | 0.1100     | -0.0491  | 0      | (未超過動態門檻，不輸出圖片)
+24    | clean_7C3DAE8901_7C3DAE89AA_PAT5_8.jpg | PASS_SKIPPED        | 0.1079    | 0.1389    | 0.1079     | -0.0310  | 0      | (未超過動態門檻，不輸出圖片)
+25    | clean_7C3DAEX100_7C3DAEX1VB_PAT2_55.jpg | PASS_SKIPPED        | 0.0994    | 0.1331    | 0.0994     | -0.0337  | 0      | (未超過動態門檻，不輸出圖片)
+26    | clean_7C3DAEX100_7C3DAEX1VB_PAT2_37.jpg | PASS_SKIPPED        | 0.0979    | 0.1142    | 0.0979     | -0.0163  | 0      | (未超過動態門檻，不輸出圖片)
+27    | clean_7B3DAKP300_7B3DAKP3SB_PAT1_32.jpg | PASS_SKIPPED        | 0.0945    | 0.1031    | 0.0945     | -0.0086  | 0      | (未超過動態門檻，不輸出圖片)
+28    | clean_7B3D87F000_7B3D87E9GB_PAT3_9.jpg | PASS_SKIPPED        | 0.0735    | 0.0783    | 0.0735     | -0.0048  | 0      | (未超過動態門檻，不輸出圖片)
+29    | clean_7C3DAE8901_7C3DAEL11B_PAT3_100.jpg | PASS_SKIPPED        | 0.0446    | 0.0602    | 0.0446     | -0.0157  | 0      | (未超過動態門檻，不輸出圖片)
+30    | clean_7B3D90D606_7C3DAGB4DA_PAT3_40.jpg | PASS_SKIPPED        | 0.0443    | 0.0490    | 0.0443     | -0.0047  | 0      | (未超過動態門檻，不輸出圖片)
+31    | clean_7B3D99T000_7B3D98K6RA_PAT6_108.jpg | PASS_SKIPPED        | 0.0307    | 0.0349    | 0.0307     | -0.0041  | 0      | (未超過動態門檻，不輸出圖片)
+
+
+===========================================================================
+ [✅ 推論完成 — 整體時間與所有檔案儲存位置總覽]
+---------------------------------------------------------------------------
+  [1] 整體推論階段總時間 (Total Inference Time) : 00:00:14.34 (14.34 秒)
+      ├─ Step 3.1 測試池高解析度切塊 (62 塊)   : 00:00:01.01 (1.01 秒)
+      ├─ Step 3.2 FoundAD 模型推論 (step=2000)     : 00:00:12.78 (12.78 秒)
+      ├─ Step 4 RAM 縫合銷毀碎片與四合一濾波畫框 : 00:00:00.56 (0.56 秒)
+      └─ 平均每張原圖推論耗時 (31 張原圖)         : 0.46 秒/張
+---------------------------------------------------------------------------
+  [2] 任務全程總執行時間 (Total Wall Time)      : 00:00:14.37 (14.37 秒)
+---------------------------------------------------------------------------
+  [3] 門檻篩選統計、分數分佈與過擬合自檢 (Score=FILTERED, Mode=auto, Eff_Thresh=0.3584):
+      🚨 超過門檻判定異常並畫框輸出 : 6 張
+      ✅ 未達門檻或微塵濾除直接略過 : 25 張 (不輸出圖片)
+      🏆 模擬盲池量化指標 (Eval)     : I-AUROC=0.7772 | I-AP=0.4813 | F1-max=0.6400 (@0.1448)
+      🎯 當前門檻實測表現 (Current)    : Recall=50.00% (4/8) | FPR=8.70% (2/23) | Precision=66.67% | F1=57.14%
+      📊 非 Golden 正常圖分數分佈 (四合一濾波後) : Max=0.5572 | P99=0.5441 | P95=0.4837 | Median=0.1195 | Mean=0.1848 | Std=0.1390
+      📐 非 Golden 正常圖門檻參考值  : mean+1*std=0.3238 | mean+2*std=0.4629 | mean+3*std=0.6019
+      🔬 濾波前後正常圖對照 (Ablation): [未濾波 Raw] Max=0.7035, Mean=0.2609, Std=0.2149 vs  [四合一濾波] Max=0.5572, Mean=0.1848, Std=0.1390
+      🩺 模型過擬合自檢 (Overfit)    : 🟢 正常 (無對照組)
+                                       [Golden平均=0.0000 vs 非Golden中位數=0.1195 | Overfit_Ratio=1.00x | Gap=+0.0000]
+---------------------------------------------------------------------------
+  [4] 權重檔與本次推論結果儲存資料夾清單 (Saved Directories & Files):
+      📦 載入訓練權重檔資料夾       : /home/kenny/project/FoundAD/logs/data_sim_mini_AVMap2_4shot/dinov3sim_escape_data_mini_AVMap2
+      🧹 子圖塊碎片 Tile .npy 狀態  : 已於 RAM 拼接完成後立即自動銷毀 (0 殘留)
+      📂 本次時間戳記推論主資料夾   : /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658
+          ├── 異常紅框三合一對照圖  : /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658/anomaly_images
+          ├── 異常1:1全解析度紅框圖 : /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658/anomaly_images/full_res_bbox_only
+          ├── 異常熱力圖矩陣(.npy)  : /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658/amap_npy
+          ├── 完整排名報表 (TXT)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658/escape_ranking_report.txt
+          ├── 完整排名報表 (CSV)    : /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658/escape_ranking_report.csv
+          └── 本次執行日誌 (log.txt): /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658/log.txt
+===========================================================================

@@ -1,0 +1,25 @@
+=== FoundAD Split Eval Report — Pack #1 (eval_pack_1) ===
+Source Run Dir: /home/kenny/project/FoundAD/output/2_fab_no_gt_data_mini_AVMap2/20261122_203658
+Score Mode: FILTERED_ROBUST | Threshold Mode: auto | Threshold Policy: GLOBAL_POOL_UNIFIED
+Effective Threshold (Used) : 0.3584 (Pack_Local_Thresh=0.4459 vs Global_Pool_Thresh=0.3584, Diff=+0.0875)
+Pack Local Thresh Detail : Hybrid 真無GT雙重校準動態門檻 (嚴格上限<=5%) = 0.5572 [未見過正常核心上界(mu+3.5*σ_left)=0.1898 (mu=0.1099, σ_left=0.0228), Golden基準上界=0.1898, Raw_P95保底=0.5572 (Core_P95=0.1429), MinFloor=0.0000] [小樣本平滑融合 α=0.44 with Global=0.3584]
+Pack Total Images: 11 | Exported Anomaly Images: 3 | Skipped Normal Images: 8
+Normal False Positives (FPR): 2/9 (22.22%) | Escape Caught (Recall): 1/2 (50.00%)
+Non-Golden Normal Score Dist: Max=0.5572 | P99=0.5524 | P95=0.5334 | Median=0.1227 | Mean=0.2171 | Std=0.1730
+Ablation Compare (Normal) : Raw_Max=0.6404, Raw_Mean=0.2728 vs Filtered_Max=0.5572, Filtered_Mean=0.2171
+Threshold Ref (Mean+k*Std) : mean+1*std=0.3901 | mean+2*std=0.5631 | mean+3*std=0.7361
+Overfit Diagnostic : 🟢 正常 (無對照組) (Golden_Mean=0.0000, NonGolden_Med=0.1195, Ratio=1.00x, Gap=+0.0000)
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P_Rank | G_Rank | Original_Filename          | Status              | Global_Status       | Max_Score | Raw_Score | Filt_Score | Delta    | BBoxes | Saved_Anomaly_Filename
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+1      | 1      | clean_7C3DAE9801_7C3DAGM9PA_PAT4_53.jpg | ANOMALY             | ANOMALY             | 0.5572    | 0.6404    | 0.5572     | -0.0832  | 1      | Rank001_Score0.5572_Box01_clean_7C3DAE9801_7C3DAGM9PA_PAT4_53.jpg
+2      | 2      | clean_7C3DAE8901_7C3DAEM2LB_PAT4_64.jpg | ANOMALY             | ANOMALY             | 0.4977    | 0.5959    | 0.4977     | -0.0982  | 1      | Rank002_Score0.4977_Box01_clean_7C3DAE8901_7C3DAEM2LB_PAT4_64.jpg
+3      | 5      | escape_bad_7B3D87F000_7B3D87E9GB_PAT3_61.jpg | ANOMALY             | ANOMALY             | 0.4300    | 0.5601    | 0.4300     | -0.1301  | 6      | Rank005_Score0.4300_Box06_escape_bad_7B3D87F000_7B3D87E9GB_PAT3_61.jpg
+4      | 12     | clean_7A3D829002_7C3DAEW6AA_PAT1_41.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.2507    | 0.4611    | 0.2507     | -0.2103  | 0      | (未超過動態門檻，不輸出圖片)
+5      | 17     | escape_bad_7A3D829002_7C3DAEW6AA_PAT1_91.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.1448    | 0.1585    | 0.1448     | -0.0137  | 0      | (未超過動態門檻，不輸出圖片)
+6      | 18     | clean_7B3D9A0600_7B3D9A06PB_PAT2_61.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.1383    | 0.1743    | 0.1383     | -0.0361  | 0      | (未超過動態門檻，不輸出圖片)
+7      | 19     | clean_7C3DAEX100_7C3DAEX1VB_PAT2_115.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.1227    | 0.1361    | 0.1227     | -0.0134  | 0      | (未超過動態門檻，不輸出圖片)
+8      | 22     | clean_7A3D829002_7C3DAEW6AA_PAT1_75.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.1119    | 0.1270    | 0.1119     | -0.0152  | 0      | (未超過動態門檻，不輸出圖片)
+9      | 24     | clean_7C3DAE8901_7C3DAE89AA_PAT5_8.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.1079    | 0.1389    | 0.1079     | -0.0310  | 0      | (未超過動態門檻，不輸出圖片)
+10     | 27     | clean_7B3DAKP300_7B3DAKP3SB_PAT1_32.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.0945    | 0.1031    | 0.0945     | -0.0086  | 0      | (未超過動態門檻，不輸出圖片)
+11     | 28     | clean_7B3D87F000_7B3D87E9GB_PAT3_9.jpg | PASS_SKIPPED        | PASS_SKIPPED        | 0.0735    | 0.0783    | 0.0735     | -0.0048  | 0      | (未超過動態門檻，不輸出圖片)

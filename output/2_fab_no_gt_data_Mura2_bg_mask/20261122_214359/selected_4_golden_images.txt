@@ -1,0 +1,5 @@
+=== Auto-Selected Golden Images (Medoid Centrality) ===
+Golden #1 (-> 000.png): clean_TD86Q18053E_004_0_mask.png | Centrality: 0.991723
+Golden #2 (-> 001.png): clean_TD86Q1805G6_004_0_mask.png | Centrality: 0.991675
+Golden #3 (-> 002.png): clean_TD86Q1803SN_004_0_mask.png | Centrality: 0.991621
+Golden #4 (-> 003.png): clean_TD86Q1805JB_004_0_mask.png | Centrality: 0.991619

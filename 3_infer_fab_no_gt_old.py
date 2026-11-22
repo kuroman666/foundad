@@ -1,4 +1,4 @@
-# 檔案位置: FoundAD/3_infer_fab_no_gt_old.py (僅保留 Inference 流程精簡版，原始檔案為 2_run_fab_no_gt.py(date:1105))
+# 檔案位置: FoundAD/3_infer_fab_no_gt_old.py (無損加速優化版：保留完整舊版評估與報表流程，加入 GPU 高Batch/TF32/AMP/多執行緒、1024px降維縫合濾波、ProcessPoolExecutor多核平行、無壓縮PNG與圓心快取)
 # 背景執行全部 YDFID-2（19 個類別）： nohup ./run_outside_new_datasets.sh ./data/YDFID-2 > foundad_YDFID2.log 2>&1 &
 #                                 tail -f foundad_YDFID2.log
 # 執行 Mura / mini_AVMap2： nohup ./run_outside_new_datasets.sh ./data/mini_AVMap2 ./data/Mura2_wo_bg_w_pb ./data/Mura2_bg_mask > foundad_mura.log 2>&1 &
@@ -18,14 +18,18 @@ import shutil
 import hashlib
 import subprocess
 import argparse
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone, timedelta
-
-TZ_TAIPEI = timezone(timedelta(hours=8))
 from typing import List, Dict, Tuple, Optional
 
 import cv2
 import numpy as np
 from PIL import Image
+
+# 避免超大解析度晶圓圖觸發 PIL DecompressionBombWarning
+Image.MAX_IMAGE_PIXELS = None
+
+TZ_TAIPEI = timezone(timedelta(hours=8))
 
 _ag = importlib.import_module("1_auto_golden_old")
 IMG_EXTENSIONS = _ag.IMG_EXTENSIONS
@@ -55,8 +59,111 @@ def log_and_print(msg: str, log_files: List[str]):
                 f.write(msg + "\n")
 
 
+def _ensure_offline_hub_patch_dir() -> str:
+    """
+    建立 sitecustomize.py 自動攔截：
+    1. GPU 加速：自動啟用 TF32 與 cuDNN benchmark。
+    2. torch.hub.load：優先從本地快取離線載入 DINOv3/DINOv2。
+    3. DataLoader 多執行緒注入：讀取 FAB_NUM_WORKERS 自動啟用 num_workers 與 pin_memory=True。
+    """
+    patch_dir = os.path.abspath("./.offline_hub_patch")
+    os.makedirs(patch_dir, exist_ok=True)
+    sc_path = os.path.join(patch_dir, "sitecustomize.py")
+    project_root = os.path.abspath(os.path.dirname(__file__))
+
+    code_sc = (
+        "import os\n"
+        "import glob\n"
+        "import inspect\n"
+        f"PROJECT_ROOT = {repr(project_root)}\n"
+        "try:\n"
+        "    import torch\n"
+        "    import torch.hub\n"
+        "\n"
+        "    if torch.cuda.is_available():\n"
+        "        torch.backends.cuda.matmul.allow_tf32 = True\n"
+        "        torch.backends.cudnn.allow_tf32 = True\n"
+        "        torch.backends.cudnn.benchmark = True\n"
+        "        try:\n"
+        "            torch.set_float32_matmul_precision('high')\n"
+        "        except Exception:\n"
+        "            pass\n"
+        "\n"
+        "    _orig_hub_load = torch.hub.load\n"
+        "\n"
+        "    def _find_local_repo(repo_or_dir):\n"
+        "        search_roots = [\n"
+        "            os.path.join(PROJECT_ROOT, 'hub_cache'),\n"
+        "            os.path.abspath('./hub_cache'),\n"
+        "            torch.hub.get_dir(),\n"
+        "            os.path.expanduser('~/.cache/torch/hub'),\n"
+        "        ]\n"
+        "        owner, repo = ('', '')\n"
+        "        if isinstance(repo_or_dir, str) and '/' in repo_or_dir:\n"
+        "            parts = repo_or_dir.split('/')\n"
+        "            owner, repo = parts[0], parts[1].split(':')[0]\n"
+        "        for root in search_roots:\n"
+        "            if not os.path.isdir(root):\n"
+        "                continue\n"
+        "            if owner and repo:\n"
+        "                for pat in [f'{owner}_{repo}_*', f'*{repo}*']:\n"
+        "                    for c in sorted(glob.glob(os.path.join(root, pat))):\n"
+        "                        if os.path.isdir(c) and os.path.isfile(os.path.join(c, 'hubconf.py')):\n"
+        "                            return c\n"
+        "            for c in sorted(glob.glob(os.path.join(root, '*dino*'))):\n"
+        "                if os.path.isdir(c) and os.path.isfile(os.path.join(c, 'hubconf.py')):\n"
+        "                    return c\n"
+        "        return None\n"
+        "\n"
+        "    def _safe_hub_load(repo_or_dir, model, *args, **kwargs):\n"
+        "        if kwargs.get('source', 'github') == 'github':\n"
+        "            local_dir = _find_local_repo(repo_or_dir)\n"
+        "            if local_dir is not None:\n"
+        "                kw_local = dict(kwargs)\n"
+        "                kw_local['source'] = 'local'\n"
+        "                return _orig_hub_load(local_dir, model, *args, **kw_local)\n"
+        "        try:\n"
+        "            return _orig_hub_load(repo_or_dir, model, *args, **kwargs)\n"
+        "        except Exception:\n"
+        "            local_dir = _find_local_repo(repo_or_dir)\n"
+        "            if local_dir is not None:\n"
+        "                kw_local = dict(kwargs)\n"
+        "                kw_local['source'] = 'local'\n"
+        "                return _orig_hub_load(local_dir, model, *args, **kw_local)\n"
+        "            raise\n"
+        "\n"
+        "    torch.hub.load = _safe_hub_load\n"
+        "\n"
+        "    _fab_nw = int(os.environ.get('FAB_NUM_WORKERS', '0') or '0')\n"
+        "    if _fab_nw > 0:\n"
+        "        import torch.utils.data\n"
+        "        _orig_dl_init = torch.utils.data.DataLoader.__init__\n"
+        "        _dl_sig = inspect.signature(_orig_dl_init)\n"
+        "\n"
+        "        def _patched_dl_init(self, *args, **kwargs):\n"
+        "            try:\n"
+        "                bound = _dl_sig.bind_partial(self, *args, **kwargs)\n"
+        "                if bound.arguments.get('num_workers', 0) == 0:\n"
+        "                    bound.arguments['num_workers'] = _fab_nw\n"
+        "                if torch.cuda.is_available() and 'pin_memory' not in bound.arguments:\n"
+        "                    bound.arguments['pin_memory'] = True\n"
+        "                if bound.arguments.get('num_workers', 0) > 0 and 'persistent_workers' not in bound.arguments:\n"
+        "                    bound.arguments['persistent_workers'] = True\n"
+        "                return _orig_dl_init(*bound.args, **bound.kwargs)\n"
+        "            except Exception:\n"
+        "                return _orig_dl_init(self, *args, **kwargs)\n"
+        "\n"
+        "        torch.utils.data.DataLoader.__init__ = _patched_dl_init\n"
+        "except Exception:\n"
+        "    pass\n"
+    )
+    with open(sc_path, "w", encoding="utf-8") as f:
+        f.write(code_sc)
+    return patch_dir
+
+
 def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) -> str:
-    """執行子程序指令，自動注入空閒 FAB_MASTER_PORT，即時在 Terminal 顯示並同步寫入 log.txt。"""
+    """執行子程序指令，自動注入空閒 FAB_MASTER_PORT 與離線/加速 Patch，即時在 Terminal 顯示並同步寫入 log.txt。"""
     header = f"\n[EXEC] {cmd}\n" + "-" * 60
     print(header, flush=True)
     output_lines = []
@@ -65,6 +172,10 @@ def run_cmd_and_log(cmd: str, log_files: List[str], env: Optional[Dict] = None) 
     run_env["PYTHONUNBUFFERED"] = "1"
     if "FAB_MASTER_PORT" not in run_env:
         run_env["FAB_MASTER_PORT"] = str(get_free_port())
+
+    patch_dir = _ensure_offline_hub_patch_dir()
+    old_pp = run_env.get("PYTHONPATH", "")
+    run_env["PYTHONPATH"] = f"{patch_dir}:{old_pp}" if old_pp else patch_dir
 
     files_to_write = [open(lf, "a", encoding="utf-8") for lf in log_files if lf]
     try:
@@ -231,14 +342,13 @@ def prepare_ckpt_for_demo(
     """確認權重已存在並複製為 pretrained.pth.tar，支援遞迴搜尋與直接傳入路徑。"""
     search_roots = [
         f"./logs/{data_name}",
-        data_name,  # 容錯：若使用者直接傳入完整或相對路徑
+        data_name,
     ]
     step_files = []
     for root in search_roots:
         if os.path.isdir(root):
             step_files.extend(glob.glob(os.path.join(root, "**", "train-step*.pth.tar"), recursive=True))
-    
-    # 若有指定 diy_name，優先過濾路徑中包含 diy_name 的權重
+
     if diy_name and any(diy_name in f for f in step_files):
         step_files = [f for f in step_files if diy_name in f]
 
@@ -246,7 +356,6 @@ def prepare_ckpt_for_demo(
     ckpt_files = []
     chosen_step = req_step
 
-    # 依資料夾分組處理
     dir_map = {}
     for f in step_files:
         d = os.path.dirname(f)
@@ -316,12 +425,7 @@ def load_existing_golden_filenames(shot_dir: str, run_out_dir: str, log_files: L
 def prepare_mock_unlabeled_pool_from_mvtec(
     mvtec_cat_dir: str, mock_pool_dir: str, log_files: List[str], defect_limit: int = 8
 ):
-    """
-    從 MVTec 建立模擬無 GT 盲池：
-    保留原始圖片名稱 (例如 000.png)，並在前方補上說明前綴：
-    - 正常樣本: clean_<原始檔名> (例如 clean_000.png)
-    - 瑕疵樣本: escape_<瑕疵類別>_<原始檔名> (例如 escape_crack_025.png)
-    """
+    """從 MVTec 建立模擬無 GT 盲池。"""
     safe_rmtree(mock_pool_dir)
     os.makedirs(mock_pool_dir, exist_ok=True)
     test_dir = os.path.join(mvtec_cat_dir, "test")
@@ -356,7 +460,88 @@ def prepare_mock_unlabeled_pool_from_mvtec(
 
 
 # =====================================================================
-# 高解析度 5000x5000 切塊 (Tiling) 與無縫縫合 (Feathering Stitching) 模組
+# 圓心偵測模組 (支援直接從記憶體 RGB 陣列偵測並快取，免去 Step 4 重複讀大圖)
+# =====================================================================
+
+def detect_circular_wafer_geometry_from_rgb(
+    full_rgb: np.ndarray, wafer_edge_mode: str, category: str
+) -> Tuple[bool, float, float, float]:
+    """直接對已載入記憶體的 RGB 原圖偵測圓形晶圓幾何資訊，回傳 (是否啟用, cy, cx, radius)。"""
+    h, w = full_rgb.shape[:2]
+    mode = wafer_edge_mode.lower().strip()
+    if mode == "off":
+        return False, h * 0.5, w * 0.5, min(h, w) * 0.5
+
+    cat_lower = category.lower()
+    is_circular_cat = any(k in cat_lower for k in ["wafer", "bottle", "cable", "coin", "lens", "circle"])
+
+    scale = 256.0 / max(h, w)
+    sh, sw = max(32, int(round(h * scale))), max(32, int(round(w * scale)))
+    try:
+        small_rgb = cv2.resize(full_rgb, (sw, sh), interpolation=cv2.INTER_LINEAR)
+        gray = cv2.cvtColor(small_rgb, cv2.COLOR_RGB2GRAY)
+        blur = cv2.GaussianBlur(gray, (5, 5), 0)
+
+        corner_sz = max(4, min(sh, sw) // 10)
+        corners = np.concatenate([
+            blur[:corner_sz, :corner_sz].reshape(-1),
+            blur[:corner_sz, -corner_sz:].reshape(-1),
+            blur[-corner_sz:, :corner_sz].reshape(-1),
+            blur[-corner_sz:, -corner_sz:].reshape(-1),
+        ])
+        center_patch = blur[sh // 3: 2 * sh // 3, sw // 3: 2 * sw // 3].reshape(-1)
+        corner_mean = float(np.mean(corners))
+        center_mean = float(np.mean(center_patch))
+        corner_std = float(np.std(corners))
+
+        if abs(center_mean - corner_mean) > 12.0:
+            thresh_type = cv2.THRESH_BINARY if center_mean > corner_mean else cv2.THRESH_BINARY_INV
+            _, bw = cv2.threshold(blur, 0, 255, thresh_type + cv2.THRESH_OTSU)
+            cnts, _ = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if cnts:
+                c = max(cnts, key=cv2.contourArea)
+                area = cv2.contourArea(c)
+                if area > 0.18 * (sh * sw):
+                    (cx_s, cy_s), r_s = cv2.minEnclosingCircle(c)
+                    circle_area = np.pi * (r_s ** 2) + 1e-6
+                    circularity_fill = area / circle_area
+                    if (
+                        0.60 <= circularity_fill <= 1.15
+                        and abs(cx_s - sw * 0.5) < 0.18 * sw
+                        and abs(cy_s - sh * 0.5) < 0.18 * sh
+                        and r_s <= 0.58 * max(sh, sw)
+                    ):
+                        if mode == "on" or is_circular_cat or corner_std < 28.0:
+                            cy_full = float(cy_s / scale)
+                            cx_full = float(cx_s / scale)
+                            r_full = float(r_s / scale)
+                            return True, cy_full, cx_full, r_full
+    except Exception:
+        pass
+
+    if mode == "on" or is_circular_cat:
+        return True, h * 0.5, w * 0.5, min(h, w) * 0.48
+
+    return False, h * 0.5, w * 0.5, min(h, w) * 0.5
+
+
+def detect_circular_wafer_geometry(
+    img_path: str, h: int, w: int, wafer_edge_mode: str, category: str
+) -> Tuple[bool, float, float, float]:
+    """容錯版：若 manifest 未快取 wafer_geom 時，才從磁碟讀取原圖偵測圓心。"""
+    if wafer_edge_mode.lower().strip() == "off":
+        return False, h * 0.5, w * 0.5, min(h, w) * 0.5
+    try:
+        full_rgb = load_image_rgb_uint8(img_path)
+        res = detect_circular_wafer_geometry_from_rgb(full_rgb, wafer_edge_mode, category)
+        del full_rgb
+        return res
+    except Exception:
+        return False, h * 0.5, w * 0.5, min(h, w) * 0.5
+
+
+# =====================================================================
+# 高解析度 5000x5000 平行切塊 (無壓縮 PNG + 同步快取圓心) 與降維縫合模組
 # =====================================================================
 
 def get_axis_positions(length: int, tile_size: int, stride: int) -> List[int]:
@@ -376,6 +561,93 @@ def is_background_tile(tile_rgb: np.ndarray, bg_std_thresh: float) -> bool:
     return float(np.std(tile_rgb)) < bg_std_thresh
 
 
+def _tile_single_image_worker(task_args: Tuple) -> Tuple[str, Dict, int, int]:
+    (
+        fpath,
+        rel_fname,
+        stem,
+        tiled_pool_dir,
+        tile_size,
+        stride,
+        bg_std_thresh,
+        disable_tiling,
+        wafer_edge_mode,
+        category,
+    ) = task_args
+    cv2.setNumThreads(1)
+    img = load_image_rgb_uint8(fpath)
+    h, w = img.shape[:2]
+
+    # 在原圖已載入記憶體時順便計算圓心座標並快取
+    use_circle, cy_f, cx_f, r_f = detect_circular_wafer_geometry_from_rgb(
+        img, wafer_edge_mode=wafer_edge_mode, category=category
+    )
+
+    if disable_tiling or (h <= tile_size and w <= tile_size):
+        ys, xs = [0], [0]
+        eff_tile_h, eff_tile_w = h, w
+    else:
+        ys = get_axis_positions(h, tile_size, stride)
+        xs = get_axis_positions(w, tile_size, stride)
+        eff_tile_h, eff_tile_w = tile_size, tile_size
+
+    tiles_info = []
+    skipped_bg = 0
+    for y in ys:
+        for x in xs:
+            ch = min(eff_tile_h, h - y)
+            cw = min(eff_tile_w, w - x)
+            crop = img[y:y + ch, x:x + cw]
+
+            if is_background_tile(crop, bg_std_thresh) and (len(ys) * len(xs) > 1):
+                skipped_bg += 1
+                continue
+
+            tile_stem = f"{stem}__tile_y{y:04d}_x{x:04d}_h{ch:04d}_w{cw:04d}"
+            tile_fname = f"{tile_stem}.png"
+            # 取消 zlib 壓縮 (compress_level=0)，大幅降低寫檔耗時
+            Image.fromarray(crop).save(
+                os.path.join(tiled_pool_dir, tile_fname), format="PNG", compress_level=0
+            )
+            tiles_info.append({
+                "tile_stem": tile_stem,
+                "tile_fname": tile_fname,
+                "y": int(y),
+                "x": int(x),
+                "h": int(ch),
+                "w": int(cw),
+            })
+
+    if not tiles_info:
+        cy, cx = max(0, (h - eff_tile_h) // 2), max(0, (w - eff_tile_w) // 2)
+        ch, cw = min(eff_tile_h, h - cy), min(eff_tile_w, w - cx)
+        crop = img[cy:cy + ch, cx:cx + cw]
+        tile_stem = f"{stem}__tile_y{cy:04d}_x{cx:04d}_h{ch:04d}_w{cw:04d}"
+        tile_fname = f"{tile_stem}.png"
+        Image.fromarray(crop).save(
+            os.path.join(tiled_pool_dir, tile_fname), format="PNG", compress_level=0
+        )
+        tiles_info.append({
+            "tile_stem": tile_stem,
+            "tile_fname": tile_fname,
+            "y": int(cy),
+            "x": int(cx),
+            "h": int(ch),
+            "w": int(cw),
+        })
+
+    del img
+    entry = {
+        "stem": stem,
+        "path": os.path.abspath(fpath),
+        "height": int(h),
+        "width": int(w),
+        "wafer_geom": [bool(use_circle), float(cy_f), float(cx_f), float(r_f)],
+        "tiles": tiles_info,
+    }
+    return rel_fname, entry, len(tiles_info), skipped_bg
+
+
 def prepare_tiled_test_pool(
     pool_dir: str,
     tiled_pool_dir: str,
@@ -388,10 +660,13 @@ def prepare_tiled_test_pool(
     tile_config_key: str,
     cached_manifest_path: str,
     log_files: List[str],
+    wafer_edge_mode: str = "auto",
+    category: str = "wafer",
+    num_workers: int = 8,
 ) -> Dict:
     """
-    遞迴搜尋測試盲池 (含所有子資料夾) 中的所有圖片並切分為重疊子圖塊，
-    確保 tiled_pool_dir 內只有純圖片 (.png)，同時將座標映射表儲存於 run_out_dir 與持久化快取中。
+    遞迴搜尋測試盲池 (含所有子資料夾) 中的所有圖片並以多核心平行切分為重疊子圖塊，
+    使用無壓縮 PNG 存檔並同步快取晶圓圓心座標。
     """
     safe_rmtree(tiled_pool_dir)
     os.makedirs(tiled_pool_dir, exist_ok=True)
@@ -411,84 +686,71 @@ def prepare_tiled_test_pool(
     total_tiles = 0
     skipped_bg_tiles = 0
 
-    num_pool_imgs = len(img_paths)
-    t_tile_loop_start = time.perf_counter()
-    print(f"\n[Tiling-Test] 開始準備 {num_pool_imgs} 張測試原圖之推論圖塊...", flush=True)
-
-    for img_idx, fpath in enumerate(img_paths, 1):
+    tasks = []
+    for fpath in img_paths:
         rel_fname = os.path.relpath(fpath, pool_dir).replace("\\", "/")
         rel_no_ext = os.path.splitext(rel_fname)[0]
         stem = re.sub(r"[\\/]+", "__", rel_no_ext)
+        tasks.append((
+            fpath,
+            rel_fname,
+            stem,
+            tiled_pool_dir,
+            tile_size,
+            stride,
+            bg_std_thresh,
+            disable_tiling,
+            wafer_edge_mode,
+            category,
+        ))
 
-        img = load_image_rgb_uint8(fpath)
-        h, w = img.shape[:2]
+    num_pool_imgs = len(tasks)
+    eff_workers = max(1, min(int(num_workers), num_pool_imgs))
+    t_tile_loop_start = time.perf_counter()
+    print(
+        f"\n[Tiling-Test] 開始準備 {num_pool_imgs} 張測試原圖之推論圖塊 "
+        f"(Workers={eff_workers}, 無壓縮 PNG + 同步快取圓心)...",
+        flush=True,
+    )
 
-        if disable_tiling or (h <= tile_size and w <= tile_size):
-            ys, xs = [0], [0]
-            eff_tile_h, eff_tile_w = h, w
-        else:
-            ys = get_axis_positions(h, tile_size, stride)
-            xs = get_axis_positions(w, tile_size, stride)
-            eff_tile_h, eff_tile_w = tile_size, tile_size
+    ordered_results: Dict[str, Dict] = {}
+    if eff_workers <= 1:
+        for img_idx, t_args in enumerate(tasks, 1):
+            rel_fname, entry, n_t, n_skip = _tile_single_image_worker(t_args)
+            ordered_results[rel_fname] = entry
+            total_tiles += n_t
+            skipped_bg_tiles += n_skip
+            if img_idx == 1 or img_idx % 5 == 0 or img_idx == num_pool_imgs:
+                _print_inline_progress(
+                    stage_title="Step 3.1 測試池切塊",
+                    current=img_idx,
+                    total=num_pool_imgs,
+                    start_t=t_tile_loop_start,
+                    extra_info=f"累計圖塊: {total_tiles} (略過背景: {skipped_bg_tiles})",
+                )
+    else:
+        completed = 0
+        with ProcessPoolExecutor(max_workers=eff_workers) as executor:
+            futures = [executor.submit(_tile_single_image_worker, t_args) for t_args in tasks]
+            for fut in as_completed(futures):
+                rel_fname, entry, n_t, n_skip = fut.result()
+                ordered_results[rel_fname] = entry
+                total_tiles += n_t
+                skipped_bg_tiles += n_skip
+                completed += 1
+                if completed == 1 or completed % 5 == 0 or completed == num_pool_imgs:
+                    _print_inline_progress(
+                        stage_title=f"Step 3.1 平行切塊(x{eff_workers})",
+                        current=completed,
+                        total=num_pool_imgs,
+                        start_t=t_tile_loop_start,
+                        extra_info=f"累計圖塊: {total_tiles} (略過背景: {skipped_bg_tiles})",
+                    )
 
-        tiles_info = []
-        for y in ys:
-            for x in xs:
-                ch = min(eff_tile_h, h - y)
-                cw = min(eff_tile_w, w - x)
-                crop = img[y:y + ch, x:x + cw]
-
-                if is_background_tile(crop, bg_std_thresh) and (len(ys) * len(xs) > 1):
-                    skipped_bg_tiles += 1
-                    continue
-
-                tile_stem = f"{stem}__tile_y{y:04d}_x{x:04d}_h{ch:04d}_w{cw:04d}"
-                tile_fname = f"{tile_stem}.png"
-                Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
-
-                tiles_info.append({
-                    "tile_stem": tile_stem,
-                    "tile_fname": tile_fname,
-                    "y": int(y),
-                    "x": int(x),
-                    "h": int(ch),
-                    "w": int(cw),
-                })
-                total_tiles += 1
-
-        if not tiles_info:
-            cy, cx = max(0, (h - eff_tile_h) // 2), max(0, (w - eff_tile_w) // 2)
-            ch, cw = min(eff_tile_h, h - cy), min(eff_tile_w, w - cx)
-            crop = img[cy:cy + ch, cx:cx + cw]
-            tile_stem = f"{stem}__tile_y{cy:04d}_x{cx:04d}_h{ch:04d}_w{cw:04d}"
-            tile_fname = f"{tile_stem}.png"
-            Image.fromarray(crop).save(os.path.join(tiled_pool_dir, tile_fname))
-            tiles_info.append({
-                "tile_stem": tile_stem,
-                "tile_fname": tile_fname,
-                "y": int(cy),
-                "x": int(cx),
-                "h": int(ch),
-                "w": int(cw),
-            })
-            total_tiles += 1
-
-        manifest["images"][rel_fname] = {
-            "stem": stem,
-            "path": os.path.abspath(fpath),
-            "height": int(h),
-            "width": int(w),
-            "tiles": tiles_info,
-        }
-        del img
-        if img_idx == 1 or img_idx % 5 == 0 or img_idx == num_pool_imgs:
-            _print_inline_progress(
-                stage_title="Step 3.1 測試池切塊",
-                current=img_idx,
-                total=num_pool_imgs,
-                start_t=t_tile_loop_start,
-                extra_info=f"累計圖塊: {total_tiles} (略過背景: {skipped_bg_tiles})",
-            )
+    for t_args in tasks:
+        rf = t_args[1]
+        if rf in ordered_results:
+            manifest["images"][rf] = ordered_results[rf]
 
     gc.collect()
     manifest["total_tiles"] = total_tiles
@@ -504,7 +766,7 @@ def prepare_tiled_test_pool(
 
     log_and_print(
         f"[Tiling-Test] 已遞迴將 {len(img_paths)} 張原圖準備為 {total_tiles} 張推論圖塊 "
-        f"(自動跳過 {skipped_bg_tiles} 張純背景角落塊) -> {os.path.abspath(tiled_pool_dir)}",
+        f"(自動跳過 {skipped_bg_tiles} 張純背景角落塊, Workers={eff_workers}) -> {os.path.abspath(tiled_pool_dir)}",
         log_files,
     )
     return manifest
@@ -514,7 +776,7 @@ def build_2d_feather_weight(h: int, w: int, overlap: int) -> np.ndarray:
     """建立 2D 餘弦平滑權重遮罩 (Raised-Cosine Window)，消除重疊切塊拼接時的邊界接縫。"""
     def _1d_ramp(length: int, ov: int) -> np.ndarray:
         w1d = np.ones(length, dtype=np.float32)
-        ramp = min(max(ov, 16), length // 3)
+        ramp = min(max(ov, 4), max(1, length // 3))
         if ramp > 1:
             t = np.linspace(0.0, np.pi, ramp, dtype=np.float32)
             rising = 0.1 + 0.9 * (0.5 * (1.0 - np.cos(t)))
@@ -569,21 +831,40 @@ def is_tiled_png_pool_valid(
         return None
 
 
+def compute_stitch_canvas_shape(orig_h: int, orig_w: int, stitch_max_dim: int) -> Tuple[int, int, float, float]:
+    """計算降維縫合畫布尺寸 (sh, sw) 與縮放比例 (scale_y, scale_x)。"""
+    if stitch_max_dim > 0 and max(orig_h, orig_w) > stitch_max_dim:
+        s = stitch_max_dim / float(max(orig_h, orig_w))
+        sh = max(1, int(round(orig_h * s)))
+        sw = max(1, int(round(orig_w * s)))
+        return sh, sw, sh / float(orig_h), sw / float(orig_w)
+    return orig_h, orig_w, 1.0, 1.0
+
+
 def stitch_single_image_amap(
     img_meta: Dict,
     tile_amap_dir: str,
     tile_overlap: int,
+    stitch_max_dim: int = 1024,
     delete_tiles: bool = True,
 ) -> np.ndarray:
-    """將單張大圖的所有子圖塊 .npy 無縫縫合回原圖完整解析度 (H, W)，並在縫合後立即刪除子圖塊 .npy。"""
-    h, w = img_meta["height"], img_meta["width"]
-    canvas_sum = np.zeros((h, w), dtype=np.float32)
-    weight_sum = np.zeros((h, w), dtype=np.float32)
+    """
+    將單張大圖的所有子圖塊 .npy 無縫縫合至目標畫布 (預設最大邊 1024px，符合 ViT Patch 解析度，
+    相比 5000x5000 運算量與記憶體直接降低 ~25 倍)，並在縫合後立即刪除子圖塊 .npy。
+    """
+    orig_h, orig_w = img_meta["height"], img_meta["width"]
+    sh, sw, scale_y, scale_x = compute_stitch_canvas_shape(orig_h, orig_w, stitch_max_dim)
+    tiles = img_meta["tiles"]
+
+    canvas_sum = np.zeros((sh, sw), dtype=np.float32)
+    weight_sum = np.zeros((sh, sw), dtype=np.float32)
 
     weight_cache: Dict[Tuple[int, int], np.ndarray] = {}
     consumed_tile_npys: List[str] = []
+    is_single_full_tile = len(tiles) == 1 and tiles[0]["h"] == orig_h and tiles[0]["w"] == orig_w
+    scaled_overlap = max(4, int(round(tile_overlap * min(scale_y, scale_x))))
 
-    for t in img_meta["tiles"]:
+    for t in tiles:
         npy_path = find_tile_npy(tile_amap_dir, t["tile_stem"], t["tile_fname"])
         if not npy_path:
             continue
@@ -593,26 +874,34 @@ def stitch_single_image_amap(
         if amap.ndim != 2:
             continue
 
-        th, tw = t["h"], t["w"]
-        if amap.shape[0] != th or amap.shape[1] != tw:
-            amap = cv2.resize(amap, (tw, th), interpolation=cv2.INTER_CUBIC)
+        y, x, th, tw = t["y"], t["x"], t["h"], t["w"]
+        sy1 = int(round(y * scale_y))
+        sx1 = int(round(x * scale_x))
+        sy2 = min(sh, max(sy1 + 1, int(round((y + th) * scale_y))))
+        sx2 = min(sw, max(sx1 + 1, int(round((x + tw) * scale_x))))
+        sth, stw = sy2 - sy1, sx2 - sx1
 
-        key = (th, tw)
-        if key not in weight_cache:
-            weight_cache[key] = build_2d_feather_weight(th, tw, tile_overlap)
-        w2d = weight_cache[key]
+        if amap.shape[0] != sth or amap.shape[1] != stw:
+            amap = cv2.resize(amap, (stw, sth), interpolation=cv2.INTER_LINEAR)
 
-        y, x = t["y"], t["x"]
-        canvas_sum[y:y + th, x:x + tw] += amap * w2d
-        weight_sum[y:y + th, x:x + tw] += w2d
+        if is_single_full_tile:
+            w2d = np.ones((sth, stw), dtype=np.float32)
+        else:
+            key = (sth, stw)
+            if key not in weight_cache:
+                weight_cache[key] = build_2d_feather_weight(sth, stw, scaled_overlap)
+            w2d = weight_cache[key]
+
+        canvas_sum[sy1:sy2, sx1:sx2] += amap * w2d
+        weight_sum[sy1:sy2, sx1:sx2] += w2d
 
     valid_mask = weight_sum > 1e-6
-    full_amap = np.zeros((h, w), dtype=np.float32)
-    full_amap[valid_mask] = canvas_sum[valid_mask] / weight_sum[valid_mask]
+    stitched_amap = np.zeros((sh, sw), dtype=np.float32)
+    stitched_amap[valid_mask] = canvas_sum[valid_mask] / weight_sum[valid_mask]
 
     if np.any(valid_mask) and not np.all(valid_mask):
-        baseline = float(np.percentile(full_amap[valid_mask], 5.0))
-        full_amap[~valid_mask] = baseline
+        baseline = float(np.percentile(stitched_amap[valid_mask], 5.0))
+        stitched_amap[~valid_mask] = baseline
 
     if delete_tiles:
         for p in consumed_tile_npys:
@@ -622,77 +911,12 @@ def stitch_single_image_amap(
             except OSError:
                 pass
 
-    return full_amap
+    return stitched_amap
 
 
 # =====================================================================
 # 防誤報核心演算法：晶圓圓周邊緣抑制 + 微塵單點尖峰濾除 + 動態門檻對齊
 # =====================================================================
-
-def detect_circular_wafer_geometry(
-    img_path: str, h: int, w: int, wafer_edge_mode: str, category: str
-) -> Tuple[bool, float, float, float]:
-    """
-    偵測影像是否為圓形晶圓/圓形工件，並回傳 (是否啟用圓周抑制, 圓心 cy, 圓心 cx, 半徑 R)。
-    """
-    mode = wafer_edge_mode.lower().strip()
-    if mode == "off":
-        return False, h * 0.5, w * 0.5, min(h, w) * 0.5
-
-    cat_lower = category.lower()
-    is_circular_cat = any(k in cat_lower for k in ["wafer", "bottle", "cable", "coin", "lens", "circle"])
-
-    scale = 256.0 / max(h, w)
-    sh, sw = max(32, int(round(h * scale))), max(32, int(round(w * scale)))
-    try:
-        full_rgb = load_image_rgb_uint8(img_path)
-        small_rgb = cv2.resize(full_rgb, (sw, sh), interpolation=cv2.INTER_LINEAR)
-        del full_rgb
-        gray = cv2.cvtColor(small_rgb, cv2.COLOR_RGB2GRAY)
-        blur = cv2.GaussianBlur(gray, (5, 5), 0)
-
-        corner_sz = max(4, min(sh, sw) // 10)
-        corners = np.concatenate([
-            blur[:corner_sz, :corner_sz].reshape(-1),
-            blur[:corner_sz, -corner_sz:].reshape(-1),
-            blur[-corner_sz:, :corner_sz].reshape(-1),
-            blur[-corner_sz:, -corner_sz:].reshape(-1),
-        ])
-        center_patch = blur[sh // 3: 2 * sh // 3, sw // 3: 2 * sw // 3].reshape(-1)
-        corner_mean = float(np.mean(corners))
-        center_mean = float(np.mean(center_patch))
-        corner_std = float(np.std(corners))
-
-        if abs(center_mean - corner_mean) > 12.0:
-            thresh_type = cv2.THRESH_BINARY if center_mean > corner_mean else cv2.THRESH_BINARY_INV
-            _, bw = cv2.threshold(blur, 0, 255, thresh_type + cv2.THRESH_OTSU)
-            cnts, _ = cv2.findContours(bw, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if cnts:
-                c = max(cnts, key=cv2.contourArea)
-                area = cv2.contourArea(c)
-                if area > 0.18 * (sh * sw):
-                    (cx_s, cy_s), r_s = cv2.minEnclosingCircle(c)
-                    circle_area = np.pi * (r_s ** 2) + 1e-6
-                    circularity_fill = area / circle_area
-                    if (
-                        0.60 <= circularity_fill <= 1.15
-                        and abs(cx_s - sw * 0.5) < 0.18 * sw
-                        and abs(cy_s - sh * 0.5) < 0.18 * sh
-                        and r_s <= 0.58 * max(sh, sw)
-                    ):
-                        if mode == "on" or is_circular_cat or corner_std < 28.0:
-                            cy_full = float(cy_s / scale)
-                            cx_full = float(cx_s / scale)
-                            r_full = float(r_s / scale)
-                            return True, cy_full, cx_full, r_full
-    except Exception:
-        pass
-
-    if mode == "on" or is_circular_cat:
-        return True, h * 0.5, w * 0.5, min(h, w) * 0.48
-
-    return False, h * 0.5, w * 0.5, min(h, w) * 0.5
-
 
 def refine_amap_for_wafer_and_noise(
     full_amap: np.ndarray,
@@ -704,9 +928,11 @@ def refine_amap_for_wafer_and_noise(
     speckle_filter_ratio: float,
     golden_spatial_ref: Optional[np.ndarray] = None,
     golden_tol_weight: float = 0.35,
+    cached_wafer_geom: Optional[List] = None,
+    orig_hw: Optional[Tuple[int, int]] = None,
 ) -> np.ndarray:
     """
-    四合一防誤報熱力圖純化器：
+    四合一防誤報熱力圖純化器 (支援於 1024x1024 降維畫布執行與圓心座標快取)：
     1. 矩形外圍 Padding 偽影抑制 (border_ratio)。
     2. 晶圓圓周邊緣 / 倒角區 (Wafer Bevel / Edge Ring) 自動餘弦衰減抑制。
     3. 灰階形態學開運算 (Grayscale Morphological Opening) 濾除單一 Patch 微塵尖峰噪點。
@@ -740,9 +966,24 @@ def refine_amap_for_wafer_and_noise(
         work_map[:, :bx] = img_median
         work_map[:, -bx:] = img_median
 
-    use_circle, cy, cx, radius = detect_circular_wafer_geometry(
-        img_path=img_path, h=h, w=w, wafer_edge_mode=wafer_edge_mode, category=category
-    )
+    orig_h, orig_w = orig_hw if orig_hw is not None else (h, w)
+    scale_y = h / float(max(1, orig_h))
+    scale_x = w / float(max(1, orig_w))
+    if wafer_edge_mode.lower().strip() == "off":
+        use_circle, cy, cx, radius = False, h * 0.5, w * 0.5, min(h, w) * 0.5
+    elif cached_wafer_geom is not None and len(cached_wafer_geom) == 4:
+        use_circle = bool(cached_wafer_geom[0])
+        cy = float(cached_wafer_geom[1]) * scale_y
+        cx = float(cached_wafer_geom[2]) * scale_x
+        radius = float(cached_wafer_geom[3]) * min(scale_y, scale_x)
+    else:
+        use_circle, cy_f, cx_f, r_f = detect_circular_wafer_geometry(
+            img_path=img_path, h=orig_h, w=orig_w, wafer_edge_mode=wafer_edge_mode, category=category
+        )
+        cy = cy_f * scale_y
+        cx = cx_f * scale_x
+        radius = r_f * min(scale_y, scale_x)
+
     if use_circle and wafer_edge_margin > 0:
         yy, xx = np.ogrid[:h, :w]
         dist_from_center = np.hypot(yy - cy, xx - cx).astype(np.float32)
@@ -811,11 +1052,7 @@ def extract_tight_bboxes_for_anomaly_image(
     min_area_ratio: float = 0.00012,
     raw_score_mode: bool = False,
 ) -> Tuple[List[Tuple[int, int, int, int, float, int]], float]:
-    """
-    峰值自適應核心收斂 (Peak-Adaptive Core Thresholding) 演算法：
-    - 針對通過門檻的異常熱力圖切出核心缺陷紅框。
-    - 若開啟 raw_score_mode，區域分數直接取單點最大值 np.max(region_pixels)。
-    """
+    """峰值自適應核心收斂 (Peak-Adaptive Core Thresholding) 演算法。"""
     h, w = refined_amap.shape[:2]
     work_map = refined_amap.copy()
 
@@ -835,7 +1072,7 @@ def extract_tight_bboxes_for_anomaly_image(
         binary_mask = cv2.morphologyEx(binary_mask, cv2.MORPH_CLOSE, kernel)
 
     num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(binary_mask, connectivity=8)
-    min_area = 1 if raw_score_mode else max(16, int(round((h * w) * min_area_ratio)))
+    min_area = 1 if raw_score_mode else max(4, int(round((h * w) * min_area_ratio)))
     vis_scale = max(1.0, max(h, w) / 900.0)
     pad = max(3, int(round(4 * vis_scale)))
 
@@ -880,13 +1117,7 @@ def compute_dynamic_effective_threshold(
     sigma_k: float = 3.5,
     top_k: int = 0,
 ) -> Tuple[float, str]:
-    """
-    雙模式門檻判定：
-      - 若 user_threshold > 0：直接採用「固定門檻 (Fixed)」，適用於同產品後續不同時期推論。
-      - 若 user_threshold <= 0：自動計算兩種具文獻依據之無監督統計門檻並取較小值，適用於第一批訓練集定門檻：
-          1. 3-Sigma 法則 (Shewhart, 1931): mean + 3 * std
-          2. Modified Z-Score (Iglewicz & Hoaglin, 1993): median + (3.5 / 0.6745) * MAD
-    """
+    """雙模式門檻判定：Fixed 固定門檻或 Min(3-Sigma, Modified Z-Score)。"""
     scores_arr = np.array(
         non_golden_scores if non_golden_scores else golden_scores,
         dtype=np.float32,
@@ -897,7 +1128,6 @@ def compute_dynamic_effective_threshold(
 
     total_n = int(scores_arr.size)
 
-    # 計算兩種文獻門檻 (無論固定或自動模式皆算出，方便追蹤跨時期分佈飄移)
     mean_val = float(np.mean(scores_arr))
     std_val = float(np.std(scores_arr))
     thresh_3sigma = mean_val + 3.0 * std_val
@@ -906,7 +1136,6 @@ def compute_dynamic_effective_threshold(
     mad_val = float(np.median(np.abs(scores_arr - med_val)))
     thresh_mod_z = med_val + (3.5 / 0.6745) * mad_val
 
-    # 【模式 A】後續時期推論：已指定固定門檻 (user_threshold > 0)
     if user_threshold is not None and float(user_threshold) > 0.0:
         eff_thresh = float(user_threshold)
         eff_count = int(np.sum(scores_arr >= eff_thresh))
@@ -919,7 +1148,6 @@ def compute_dynamic_effective_threshold(
         )
         return eff_thresh, desc
 
-    # 【模式 B】第一批訓練集定門檻：取 Min(3-Sigma, Modified Z-Score)
     if thresh_3sigma <= thresh_mod_z:
         eff_thresh, eff_name = thresh_3sigma, "3-Sigma (mean+3*std)"
         high_thresh, high_name = thresh_mod_z, "Modified Z-Score (3.5)"
@@ -956,10 +1184,7 @@ def evaluate_overfitting_diagnostics(
     golden_scores: List[float],
     non_golden_normal_scores: List[float],
 ) -> Tuple[float, float, float, str, str]:
-    """
-    無監督過擬合自檢指標 (Unsupervised Overfitting Self-Diagnostic)：
-    計算「非 Golden 正常圖中位數分數 (Median)」與「Golden 圖平均分數 (Mean)」的比值與差距。
-    """
+    """無監督過擬合自檢指標。"""
     if not golden_scores or not non_golden_normal_scores:
         return 0.0, 1.0, 0.0, "🟢 正常 (無對照組)", ""
 
@@ -985,12 +1210,9 @@ def evaluate_overfitting_diagnostics(
 
     return g_mean, overfit_ratio, golden_gap, status_badge, advice_msg
 
+
 def compute_blind_pool_eval_metrics(ranking_records: List[Dict]) -> Optional[Dict[str, float]]:
-    """
-    若盲池檔名包含模擬標籤 (escape_* 為正樣本, 非 Golden 正常圖為負樣本)，
-    自動計算 Image-AUROC、I-AP、F1-max (最佳門檻)、以及當前門檻下的 Recall / FPR / Precision / F1。
-    (自動排除作為訓練集之 GOLDEN 樣本，確保評估無資料洩漏)
-    """
+    """若盲池檔名包含模擬標籤 (escape_*)，自動計算 I-AUROC、I-AP、F1-max、Recall、FPR、Precision、F1。"""
     eval_recs = [r for r in ranking_records if not str(r.get("status", "")).startswith("GOLDEN")]
     if not eval_recs:
         eval_recs = ranking_records
@@ -1010,7 +1232,6 @@ def compute_blind_pool_eval_metrics(ranking_records: List[Dict]) -> Optional[Dic
     n_pos = int(np.sum(y_true == 1))
     n_neg = int(np.sum(y_true == 0))
 
-    # 1. Image-level AUROC (Mann-Whitney U 精確計算，含同分處理)
     order = np.argsort(-y_score, kind="mergesort")
     y_true_sorted = y_true[order]
     y_score_sorted = y_score[order]
@@ -1028,7 +1249,6 @@ def compute_blind_pool_eval_metrics(ranking_records: List[Dict]) -> Optional[Dic
     pos_rank_sum = float(np.sum(ranks[y_true_sorted == 1]))
     auroc = (pos_rank_sum - n_pos * (n_pos + 1) / 2.0) / max(1.0, float(n_pos * n_neg))
 
-    # 2. Image-level AP & F1-max (掃描所有門檻切點)
     tp_cum = np.cumsum(y_true_sorted == 1)
     fp_cum = np.cumsum(y_true_sorted == 0)
     distinct_idx = np.where(np.diff(y_score_sorted))[0]
@@ -1047,7 +1267,6 @@ def compute_blind_pool_eval_metrics(ranking_records: List[Dict]) -> Optional[Dic
     f1_max = float(f1_curve[best_idx])
     best_thresh = float(y_score_sorted[thresh_idxs[best_idx]])
 
-    # 3. 當前門檻下的實測指標
     tp_cur = int(np.sum((y_true == 1) & (y_pred == 1)))
     fp_cur = int(np.sum((y_true == 0) & (y_pred == 1)))
     fn_cur = int(np.sum((y_true == 1) & (y_pred == 0)))
@@ -1074,6 +1293,111 @@ def compute_blind_pool_eval_metrics(ranking_records: List[Dict]) -> Optional[Dic
     }
 
 
+# =====================================================================
+# Step 4.1 Pass 2 多核心平行縫合與濾波 Worker
+# =====================================================================
+
+_WORKER_GOLDEN_REF: Optional[np.ndarray] = None
+
+
+def _init_stitch_worker(golden_ref_path: str):
+    global _WORKER_GOLDEN_REF
+    cv2.setNumThreads(1)
+    if golden_ref_path and os.path.isfile(golden_ref_path):
+        _WORKER_GOLDEN_REF = np.load(golden_ref_path).astype(np.float32)
+    else:
+        _WORKER_GOLDEN_REF = None
+
+
+def _stitch_and_refine_single_worker(task: Dict) -> Dict:
+    cv2.setNumThreads(1)
+    idx = task["idx"]
+    fname = task["fname"]
+    meta = task["meta"]
+    is_golden_img = task["is_golden_img"]
+    pre_stitched_raw_path = task["pre_stitched_raw_path"]
+    tile_amap_dir = task["tile_amap_dir"]
+    tile_overlap = task["tile_overlap"]
+    stitch_max_dim = task["stitch_max_dim"]
+    refined_cache_dir = task["refined_cache_dir"]
+    category = task["category"]
+    border_ratio = task["border_ratio"]
+    wafer_edge_mode = task["wafer_edge_mode"]
+    wafer_edge_margin = task["wafer_edge_margin"]
+    speckle_filter_ratio = task["speckle_filter_ratio"]
+    raw_score_mode = task["raw_score_mode"]
+
+    if pre_stitched_raw_path and os.path.isfile(pre_stitched_raw_path):
+        raw_amap = np.load(pre_stitched_raw_path).astype(np.float32)
+        try:
+            os.remove(pre_stitched_raw_path)
+        except OSError:
+            pass
+    else:
+        raw_amap = stitch_single_image_amap(
+            img_meta=meta,
+            tile_amap_dir=tile_amap_dir,
+            tile_overlap=tile_overlap,
+            stitch_max_dim=stitch_max_dim,
+            delete_tiles=True,
+        )
+
+    raw_flat = raw_amap.reshape(-1)
+    raw_single_max = float(np.max(raw_flat))
+    peak_k = max(8, int(round(raw_flat.size * 0.00015)))
+    raw_top_peak = float(np.mean(np.partition(raw_flat, -peak_k)[-peak_k:]))
+
+    refined_amap = refine_amap_for_wafer_and_noise(
+        full_amap=raw_amap,
+        img_path=meta["path"],
+        category=category,
+        border_ratio=border_ratio,
+        wafer_edge_mode=wafer_edge_mode,
+        wafer_edge_margin=wafer_edge_margin,
+        speckle_filter_ratio=speckle_filter_ratio,
+        golden_spatial_ref=_WORKER_GOLDEN_REF if not is_golden_img else None,
+        golden_tol_weight=0.35,
+        cached_wafer_geom=meta.get("wafer_geom", None),
+        orig_hw=(meta["height"], meta["width"]),
+    )
+    ref_flat = refined_amap.reshape(-1)
+    filtered_robust_max = float(np.mean(np.partition(ref_flat, -peak_k)[-peak_k:]))
+
+    if raw_score_mode:
+        active_amap = raw_amap
+        active_max_score = raw_single_max
+        active_flat = raw_flat
+    else:
+        active_amap = refined_amap
+        active_max_score = filtered_robust_max
+        active_flat = ref_flat
+
+    top_k_count = max(20, int(active_flat.size * 0.0005))
+    top_k_score = float(np.mean(np.partition(active_flat, -top_k_count)[-top_k_count:]))
+
+    cache_npy_path = os.path.join(refined_cache_dir, f"{idx:05d}_{meta['stem']}.npy")
+    try:
+        np.save(cache_npy_path, active_amap.astype(np.float16))
+    except Exception:
+        cache_npy_path = ""
+    del raw_amap, refined_amap, active_amap
+
+    return {
+        "idx": idx,
+        "filename": fname,
+        "stem": meta["stem"],
+        "meta": meta,
+        "is_golden_img": is_golden_img,
+        "cache_npy_path": cache_npy_path,
+        "max_score": active_max_score,
+        "raw_max_score": raw_single_max,
+        "raw_top_peak_score": raw_top_peak,
+        "filtered_max_score": filtered_robust_max,
+        "filter_delta": filtered_robust_max - raw_single_max,
+        "top_k_score": top_k_score,
+    }
+
+
 def stitch_and_filter_anomalies(
     manifest: Dict,
     tile_amap_dir: str,
@@ -1095,13 +1419,10 @@ def stitch_and_filter_anomalies(
     min_area_ratio: float,
     raw_score_mode: bool,
     log_files: List[str],
+    stitch_max_dim: int = 1024,
+    num_workers: int = 8,
 ) -> Tuple[int, int, float, str, str, str]:
-    """
-    三階段串流縫合與篩選（支援 --raw_score_mode 未濾波原生計分與四合一純化計分雙軌對照）：
-    - Pass 1: 縫合 Golden 圖建立空間結構容差基準 `golden_spatial_ref`，算完立即釋放 Golden 陣列。
-    - Pass 2: 逐張串流縫合，同時計算 Raw_Max_Score 與 Filtered_Max_Score，將 float16 暫存於磁碟。
-    - Pass 3: 僅針對超過有效門檻的異常圖片按需載入陣列畫紅框；正常圖片直接清理暫存檔略過。
-    """
+    """三階段多核心平行縫合與篩選 (支援降維畫布 <= 1024px 與異常圖 1:1 座標映回)。"""
     os.makedirs(final_amap_dir, exist_ok=True)
     anomaly_dir = os.path.join(out_dir, "anomaly_images")
     anomaly_fullres_bbox_dir = os.path.join(anomaly_dir, "full_res_bbox_only")
@@ -1119,23 +1440,29 @@ def stitch_and_filter_anomalies(
         if raw_score_mode
         else "FILTERED_ROBUST (四合一防誤報純化 + Top-0.015% 抗噪點峰值)"
     )
+    canvas_desc = f"降維畫布 <= {stitch_max_dim}px" if stitch_max_dim > 0 else "原圖全解析度"
 
     log_and_print(
-        f"\n[Step 4.1] 啟動 RAM 即時縫合與碎片銷毀模式 (共 {total_imgs} 張原圖) | 計分模式: {score_mode_label}",
+        f"\n[Step 4.1] 啟動 RAM 多核心平行縫合與碎片銷毀模式 (共 {total_imgs} 張原圖 | "
+        f"畫布={canvas_desc} | Workers={num_workers}) | 計分模式: {score_mode_label}",
         log_files,
     )
 
-    # Pass 1: 僅先縫合 Golden 圖計算跨片空間結構容差基準 (縫合後立即刪除該 Golden 圖之子圖塊 .npy，並暫存於 RAM 供 Pass 2 取用)
-    golden_raw_cache: Dict[str, np.ndarray] = {}
+    # Pass 1: 縫合 Golden 圖建立空間結構容差基準
+    golden_pre_stitched_paths: Dict[str, str] = {}
     golden_maps: List[np.ndarray] = []
     if not raw_score_mode and golden_set:
-        for fname, meta in manifest["images"].items():
+        for g_idx, (fname, meta) in enumerate(manifest["images"].items()):
             if fname in golden_set or os.path.basename(fname) in golden_set:
-                g_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap, delete_tiles=True)
-                golden_raw_cache[fname] = g_amap
+                g_amap = stitch_single_image_amap(
+                    meta, tile_amap_dir, tile_overlap, stitch_max_dim=stitch_max_dim, delete_tiles=True
+                )
+                tmp_g_path = os.path.join(refined_cache_dir, f"_golden_raw_{g_idx:03d}.npy")
+                np.save(tmp_g_path, g_amap.astype(np.float32))
+                golden_pre_stitched_paths[fname] = tmp_g_path
                 golden_maps.append(g_amap)
 
-    golden_spatial_ref: Optional[np.ndarray] = None
+    golden_ref_file = ""
     if golden_maps:
         ref_h, ref_w = golden_maps[0].shape[:2]
         aligned_g = [
@@ -1145,94 +1472,94 @@ def stitch_and_filter_anomalies(
         g_max_map = np.max(np.stack(aligned_g, axis=0), axis=0)
         blur_k = max(15, int(round(max(ref_h, ref_w) * 0.035)) | 1)
         golden_spatial_ref = cv2.GaussianBlur(g_max_map, (blur_k, blur_k), 0)
-        del aligned_g, g_max_map
+        golden_ref_file = os.path.join(refined_cache_dir, "_golden_spatial_ref.npy")
+        np.save(golden_ref_file, golden_spatial_ref.astype(np.float32))
+        del aligned_g, g_max_map, golden_spatial_ref
     del golden_maps
     gc.collect()
 
-    # Pass 2: 單張串流縫合，同步計算「未濾波 Raw 分數」與「四合一濾波後分數」
+    # Pass 2: 多核心平行縫合與四合一濾波
+    tasks = []
+    for idx, (fname, meta) in enumerate(manifest["images"].items(), 1):
+        is_golden_img = (fname in golden_set) or (os.path.basename(fname) in golden_set)
+        tasks.append({
+            "idx": idx,
+            "fname": fname,
+            "meta": meta,
+            "is_golden_img": is_golden_img,
+            "pre_stitched_raw_path": golden_pre_stitched_paths.get(fname, ""),
+            "tile_amap_dir": tile_amap_dir,
+            "tile_overlap": tile_overlap,
+            "stitch_max_dim": stitch_max_dim,
+            "refined_cache_dir": refined_cache_dir,
+            "category": category,
+            "border_ratio": border_ratio,
+            "wafer_edge_mode": wafer_edge_mode,
+            "wafer_edge_margin": wafer_edge_margin,
+            "speckle_filter_ratio": speckle_filter_ratio,
+            "raw_score_mode": raw_score_mode,
+        })
+
     stitched_info = []
     golden_max_scores = []
     non_golden_all_scores = []
     non_golden_normal_scores = []
 
+    eff_workers = max(1, min(int(num_workers), len(tasks)))
     t_stitch_loop_start = time.perf_counter()
 
-    for idx, (fname, meta) in enumerate(manifest["images"].items(), 1):
-        is_golden_img = (fname in golden_set) or (os.path.basename(fname) in golden_set)
-        if fname in golden_raw_cache:
-            raw_amap = golden_raw_cache.pop(fname)
-        else:
-            raw_amap = stitch_single_image_amap(meta, tile_amap_dir, tile_overlap, delete_tiles=True)
-        raw_flat = raw_amap.reshape(-1)
-        raw_single_max = float(np.max(raw_flat))
-        peak_k = max(8, int(round(raw_flat.size * 0.00015)))
-        raw_top_peak = float(np.mean(np.partition(raw_flat, -peak_k)[-peak_k:]))
+    if eff_workers <= 1:
+        _init_stitch_worker(golden_ref_file)
+        for completed, t_item in enumerate(tasks, 1):
+            res = _stitch_and_refine_single_worker(t_item)
+            if res["is_golden_img"]:
+                golden_max_scores.append(res["max_score"])
+            else:
+                non_golden_all_scores.append(res["max_score"])
+                if not os.path.basename(res["filename"]).startswith("escape_"):
+                    non_golden_normal_scores.append(res["max_score"])
+            stitched_info.append(res)
+            if completed == 1 or completed % 5 == 0 or completed == total_imgs:
+                _print_inline_progress(
+                    stage_title="Step 4.1 RAM縫合與濾波",
+                    current=completed,
+                    total=total_imgs,
+                    start_t=t_stitch_loop_start,
+                    extra_info=f"最新分數={res['max_score']:.4f}",
+                )
+    else:
+        completed = 0
+        with ProcessPoolExecutor(
+            max_workers=eff_workers,
+            initializer=_init_stitch_worker,
+            initargs=(golden_ref_file,),
+        ) as executor:
+            futures = [executor.submit(_stitch_and_refine_single_worker, t_item) for t_item in tasks]
+            for fut in as_completed(futures):
+                res = fut.result()
+                if res["is_golden_img"]:
+                    golden_max_scores.append(res["max_score"])
+                else:
+                    non_golden_all_scores.append(res["max_score"])
+                    if not os.path.basename(res["filename"]).startswith("escape_"):
+                        non_golden_normal_scores.append(res["max_score"])
+                stitched_info.append(res)
+                completed += 1
+                if completed == 1 or completed % 5 == 0 or completed == total_imgs:
+                    _print_inline_progress(
+                        stage_title=f"Step 4.1 平行縫合濾波(x{eff_workers})",
+                        current=completed,
+                        total=total_imgs,
+                        start_t=t_stitch_loop_start,
+                        extra_info=f"最新分數={res['max_score']:.4f}",
+                    )
 
-        refined_amap = refine_amap_for_wafer_and_noise(
-            full_amap=raw_amap,
-            img_path=meta["path"],
-            category=category,
-            border_ratio=border_ratio,
-            wafer_edge_mode=wafer_edge_mode,
-            wafer_edge_margin=wafer_edge_margin,
-            speckle_filter_ratio=speckle_filter_ratio,
-            golden_spatial_ref=golden_spatial_ref if not is_golden_img else None,
-            golden_tol_weight=0.35,
-        )
-        ref_flat = refined_amap.reshape(-1)
-        filtered_robust_max = float(np.mean(np.partition(ref_flat, -peak_k)[-peak_k:]))
-
-        if raw_score_mode:
-            active_amap = raw_amap
-            active_max_score = raw_single_max
-            active_flat = raw_flat
-        else:
-            active_amap = refined_amap
-            active_max_score = filtered_robust_max
-            active_flat = ref_flat
-
-        top_k_count = max(20, int(active_flat.size * 0.0005))
-        top_k_score = float(np.mean(np.partition(active_flat, -top_k_count)[-top_k_count:]))
-
-        if is_golden_img:
-            golden_max_scores.append(active_max_score)
-        else:
-            non_golden_all_scores.append(active_max_score)
-            if not os.path.basename(fname).startswith("escape_"):
-                non_golden_normal_scores.append(active_max_score)
-
-        cache_npy_path = os.path.join(refined_cache_dir, f"{idx:05d}_{meta['stem']}.npy")
+    if golden_ref_file and os.path.exists(golden_ref_file):
         try:
-            np.save(cache_npy_path, active_amap.astype(np.float16))
-        except Exception:
-            cache_npy_path = ""
-        del raw_amap, refined_amap, active_amap
+            os.remove(golden_ref_file)
+        except OSError:
+            pass
 
-        stitched_info.append({
-            "filename": fname,
-            "stem": meta["stem"],
-            "meta": meta,
-            "cache_npy_path": cache_npy_path,
-            "max_score": active_max_score,
-            "raw_max_score": raw_single_max,
-            "raw_top_peak_score": raw_top_peak,
-            "filtered_max_score": filtered_robust_max,
-            "filter_delta": filtered_robust_max - raw_single_max,
-            "top_k_score": top_k_score,
-        })
-
-        if idx == 1 or idx % 5 == 0 or idx == total_imgs:
-            _print_inline_progress(
-                stage_title="Step 4.1 RAM縫合與濾波",
-                current=idx,
-                total=total_imgs,
-                start_t=t_stitch_loop_start,
-                extra_info=f"最新分數={active_max_score:.4f}",
-            )
-        if idx % 25 == 0:
-            gc.collect()
-
-    golden_raw_cache.clear()
     safe_rmtree(tile_amap_dir)
     log_and_print(
         f"[🧹 碎片清理完成] 所有子圖塊已於 RAM 內拼回整張 Wafer，已自動銷毀全部碎片 Tile .npy -> {os.path.abspath(tile_amap_dir)}",
@@ -1259,7 +1586,7 @@ def stitch_and_filter_anomalies(
 
     log_and_print(
         f"[Step 4.2] 異常判定門檻設定: {thresh_mode_str}\n"
-        f"           (計分模式={'RAW未濾波' if raw_score_mode else '四合一純化濾波'}, "
+        f"           (計分模式={'RAW未濾波' if raw_score_mode else '四合一純化濾波'}, 縫合畫布={canvas_desc}, "
         f"圓周邊緣抑制={'OFF(Raw)' if raw_score_mode else wafer_edge_mode}, "
         f"邊界縮減={0.0 if raw_score_mode else wafer_edge_margin * 100:.1f}%, "
         f"微塵開運算比例={0.0 if raw_score_mode else speckle_filter_ratio:.4f})\n"
@@ -1271,7 +1598,7 @@ def stitch_and_filter_anomalies(
     if overfit_advice:
         log_and_print(overfit_advice, log_files)
 
-    # Pass 3: 依分數高低排序，僅針對超過門檻的圖片載入陣列並輸出紅框
+    # Pass 3: 依分數高低排序，僅針對超過門檻的圖片載入陣列並映回原圖畫紅框
     stitched_info.sort(key=lambda item: item["max_score"], reverse=True)
 
     ranking_records = []
@@ -1321,9 +1648,11 @@ def stitch_and_filter_anomalies(
             except OSError:
                 pass
         else:
-            active_amap = np.zeros((h, w), dtype=np.float32)
+            sh, sw, _, _ = compute_stitch_canvas_shape(h, w, stitch_max_dim)
+            active_amap = np.zeros((sh, sw), dtype=np.float32)
 
-        bboxes, pixel_box_thresh = extract_tight_bboxes_for_anomaly_image(
+        amap_h, amap_w = active_amap.shape[:2]
+        bboxes_scaled, _ = extract_tight_bboxes_for_anomaly_image(
             refined_amap=active_amap,
             img_threshold=effective_threshold,
             core_ratio=core_ratio,
@@ -1331,7 +1660,7 @@ def stitch_and_filter_anomalies(
             raw_score_mode=raw_score_mode,
         )
 
-        if not bboxes:
+        if not bboxes_scaled:
             del active_amap
             skipped_normal_count += 1
             status_tag = "GOLDEN_PASS" if is_golden else "PASS_NOISE_FILTERED"
@@ -1350,9 +1679,21 @@ def stitch_and_filter_anomalies(
             })
             continue
 
+        # 將降維畫布紅框座標映回 1:1 原圖解析度
+        inv_sx = w / float(max(1, amap_w))
+        inv_sy = h / float(max(1, amap_h))
+        bboxes_full = []
+        for (x1, y1, x2, y2, region_max, area_s) in bboxes_scaled:
+            fx1 = max(0, min(w - 1, int(round(x1 * inv_sx))))
+            fy1 = max(0, min(h - 1, int(round(y1 * inv_sy))))
+            fx2 = max(0, min(w - 1, int(round(x2 * inv_sx))))
+            fy2 = max(0, min(h - 1, int(round(y2 * inv_sy))))
+            farea = int(round(area_s * inv_sx * inv_sy))
+            bboxes_full.append((fx1, fy1, fx2, fy2, region_max, farea))
+
         anomaly_count += 1
 
-        save_dtype = np.float16 if max(active_amap.shape) > 2048 else np.float32
+        save_dtype = np.float16 if max(active_amap.shape) > 1024 else np.float32
         np.save(
             os.path.join(final_amap_dir, f"Rank{rank_idx:03d}_Score{max_score:.4f}_{stem}.npy"),
             active_amap.astype(save_dtype),
@@ -1366,7 +1707,7 @@ def stitch_and_filter_anomalies(
         font_thickness = max(1, int(round(1.5 * vis_scale)))
 
         bbox_canvas = orig_bgr.copy()
-        for (x1, y1, x2, y2, region_max, _) in bboxes:
+        for (x1, y1, x2, y2, region_max, _) in bboxes_full:
             cv2.rectangle(bbox_canvas, (x1, y1), (x2, y2), (0, 0, 255), box_thickness)
             label_txt = f"{region_max:.3f}"
             (tw, th_txt), _ = cv2.getTextSize(label_txt, cv2.FONT_HERSHEY_SIMPLEX, font_scale, font_thickness)
@@ -1377,22 +1718,23 @@ def stitch_and_filter_anomalies(
                 cv2.FONT_HERSHEY_SIMPLEX, font_scale, (255, 255, 255), font_thickness, cv2.LINE_AA
             )
 
-        img_med = float(np.median(active_amap))
-        norm_map = np.clip((active_amap - img_med) / max(float(np.max(active_amap)) - img_med, 1e-6), 0.0, 1.0)
-        hm_color = cv2.applyColorMap((norm_map * 255).astype(np.uint8), cv2.COLORMAP_JET)
-        overlay_bgr = cv2.addWeighted(orig_bgr, 0.55, hm_color, 0.45, 0)
-
         safe_out_fname = re.sub(r"[\\/]+", "__", fname)
-        prefixed_img_name = f"Rank{rank_idx:03d}_Score{max_score:.4f}_Box{len(bboxes):02d}_{safe_out_fname}"
+        prefixed_img_name = f"Rank{rank_idx:03d}_Score{max_score:.4f}_Box{len(bboxes_full):02d}_{safe_out_fname}"
 
         fullres_out_path = os.path.join(anomaly_fullres_bbox_dir, prefixed_img_name)
         cv2.imwrite(fullres_out_path, bbox_canvas)
 
+        # 三合一對照圖直接於 panel_h 尺度合成熱力圖疊圖
         panel_h = min(900, h)
         panel_w = int(round(w * (panel_h / float(h))))
         p1 = cv2.resize(orig_bgr, (panel_w, panel_h), interpolation=cv2.INTER_AREA)
-        p2 = cv2.resize(overlay_bgr, (panel_w, panel_h), interpolation=cv2.INTER_AREA)
         p3 = cv2.resize(bbox_canvas, (panel_w, panel_h), interpolation=cv2.INTER_AREA)
+
+        amap_panel = cv2.resize(active_amap, (panel_w, panel_h), interpolation=cv2.INTER_LINEAR)
+        img_med = float(np.median(amap_panel))
+        norm_map = np.clip((amap_panel - img_med) / max(float(np.max(amap_panel)) - img_med, 1e-6), 0.0, 1.0)
+        hm_color = cv2.applyColorMap((norm_map * 255).astype(np.uint8), cv2.COLORMAP_JET)
+        p2 = cv2.addWeighted(p1, 0.55, hm_color, 0.45, 0)
         tri_panel = np.hstack([p1, p2, p3])
 
         banner_h = max(36, int(round(panel_h * 0.055)))
@@ -1400,7 +1742,7 @@ def stitch_and_filter_anomalies(
         mode_tag = "RAW" if raw_score_mode else "FILT"
         banner_txt = (
             f"[{mode_tag}] Orig: {fname} | Score: {max_score:.4f} (Raw: {raw_max_score:.4f}, Filt: {filtered_max_score:.4f}, "
-            f"EffThresh: {effective_threshold:.4f}) | Status: ANOMALY (Boxes: {len(bboxes)})"
+            f"EffThresh: {effective_threshold:.4f}) | Status: ANOMALY (Boxes: {len(bboxes_full)})"
         )
         cv2.putText(
             banner, banner_txt, (12, int(banner_h * 0.72)),
@@ -1410,7 +1752,7 @@ def stitch_and_filter_anomalies(
         vis_out_path = os.path.join(anomaly_dir, prefixed_img_name)
         cv2.imwrite(vis_out_path, final_vis)
 
-        del active_amap, orig_bgr, bbox_canvas, hm_color, overlay_bgr, tri_panel, final_vis
+        del active_amap, orig_bgr, bbox_canvas, amap_panel, hm_color, p1, p2, p3, tri_panel, final_vis
         gc.collect()
 
         status_tag = "GOLDEN_ANOMALY" if is_golden else "ANOMALY"
@@ -1423,16 +1765,14 @@ def stitch_and_filter_anomalies(
             "filtered_max_score": filtered_max_score,
             "filter_delta": filter_delta,
             "top_k_score": top_k_score,
-            "num_bboxes": len(bboxes),
+            "num_bboxes": len(bboxes_full),
             "saved_file": prefixed_img_name,
             "resolution": f"{w}x{h}",
         })
 
     safe_rmtree(refined_cache_dir)
-    del golden_spatial_ref
     gc.collect()
 
-    # 計算非 Golden 正常圖之「濾波後 vs 未濾波 Raw」分數分佈對照
     non_golden_recs = [r for r in ranking_records if not r["status"].startswith("GOLDEN")]
     non_golden_normal_recs = [
         r for r in non_golden_recs if not os.path.basename(r["filename"]).startswith("escape_")
@@ -1505,6 +1845,7 @@ def stitch_and_filter_anomalies(
         f.write(
             f"Score Mode: {'RAW_UNFILTERED' if raw_score_mode else 'FILTERED_ROBUST'} | "
             f"Threshold Mode: {thresh_mode} | Effective Threshold: {effective_threshold:.4f} | "
+            f"Stitch Canvas: {canvas_desc} | "
             f"Wafer Edge Mode: {'off(raw)' if raw_score_mode else wafer_edge_mode} (Margin: {wafer_edge_margin:.3f})\n"
             f"Core Box Ratio: {core_ratio:.2f} | Exported Anomaly Images: {anomaly_count} | "
             f"Skipped Normal Images: {skipped_normal_count}\n"
@@ -1557,7 +1898,8 @@ def stitch_and_filter_anomalies(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="FoundAD High-Res Zero-GT Anomaly Inference Pipeline")
+    default_workers = min(8, os.cpu_count() or 4)
+    parser = argparse.ArgumentParser(description="FoundAD High-Res Zero-GT Anomaly Inference Pipeline (無損加速版)")
     parser.add_argument("--pool_dir", type=str, required=True)
     parser.add_argument("--out_dir", type=str, default="./output/2_fab_no_gt")
     parser.add_argument("--datasets_dir", type=str, default="./datasets")
@@ -1567,73 +1909,38 @@ def main():
     parser.add_argument("--diy_name", type=str, default="sim_escape")
     parser.add_argument("--ckpt_step", type=int, default=2000)
 
-    # 門檻與動態對齊參數
     parser.add_argument(
         "--thresh_mode", type=str, default="auto",
         choices=["auto", "hybrid", "mean_std", "percentile", "top_k", "fixed"],
-        help="門檻決定模式：hybrid(結合P95+MAD穩健統計+保底門檻)、mean_std(直接以 mean + sigma_k * std 作為門檻)、percentile(對齊分位數)、top_k(只抓前K高分)、fixed(固定threshold)"
     )
-    parser.add_argument(
-        "--threshold", type=float, default=0.25,
-        help="當 thresh_mode=fixed 時作為固定門檻；當 thresh_mode=hybrid 時作為保底門檻下限之一"
-    )
-    parser.add_argument(
-        "--min_threshold", type=float, default=0.27,
-        help="動態門檻的絕對最低安全底線 (適用於 hybrid / percentile / top_k 模式)"
-    )
-    parser.add_argument(
-        "--auto_percentile", type=float, default=95.0,
-        help="動態門檻自動對齊之盲池分位數 (例如 95.0 代表 P95，98.0 代表 P98)"
-    )
-    parser.add_argument(
-        "--top_k", type=int, default=0,
-        help="若設為 > 0 (例如 5 或 8)，則限制最多只輸出分數最高的前 K 張可疑圖片"
-    )
-    parser.add_argument(
-        "--sigma_k", type=float, default=3.5,
-        help="當 thresh_mode=mean_std 時代表 mean + k*std 的倍數 k (如 1.0, 2.0, 3.0)；當為 hybrid 時代表 MAD 標準差倍數"
-    )
+    parser.add_argument("--threshold", type=float, default=0.25)
+    parser.add_argument("--min_threshold", type=float, default=0.27)
+    parser.add_argument("--auto_percentile", type=float, default=95.0)
+    parser.add_argument("--top_k", type=int, default=0)
+    parser.add_argument("--sigma_k", type=float, default=3.5)
 
-    # 晶圓圓周邊緣抑制與微塵濾波參數 + Raw 未濾波對照開關
-    parser.add_argument(
-        "--raw_score_mode", action="store_true",
-        help="若設定此旗標，將完全關閉四合一防誤報濾波，直接以縫合後之原始熱力圖與單點最大值 np.max(amap) 進行計分與畫框 (供消融實驗對照用)"
-    )
-    parser.add_argument(
-        "--core_ratio", type=float, default=0.55,
-        help="異常熱區峰值核心收斂比例 (0.45~0.65，越高紅框越緊密貼合最高分缺陷核心)"
-    )
-    parser.add_argument(
-        "--border_ratio", type=float, default=0.02,
-        help="抑制影像四週矩形邊框 Padding 偽影的比例 (預設 0.02 即 2%%)"
-    )
-    parser.add_argument(
-        "--wafer_edge_mode", type=str, default="auto",
-        choices=["auto", "on", "off"],
-        help="晶圓圓周邊緣 (Bevel/Notch) 抑制模式：auto(自動偵測圓形工件)、on(強制開啟)、off(關閉)"
-    )
-    parser.add_argument(
-        "--wafer_edge_margin", type=float, default=0.04,
-        help="晶圓圓周外圈倒角抑制寬度佔半徑比例 (預設 0.04 即外圈 4%% 半徑平滑衰減)"
-    )
-    parser.add_argument(
-        "--speckle_filter_ratio", type=float, default=0.008,
-        help="灰階形態學開運算濾除單點微塵尖峰之核大小比例 (預設 0.008，設 0 則關閉)"
-    )
-    parser.add_argument(
-        "--min_area_ratio", type=float, default=0.00012,
-        help="有效異常紅框的最小面積佔全圖比例 (低於此面積之微小雜訊點不畫框、不誤報)"
-    )
+    parser.add_argument("--raw_score_mode", action="store_true")
+    parser.add_argument("--core_ratio", type=float, default=0.55)
+    parser.add_argument("--border_ratio", type=float, default=0.02)
+    parser.add_argument("--wafer_edge_mode", type=str, default="auto", choices=["auto", "on", "off"])
+    parser.add_argument("--wafer_edge_margin", type=float, default=0.04)
+    parser.add_argument("--speckle_filter_ratio", type=float, default=0.008)
+    parser.add_argument("--min_area_ratio", type=float, default=0.00012)
 
-    parser.add_argument("--skip_train", action="store_true", help="(相容保留旗標) 純推論模式下預設即跳過訓練並優先使用快取")
-    parser.add_argument("--force_infer", action="store_true", help="強制重新切塊並重跑 GPU 推論 (不使用 .npy 快取)")
+    parser.add_argument("--skip_train", action="store_true")
+    parser.add_argument("--force_infer", action="store_true")
     parser.add_argument("--mock_from_mvtec", type=str, default="")
 
-    parser.add_argument("--tile_size", type=int, default=512, help="子圖塊像素大小 (建議 512 或 1024，避免大圖壓縮失真)")
-    parser.add_argument("--tile_overlap", type=int, default=64, help="相鄰子圖塊重疊像素寬度 (用於無縫平滑拼接)")
-    parser.add_argument("--infer_batch_size", type=int, default=16, help="推論子圖塊時的 Mini-Batch 大小，大幅加速 5000x5000 推論")
-    parser.add_argument("--bg_std_thresh", type=float, default=1.5, help="過濾純背景角落塊的標準差門檻")
-    parser.add_argument("--disable_tiling", action="store_true", help="若設定此旗標則關閉切塊，退回整張推論模式")
+    parser.add_argument("--tile_size", type=int, default=512)
+    parser.add_argument("--tile_overlap", type=int, default=64)
+    parser.add_argument("--bg_std_thresh", type=float, default=1.5)
+    parser.add_argument("--disable_tiling", action="store_true")
+
+    # 無損加速參數
+    parser.add_argument("--infer_batch_size", type=int, default=64, help="GPU 推論 Batch Size (預設由 16 提升至 64)")
+    parser.add_argument("--num_workers", type=int, default=default_workers, help="切塊、讀圖與縫合之多核心 Worker 數")
+    parser.add_argument("--stitch_max_dim", type=int, default=1024, help="縫合與濾波畫布最大邊長 (預設 1024，設 0 則退回原圖解析度)")
+    parser.add_argument("--amp_dtype", type=str, default="bf16", choices=["bf16", "fp16", "off"], help="傳遞給 AD.py 推論的混合精度設定")
     args = parser.parse_args()
 
     if not args.category or args.category.lower() == "auto":
@@ -1662,6 +1969,8 @@ def main():
         f"\n{'=' * 75}\n"
         f"[Task 2 無GT抓漏純推論啟動時間] {start_dt_str}\n"
         f"[本次專屬時間戳記輸出目錄] {run_out_dir}\n"
+        f"[無損加速設定] BatchSize={args.infer_batch_size} | Workers={args.num_workers} | "
+        f"StitchCanvas={args.stitch_max_dim}px | AMP={args.amp_dtype}\n"
         f"{'=' * 75}",
         log_files,
     )
@@ -1682,16 +1991,12 @@ def main():
         f"t{args.tile_size}_ov{args.tile_overlap}_bg{args.bg_std_thresh:g}_dt{int(args.disable_tiling)}"
     )
 
-    # 讀取既有 Golden 檔名清單與模型權重
     golden_filenames = load_existing_golden_filenames(shot_dir, run_out_dir, log_files)
     actual_step, ckpt_dirs, ckpt_files = prepare_ckpt_for_demo(
         args.data_name, args.diy_name, args.ckpt_step, log_files
     )
     ckpt_signature = compute_ckpt_signature(ckpt_files)
 
-    # =========================================================================
-    # [整體推論階段] (RAM 即時縫合並自動銷毀子圖塊 .npy 碎片，主動清理舊快取目錄)
-    # =========================================================================
     amap_dump_dir = os.path.join(run_out_dir, "amap_npy")
     report_txt_path = os.path.join(run_out_dir, "escape_ranking_report.txt")
     report_csv_path = os.path.join(run_out_dir, "escape_ranking_report.csv")
@@ -1740,6 +2045,9 @@ def main():
             tile_config_key=tile_config_key,
             cached_manifest_path=cached_manifest_path,
             log_files=log_files,
+            wafer_edge_mode=args.wafer_edge_mode,
+            category=args.category,
+            num_workers=args.num_workers,
         )
         test_tile_sec = time.perf_counter() - t_test_tile_start
         num_test_images = manifest.get("num_images", 1)
@@ -1753,6 +2061,8 @@ def main():
     env["FAB_AMAP_DUMP_DIR"] = os.path.abspath(tile_amap_tmp_dir)
     env["FAB_SKIP_TILE_HEATMAP_PNG"] = "1"
     env["FAB_INFER_BATCH_SIZE"] = str(args.infer_batch_size)
+    env["FAB_NUM_WORKERS"] = str(args.num_workers)
+    env["FAB_AMP_DTYPE"] = str(args.amp_dtype)
     env["FAB_BBOX_OUT_DIR"] = ""
     env["FAB_SIGMA_K"] = str(args.sigma_k)
     env["FAB_GOLDEN_NAMES"] = ""
@@ -1766,6 +2076,7 @@ def main():
     log_and_print(
         f"\n[Step 3] 執行 FoundAD 子圖塊高解析度批次推論 "
         f"(共 {total_test_tiles} 張推論圖塊, BatchSize={args.infer_batch_size}, "
+        f"Workers={args.num_workers}, AMP={args.amp_dtype}, "
         f"暫存於 {os.path.abspath(tile_amap_tmp_dir)} 並將於 Step 4 RAM 拼接後立即銷毀):",
         log_files,
     )
@@ -1799,6 +2110,8 @@ def main():
         min_area_ratio=args.min_area_ratio,
         raw_score_mode=args.raw_score_mode,
         log_files=log_files,
+        stitch_max_dim=args.stitch_max_dim,
+        num_workers=args.num_workers,
     )
     stitch_vis_sec = time.perf_counter() - t_stitch_start
 
@@ -1813,8 +2126,8 @@ def main():
         f"  [1] 整體推論階段總時間 (Total Inference Time) : {format_duration(total_infer_time)}\n"
         f"      ├─ Step 3.1 測試池高解析度切塊 ({total_test_tiles} 塊)   : {format_duration(test_tile_sec)}"
         f"{' (Cached)' if used_png_tile_cache else ''}\n"
-        f"      ├─ Step 3.2 FoundAD 模型推論 (step={actual_step})     : {format_duration(model_infer_sec)}\n"
-        f"      ├─ Step 4 RAM 縫合銷毀碎片與{'未濾波' if args.raw_score_mode else '四合一濾波'}畫框 : {format_duration(stitch_vis_sec)}\n"
+        f"      ├─ Step 3.2 FoundAD 模型推論 (step={actual_step}, BS={args.infer_batch_size}) : {format_duration(model_infer_sec)}\n"
+        f"      ├─ Step 4 RAM 縫合銷毀碎片與{'未濾波' if args.raw_score_mode else '四合一濾波'}畫框 (Canvas<={args.stitch_max_dim}px) : {format_duration(stitch_vis_sec)}\n"
         f"      └─ 平均每張原圖推論耗時 ({num_test_images} 張原圖)         : {avg_infer_per_img:.2f} 秒/張\n"
         f"{'-' * 75}\n"
         f"  [2] 任務全程總執行時間 (Total Wall Time)      : {format_duration(total_wall_time)}\n"
