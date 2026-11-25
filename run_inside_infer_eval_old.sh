@@ -7,6 +7,27 @@
 # 流程: 3_infer_fab_no_gt_old.py -> 4_split_eval_results.py (不重挑 Golden、不重新訓練模型)
 set -e
 
+# ===== DINOv3 Offline Settings =====
+
+COMPANY_DINO_CKPT="/workspace/model_weight/dinov3_vitb16_pretrain_lvd1689m-73cec8be.pth"
+
+export FAB_LOCAL_DINO_CKPT="${COMPANY_DINO_CKPT}"
+export FAB_LOCAL_DINO_REPO="$(pwd)/hub_cache/facebookresearch_dinov3_main"
+
+export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+
+# 檢查離線模型資源是否存在
+if [ ! -f "${FAB_LOCAL_DINO_CKPT}" ]; then
+    echo "ERROR: DINOv3 pretrained checkpoint not found"
+    exit 1
+fi
+
+if [ ! -f "${FAB_LOCAL_DINO_REPO}/hubconf.py" ]; then
+    echo "ERROR: Local DINOv3 repository not found"
+    exit 1
+fi
+
 # ===================== [可自由修改的參數區] =====================
 OUTPUT_ROOT="./wafer_escape_results"
 DATASETS_DIR="./datasets"
