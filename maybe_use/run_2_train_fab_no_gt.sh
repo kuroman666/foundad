@@ -29,7 +29,7 @@ SKIP_TRAIN=""            # 若只想重新驗證並對接既有權重，可設�
 REBUILD_GOLDEN=""        # 若想強制重跑 Golden 挑選與純化，可設為 "--rebuild_golden"
 DISABLE_TILING=""        # 若關閉切塊，設為 "--disable_tiling"
 
-DATA_NAME="wafer_${LAYER_ID}_${SHOTS}shot"
+DATA_NAME="wafer_${DATASET_ID}_${LAYER_ID}_${SHOTS}shot"
 DIY_NAME="fab_${LAYER_ID}"
 # ==============================================================================
 
