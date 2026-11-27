@@ -628,6 +628,108 @@ if flagged:
         "Top-5 Anomalies    : " + ", ".join(names)
     )
 
+
+# ============================================================
+# Threshold Reference Comparison
+# 僅統計候選數量，不改變實際 Inference 結果
+# ============================================================
+
+# 排除 Golden 後的全部 Wafer 分數
+ref_scores = all_scores
+
+n = len(ref_scores)
+ref_median = float(np.median(ref_scores))
+ref_mean = float(np.mean(ref_scores))
+ref_std = float(np.std(ref_scores))
+ref_p95 = float(np.percentile(ref_scores, 95))
+
+# 建立不同 Threshold 的比較表
+threshold_refs = [
+    ("Effective Threshold", actual_threshold),
+    ("Median + 2 Sigma", ref_median + 2 * ref_std),
+    ("Median + 3 Sigma", ref_median + 3 * ref_std),
+    ("Median + 3.5 Sigma", ref_median + 3.5 * ref_std),
+    ("Mean + 3 Sigma", th_3sigma),
+    ("Modified Z-Score 3.5", th_modz),
+    ("P95", ref_p95),
+]
+
+lines.extend([
+    "-" * 85,
+    "Threshold Reference Comparison",
+    f"Score Population : Non-Golden Wafer (N={n})",
+    f"Median={ref_median:.4f} | "
+    f"Mean={ref_mean:.4f} | Std={ref_std:.4f}",
+    "-" * 85,
+    f"{'Method':<26} {'Threshold':>10} "
+    f"{'Candidates':>12} {'Rate':>10} {'Rank Cut':>12}",
+])
+
+comparison_rows = []
+
+for method, th in threshold_refs:
+
+    count = int(np.sum(ref_scores >= th))
+    rate = 100.0 * count / n if n else 0.0
+
+    rank_cut = f"Top {count}" if count else "None"
+
+    lines.append(
+        f"{method:<26} {th:>10.4f} "
+        f"{count:>8}/{n:<3} "
+        f"{rate:>9.2f}% "
+        f"{rank_cut:>12}"
+    )
+
+    comparison_rows.append([
+        method,
+        f"{th:.6f}",
+        count,
+        n,
+        f"{rate:.4f}",
+        rank_cut,
+    ])
+
+# 真正完成 Bounding Box 篩選的結果
+lines.extend([
+    "-" * 85,
+    f"FINAL Effective Threshold : {actual_threshold:.4f}",
+    f"FINAL Score Candidates    : "
+    f"{int(np.sum(ref_scores >= actual_threshold))}/{n}",
+    f"FINAL BBox Anomalies      : {len(flagged)}/{n}",
+    f"FINAL Anomaly Rate        : {anom_pct:.2f}%",
+])
+
+# 額外匯出門檻比較 CSV
+comparison_csv = os.path.join(
+    run_dir,
+    "threshold_reference_comparison.csv"
+)
+
+with open(
+    comparison_csv, "w",
+    newline="",
+    encoding="utf-8-sig"
+) as f:
+
+    writer = csv.writer(f)
+
+    writer.writerow([
+        "Threshold_Method",
+        "Threshold_Value",
+        "Score_Candidate_Count",
+        "Total_NonGolden",
+        "Candidate_Rate_Pct",
+        "Rank_Cut",
+    ])
+
+    writer.writerows(comparison_rows)
+
+lines.append(
+    f"Threshold Comparison CSV : {comparison_csv}"
+)
+
+
 lines.append("=" * 85)
 
 summary = "\n".join(lines)
