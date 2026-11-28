@@ -697,6 +697,7 @@ lines.extend([
     f"FINAL Score Candidates    : "
     f"{int(np.sum(ref_scores >= actual_threshold))}/{n}",
     f"FINAL BBox Anomalies      : {len(flagged)}/{n}",
+    f"FINAL Normal Wafers       : {len(passed)}/{n}",
     f"FINAL Anomaly Rate        : {anom_pct:.2f}%",
 ])
 
